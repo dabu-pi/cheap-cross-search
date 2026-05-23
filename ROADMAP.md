@@ -12,8 +12,9 @@
 | 4 | 管理画面 | ✅ 完了（土台・2026-05-24）| - |
 | 5 | 取得アダプタ土台 | ✅ 完了（registry・mock・2026-05-24）| - |
 | 6 | 収益化（アフィリエイト）土台 | ✅ 完了（2026-05-24）| - |
+| 7 | 安全公開準備・ポリシー | ✅ 完了（2026-05-24）| - |
 | 5b | 取得アダプタ実装（実 API 接続） | 🔜 未着手（申請後）| ★★☆ |
-| 7 | 一般公開準備 | 🔜 未着手 | ★★☆ |
+| 8 | 本番Supabase接続・デプロイ | 🔜 未着手 | ★★★ |
 
 ---
 
@@ -189,18 +190,40 @@ Authentication > URL Configuration > Redirect URL に /auth/callback を追加
 
 ---
 
-## Phase 7: 一般公開準備 🔜
+## Phase 7: 安全公開準備・ポリシー ✅ 完了（2026-05-24）
 
-**完了条件:** 一般ユーザーが使える状態・法務・規約ページあり
+**完了条件:** 安全フィルター・通報導線・ポリシーページの土台が整っている
 
-- [ ] 禁止商品フィルター強化（blocked_keywords / blocked_categories）
-- [ ] 通報機能（reported_products）
-- [ ] 利用規約ページ
-- [ ] プライバシーポリシーページ
+- [x] 安全フィルター型定義（`src/lib/safety/types.ts`）
+- [x] 安全ルール定義（`src/lib/safety/rules.ts`）— blocked 17 / caution 12
+- [x] フィルター実装（`src/lib/safety/filter-product-offers.ts`）
+- [x] 検索ページへの安全フィルター統合（除外件数・注意件数バナー）
+- [x] ProductCard 要注意ラベル・「⚑」報告リンク
+- [x] 問題報告ページ（`/report`）— デモモード
+- [x] 利用規約ページ（`/terms`）
+- [x] プライバシーポリシーページ（`/privacy`）
+- [x] 安全ポリシーページ（`/safety-policy`）— ルールから自動生成
+- [x] トップページ フッターナビ
+- [x] 管理画面 blocked-keywords 強化（稼働中ルール表示）
+- [x] 公開チェックリスト（`docs/SAFETY_PUBLICATION_CHECKLIST.md`）
+- [ ] 通報 DB 保存（`reported_products` テーブル）→ Supabase 設定後
+- [ ] `blocked_keywords` テーブルへの移行 → 管理画面から動的編集
+- [ ] ポリシーページの法的レビュー → 公開前に弁護士確認推奨
+
+## Phase 8: 本番Supabase接続・デプロイ 🔜
+
+**完了条件:** 一般ユーザーが実際に使える状態
+
+- [ ] Supabase プロジェクト作成・`.env.local` 設定
+- [ ] SQL マイグレーション適用（auth / favorites / affiliate / click_events）
+- [ ] Google OAuth 有効化
+- [ ] アフィリエイトプログラム申請・ID 設定
+- [ ] click_events DB INSERT 有効化
+- [ ] 管理者権限チェック実装
 - [ ] SEO（title / description / OGP）
 - [ ] PWA アイコン作成（192x192 / 512x512）
-- [ ] パフォーマンス改善（Core Web Vitals）
 - [ ] Vercel 本番デプロイ
+- [ ] カスタムドメイン設定
 
 ---
 

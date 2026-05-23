@@ -14,6 +14,8 @@ interface ProductCardProps {
   offer: ProductOffer;
   /** 検索クエリ（クリック計測に使用） */
   query?: string;
+  /** Phase 7: 要注意商品の警告文（未定義なら通常表示）*/
+  cautionReason?: string;
 }
 
 const CONFIDENCE_BADGE: Record<
@@ -34,7 +36,7 @@ const CONFIDENCE_BADGE: Record<
  * - PR / アフィリエイト表記を明示
  * - 欠損値でクラッシュしない
  */
-export function ProductCard({ offer, query }: ProductCardProps) {
+export function ProductCard({ offer, query, cautionReason }: ProductCardProps) {
   const shop       = getShopByCode(offer.shopCode);
   const logoColor  = shop?.logoColor ?? '#666';
   const confidence = CONFIDENCE_BADGE[offer.priceConfidence] ?? CONFIDENCE_BADGE.unknown;
@@ -47,8 +49,19 @@ export function ProductCard({ offer, query }: ProductCardProps) {
   const ratingText = formatRating(offer.rating ?? null);
   const reviewText = formatReviewCount(offer.reviewCount ?? null);
 
+  // 通報用 URL
+  const reportUrl = `/report?offerId=${encodeURIComponent(offer.id)}&shopCode=${encodeURIComponent(offer.shopCode)}&title=${encodeURIComponent(offer.title ?? '')}`;
+
   return (
-    <div className="rounded-2xl border shadow-sm bg-white overflow-hidden transition-shadow hover:shadow-md">
+    <div className={`rounded-2xl border shadow-sm bg-white overflow-hidden transition-shadow hover:shadow-md ${cautionReason ? 'border-amber-300' : ''}`}>
+
+      {/* Phase 7: 要注意バナー */}
+      {cautionReason && (
+        <div className="px-4 py-2 bg-amber-50 border-b border-amber-200 flex items-start gap-2">
+          <span className="text-amber-500 text-sm shrink-0" aria-hidden>⚠️</span>
+          <p className="text-xs text-amber-700 leading-snug">{cautionReason}</p>
+        </div>
+      )}
 
       {/* ─── ショップヘッダー ─── */}
       <div
@@ -159,15 +172,15 @@ export function ProductCard({ offer, query }: ProductCardProps) {
         <FavoriteProductButton offer={offer} />
 
         <div className="flex items-center gap-3">
-          {/* 問題報告（Phase 7プレースホルダー） */}
-          <button
-            className="text-xs text-gray-300 hover:text-gray-400 transition-colors cursor-not-allowed"
-            title="価格・情報の問題を報告（準備中）"
-            disabled
-            aria-label="問題を報告（準備中）"
+          {/* 問題報告（Phase 7: /report ページへ）*/}
+          <a
+            href={reportUrl}
+            className="text-xs text-gray-300 hover:text-red-400 transition-colors"
+            title="価格・情報の問題を報告"
+            aria-label="問題を報告"
           >
             ⚑
-          </button>
+          </a>
 
           {/* 商品ページへ（Phase 6: /api/click 経由） */}
           <a

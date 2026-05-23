@@ -9,6 +9,7 @@ import { DisclaimerBanner } from '@/components/ui/DisclaimerBanner';
 import { crossSearch } from '@/lib/search/engine';
 import { getDemoOffers } from '@/lib/search/demo-results';
 import { saveSearchQuery } from '@/lib/favorites/actions';
+import { filterProductOffers } from '@/lib/safety/filter-product-offers';
 
 interface SearchPageProps {
   searchParams: Promise<{ q?: string }>;
@@ -68,7 +69,16 @@ async function SearchResults({ query }: { query: string }) {
 
   // 表示するオファー: API取得 → なければ legacy デモデータ
   const demoOffers = getDemoOffers();
-  const displayOffers = apiOffers.length > 0 ? apiOffers : demoOffers;
+  const rawOffers = apiOffers.length > 0 ? apiOffers : demoOffers;
+
+  // Phase 7: 安全フィルター適用
+  const safetyResult = filterProductOffers(rawOffers);
+  const displayOffers = safetyResult.annotated.map((a) => a.offer);
+  const cautionAnnotations = new Map(
+    safetyResult.annotated
+      .filter((a) => a.safetyLevel === 'caution')
+      .map((a) => [a.offer.id, a.cautionReason ?? '要注意商品です。購入前に各ショップで内容をご確認ください。'])
+  );
 
   // デモデータを使っているか
   const usingMock = apiOffers.some((o) => o.source === 'external_api_mock');
@@ -115,6 +125,20 @@ async function SearchResults({ query }: { query: string }) {
       {/* 免責バナー */}
       <DisclaimerBanner />
 
+      {/* Phase 7: 安全フィルター状態表示 */}
+      {(safetyResult.blockedCount > 0 || safetyResult.cautionCount > 0) && (
+        <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-2.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span className="text-xs font-semibold text-amber-700">🛡️ 安全フィルター有効</span>
+          {safetyResult.blockedCount > 0 && (
+            <span className="text-xs text-amber-600">{safetyResult.blockedCount} 件を非表示にしました</span>
+          )}
+          {safetyResult.cautionCount > 0 && (
+            <span className="text-xs text-amber-600">{safetyResult.cautionCount} 件に注意ラベルを表示</span>
+          )}
+          <Link href="/safety-policy" className="text-xs text-amber-500 hover:underline ml-auto">フィルター方針 →</Link>
+        </div>
+      )}
+
       {/* Phase 6: PR・アフィリエイト開示ノート */}
       <p className="text-xs text-gray-400 leading-relaxed px-1">
         ※ 一部リンクは<strong className="font-medium">アフィリエイトリンク（PR）</strong>です。
@@ -124,7 +148,7 @@ async function SearchResults({ query }: { query: string }) {
       </p>
 
       {/* ─── 商品カード比較UI（並び替え付き） ─── */}
-      <ProductCardGrid offers={displayOffers} />
+      <ProductCardGrid offers={displayOffers} cautionMap={cautionAnnotations} query={query} />
 
       {/* セパレータ（link_only ショップがある場合のみ） */}
       {linkOnlyShops.length > 0 && (

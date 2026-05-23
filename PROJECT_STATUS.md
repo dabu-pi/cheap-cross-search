@@ -14,8 +14,9 @@
 | Phase 4（管理画面） | ✅ 完了（土台・デモデータ・12/12 PASS・2026-05-24）|
 | Phase 5（取得アダプタ土台） | ✅ 完了（registry・mock・10/10 PASS・2026-05-24）|
 | Phase 6（収益化・アフィリエイト土台） | ✅ 完了（土台・デモID・click計測・2026-05-24）|
+| Phase 7（安全公開準備・ポリシー） | ✅ 完了（安全フィルター・通報・ポリシー・2026-05-24）|
 | Phase 5b（実 API アダプタ） | 🔜 未着手（申請後に実装）|
-| Phase 7（一般公開準備） | 🔜 未着手 |
+| Phase 8（本番Supabase・デプロイ） | 🔜 未着手 |
 
 ## 完了内容（Phase 0-1）
 
@@ -352,13 +353,66 @@
 
 ---
 
-## 次のアクション（Phase 7 候補）
+## Phase 7 完了内容（2026-05-24）
+
+### 安全公開準備・ポリシー/除外ルール強化
+
+| 項目 | 内容 |
+|---|---|
+| 安全フィルター型定義 | `src/lib/safety/types.ts` — SafetyLevel / AnnotatedOffer / SafetyFilterResult |
+| 安全ルール定義 | `src/lib/safety/rules.ts` — BLOCKED_RULES (17ルール) / CAUTION_RULES (12ルール) |
+| フィルター実装 | `src/lib/safety/filter-product-offers.ts` — filterProductOffers / checkOfferSafety |
+| 検索ページ統合 | 安全フィルター適用・除外件数・注意件数バナー表示 |
+| 商品カード改善 | 要注意バナー・「⚑」報告ボタンが `/report` ページへリンク |
+| 問題報告ページ | `/report` — フォームUI・デモモード・送信フロー |
+| ポリシーページ | `/terms` / `/privacy` / `/safety-policy` |
+| フッターナビ | トップページに利用規約・プライバシー・安全ポリシー等のリンク追加 |
+| 管理画面強化 | `/admin/blocked-keywords` に稼働中ルール表示・severity 分類 |
+| 公開チェックリスト | `docs/SAFETY_PUBLICATION_CHECKLIST.md` |
+
+### 新規ファイル（Phase 7）
+
+| ファイル | 内容 |
+|---|---|
+| `src/lib/safety/types.ts` | 安全フィルター型定義 |
+| `src/lib/safety/rules.ts` | blocked 17ルール / caution 12ルール |
+| `src/lib/safety/filter-product-offers.ts` | フィルター実装 |
+| `src/app/report/page.tsx` | 問題報告ページ（Server Component）|
+| `src/app/report/ReportForm.tsx` | 報告フォーム（Client Component）|
+| `src/app/terms/page.tsx` | 利用規約 |
+| `src/app/privacy/page.tsx` | プライバシーポリシー |
+| `src/app/safety-policy/page.tsx` | 安全ポリシー（rules.ts から自動生成）|
+| `docs/SAFETY_PUBLICATION_CHECKLIST.md` | 公開前チェックリスト |
+
+### 変更ファイル（Phase 7）
+
+| ファイル | 変更内容 |
+|---|---|
+| `src/app/search/page.tsx` | filterProductOffers 適用・フィルター状態バナー |
+| `src/components/search/ProductCard.tsx` | cautionReason prop・要注意バナー・報告リンク |
+| `src/components/search/ProductCardGrid.tsx` | cautionMap / query props 追加 |
+| `src/app/admin/blocked-keywords/page.tsx` | 稼働中ルール表示・severity 分類 |
+| `src/app/page.tsx` | フッターナビ追加 |
+| `src/lib/search/demo-results.ts` | バッテリー要注意テスト商品追加 |
+
+### 安全フィルター方針（Phase 7）
+
+| 分類 | ルール数 | キーワード数 | 動作 |
+|---|---|---|---|
+| blocked（非表示）| 17 | 約50 | 商品タイトルマッチで検索結果から除外 |
+| caution（注意ラベル）| 12 | 約35 | 注意ラベル付きで表示 |
+
+---
+
+## 次のアクション（Phase 8 候補）
 
 1. **Supabase 本番接続** — `docs/SUPABASE_SETUP.md` の手順を実施
 2. **アフィリエイトプログラム申請** — 各ショップのプログラムに申請
 3. **click_events DB 有効化** — Supabase 設定後に `logClickEvent()` の TODO を実装
-4. **検索履歴重複排除** — 同一 user_id + normalized_query の upsert 化
-5. **Supabase テーブル作成** — `docs/AFFILIATE_TRACKING_DESIGN.md` の SQL を実行
+4. **`reported_products` テーブル作成** — 通報機能のDB有効化
+5. **管理者権限チェック** — `admin_users` テーブル作成 + Middleware
+6. **Vercel デプロイ** — 本番公開
+7. **ポリシーページの法的レビュー** — 弁護士確認推奨
 
 ## 技術スタック
 

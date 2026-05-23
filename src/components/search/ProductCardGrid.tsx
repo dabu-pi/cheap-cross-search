@@ -8,14 +8,19 @@ import { ProductCard } from './ProductCard';
 interface ProductCardGridProps {
   /** サーバーから渡されるオファー一覧 */
   offers: ProductOffer[];
+  /** Phase 7: 要注意商品の offerId → 理由 マップ（Server から渡す）*/
+  cautionMap?: Map<string, string>;
+  /** 検索クエリ（クリック計測に使用）*/
+  query?: string;
 }
 
 /**
  * 商品カード一覧 + 並び替えUI（Client Component）
  * - 並び替えはクライアントサイドで即時反映（ページリロードなし）
  * - offers はサーバーから渡す（Server Component 側で取得）
+ * - Phase 7: cautionMap で要注意ラベルを表示
  */
-export function ProductCardGrid({ offers }: ProductCardGridProps) {
+export function ProductCardGrid({ offers, cautionMap, query }: ProductCardGridProps) {
   const [sortOrder, setSortOrder] = useState<SortOrder>('recommended');
   const sorted = sortOffers(offers, sortOrder);
 
@@ -53,7 +58,12 @@ export function ProductCardGrid({ offers }: ProductCardGridProps) {
       {/* 商品カード一覧 */}
       <div className="space-y-3">
         {sorted.map((offer) => (
-          <ProductCard key={offer.id} offer={offer} />
+          <ProductCard
+            key={offer.id}
+            offer={offer}
+            query={query}
+            cautionReason={cautionMap?.get(offer.id)}
+          />
         ))}
       </div>
 

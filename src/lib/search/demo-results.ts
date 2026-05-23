@@ -210,5 +210,29 @@ export function getDemoOffers(): ProductOffer[] {
       source: 'demo',
       isSponsored: false,
     },
+
+    // ─── 安全フィルターUI確認用 caution デモ商品 ──────────────────────
+    // ⚠️ Phase 7 テスト用：「モバイルバッテリー」は caution ルールにマッチ
+    {
+      id: 'demo-aliexpress-3',
+      shopCode: 'aliexpress',
+      shopName: 'AliExpress',
+      title: '大容量モバイルバッテリー 20000mAh 急速充電対応 Type-C',
+      imageUrl: undefined,
+      productUrl: 'https://ja.aliexpress.com',
+      affiliateUrl: undefined,
+      itemPrice: 1580,
+      shippingPrice: 0,
+      estimatedTotalPrice: 1580,
+      currency: 'JPY',
+      taxIncludedStatus: 'excluded',
+      deliveryEstimateText: '2〜3週間',
+      rating: 3.7,
+      reviewCount: 450,
+      priceConfidence: 'low',
+      fetchedAt: now,
+      source: 'demo',
+      isSponsored: false,
+    },
   ];
 }

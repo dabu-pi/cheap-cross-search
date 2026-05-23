@@ -96,6 +96,24 @@ export default function HomePage() {
             </Link>
           </p>
         </div>
+
+        {/* フッターナビ（Phase 7） */}
+        <nav className="border-t border-gray-200 pt-4">
+          <ul className="flex flex-wrap justify-center gap-x-5 gap-y-2">
+            {[
+              { href: '/disclaimer',   label: '免責事項' },
+              { href: '/terms',        label: '利用規約' },
+              { href: '/privacy',      label: 'プライバシーポリシー' },
+              { href: '/safety-policy', label: '安全ポリシー' },
+            ].map((item) => (
+              <li key={item.href}>
+                <Link href={item.href} className="text-xs text-gray-400 hover:text-gray-600 hover:underline">
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
     </main>
   );
