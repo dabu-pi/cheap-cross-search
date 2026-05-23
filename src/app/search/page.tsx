@@ -4,6 +4,7 @@ import { SearchBar } from '@/components/search/SearchBar';
 import { ShopCard } from '@/components/search/ShopCard';
 import { ProductCardGrid } from '@/components/search/ProductCardGrid';
 import { FavoriteQueryButton } from '@/components/search/FavoriteQueryButton';
+import { SearchStatusSummary } from '@/components/search/SearchStatusSummary';
 import { DisclaimerBanner } from '@/components/ui/DisclaimerBanner';
 import { crossSearch } from '@/lib/search/engine';
 import { getDemoOffers } from '@/lib/search/demo-results';
@@ -50,12 +51,28 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 async function SearchResults({ query }: { query: string }) {
   const normalizedQuery = query.trim().replace(/\s+/g, ' ');
 
-  const [crossResult, demoOffers] = await Promise.all([
+  // Phase 5: crossSearch がアダプタ registry 経由で各ショップを取得
+  // ログイン中なら検索履歴を同時保存（エラーは無視）
+  const [crossResult] = await Promise.all([
     crossSearch(query),
-    Promise.resolve(getDemoOffers()),
-    // ログイン中なら検索履歴を保存（エラーは無視 — 検索の妨げにしない）
     saveSearchQuery(query, normalizedQuery).catch(() => {}),
   ]);
+
+  // Phase 5: registry から取得したオファー（現時点は全ショップ link_only のため空）
+  const apiOffers = crossResult.offers;
+
+  // link_only ショップのリンク表示用（offers がないショップ）
+  const linkOnlyShops = crossResult.shops.filter(
+    (s) => s.status === 'link_only' || s.status === 'error'
+  );
+
+  // 表示するオファー: API取得 → なければ legacy デモデータ
+  const demoOffers = getDemoOffers();
+  const displayOffers = apiOffers.length > 0 ? apiOffers : demoOffers;
+
+  // デモデータを使っているか
+  const usingMock = apiOffers.some((o) => o.source === 'external_api_mock');
+  const usingLegacyDemo = apiOffers.length === 0;
 
   return (
     <>
@@ -63,39 +80,61 @@ async function SearchResults({ query }: { query: string }) {
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm text-gray-600">
           <span className="font-semibold text-gray-900">「{query}」</span> の比較結果
-          <span className="text-gray-400 ml-1">({demoOffers.length} 件)</span>
+          <span className="text-gray-400 ml-1">({displayOffers.length} 件)</span>
         </p>
         <FavoriteQueryButton query={query} />
       </div>
 
-      {/* デモ注意バナー */}
-      <div className="rounded-xl bg-blue-50 border border-blue-200 px-4 py-3 space-y-0.5">
-        <p className="text-sm font-semibold text-blue-700">⚠️ サンプル表示中</p>
-        <p className="text-xs text-blue-600 leading-relaxed">
-          現在表示している商品・価格はサンプルデータです。<br />
-          実際の検索結果は下部「ショップで直接検索」からご確認ください。
-        </p>
-      </div>
+      {/* Phase 5: ショップ別取得状態サマリ */}
+      <SearchStatusSummary shops={crossResult.shops} />
+
+      {/* デモ注意バナー（モックデータ or レガシーデモ） */}
+      {(usingMock || usingLegacyDemo) && (
+        <div className="rounded-xl bg-blue-50 border border-blue-200 px-4 py-3 space-y-1">
+          <p className="text-sm font-semibold text-blue-700">⚠️ サンプル表示中</p>
+          <p className="text-xs text-blue-600 leading-relaxed">
+            現在表示している商品・価格はサンプルデータです。<br />
+            {usingMock
+              ? '本格 API 接続前のモックデータ（外部 API アダプタ）を使用しています。'
+              : '実際の商品データ取得前のデモデータを使用しています。'}
+            実際の検索結果は下部「ショップで直接検索」からご確認ください。
+          </p>
+          {crossResult.globalWarnings && crossResult.globalWarnings.length > 0 && (
+            <details className="mt-1">
+              <summary className="text-xs text-blue-500 cursor-pointer">技術情報 ▼</summary>
+              <ul className="mt-1 space-y-0.5">
+                {crossResult.globalWarnings.map((w, i) => (
+                  <li key={i} className="text-xs text-blue-500 pl-2">• {w}</li>
+                ))}
+              </ul>
+            </details>
+          )}
+        </div>
+      )}
 
       {/* 免責バナー */}
       <DisclaimerBanner />
 
       {/* ─── 商品カード比較UI（並び替え付き） ─── */}
-      <ProductCardGrid offers={demoOffers} />
+      <ProductCardGrid offers={displayOffers} />
 
-      {/* セパレータ */}
-      <div className="flex items-center gap-3 pt-2">
-        <div className="flex-1 h-px bg-gray-200" />
-        <p className="text-xs text-gray-400 shrink-0 font-medium">ショップで直接検索</p>
-        <div className="flex-1 h-px bg-gray-200" />
-      </div>
+      {/* セパレータ（link_only ショップがある場合のみ） */}
+      {linkOnlyShops.length > 0 && (
+        <>
+          <div className="flex items-center gap-3 pt-2">
+            <div className="flex-1 h-px bg-gray-200" />
+            <p className="text-xs text-gray-400 shrink-0 font-medium">ショップで直接検索</p>
+            <div className="flex-1 h-px bg-gray-200" />
+          </div>
 
-      {/* link_only フォールバック — ShopCard */}
-      <div className="space-y-4">
-        {crossResult.shops.map((shopResult) => (
-          <ShopCard key={shopResult.shopCode} result={shopResult} query={query} />
-        ))}
-      </div>
+          {/* link_only フォールバック — ShopCard */}
+          <div className="space-y-4">
+            {linkOnlyShops.map((shopResult) => (
+              <ShopCard key={shopResult.shopCode} result={shopResult} query={query} />
+            ))}
+          </div>
+        </>
+      )}
 
       {/* フッター注意文 */}
       <div className="text-center py-4 space-y-1">

@@ -1,10 +1,15 @@
 /**
  * 取得方式（ショップごとに切り替え可能）
- * - official_api: 公式API
- * - affiliate_api: アフィリエイトAPI
- * - external_api: TKAPI / 外部検索API
- * - link_only: 検索リンクのみ表示（fallback）
- * - disabled: 一時停止
+ * - official_api:  公式API（Amazon PA-API 等）
+ * - affiliate_api: アフィリエイトAPI（各社アフィリエイトプログラム経由）
+ * - external_api:  外部検索API（TKAPI 等 第三者サービス経由）
+ * - link_only:     検索リンクのみ表示（最終フォールバック）
+ * - disabled:      一時停止（検索対象外）
+ *
+ * Phase 5 追加:
+ * - registry.ts がモードに応じてアダプタを選択する
+ * - 未実装モード (official_api / affiliate_api) は link_only に安全フォールバック
+ * - external_api は ExternalMockAdapter を使用（本格 API 接続前のモック）
  */
 export type IntegrationMode =
   | 'official_api'
@@ -58,6 +63,10 @@ export interface ProductOffer {
 
 /**
  * ショップ単位の検索結果
+ *
+ * Phase 5 追加フィールド:
+ * - warnings: アダプタが生成した警告一覧（デモデータ使用・フォールバック発生 等）
+ * - requestedMode: 元々要求されたモード（フォールバック発生時に元のモードを記録）
  */
 export interface ShopSearchResult {
   shopCode: string;
@@ -68,26 +77,58 @@ export interface ShopSearchResult {
   offers: ProductOffer[];
   errorMessage?: string;
   fetchedAt: string;
+  /** アダプタ警告（デモデータ使用・フォールバック発生 等） */
+  warnings?: string[];
+  /** フォールバック発生時の元モード */
+  requestedMode?: IntegrationMode;
 }
 
 /**
  * 横断検索全体の結果
+ *
+ * Phase 5 追加フィールド:
+ * - globalWarnings: 全体警告（デモデータ使用中 等）
+ * - offers: 全ショップのオファーを集約したフラットリスト
  */
 export interface CrossSearchResult {
   query: string;
   normalizedQuery: string;
   searchedAt: string;
   shops: ShopSearchResult[];
+  /** 全体警告（デモデータ使用中 等） */
+  globalWarnings?: string[];
+  /** 全ショップのオファー集約（status==='success' のショップから収集） */
+  offers: ProductOffer[];
 }
 
 /**
- * 検索アダプタのインターフェース
+ * 検索アダプタのインターフェース (Phase 5 拡張)
+ *
+ * すべてのアダプタが実装すべき共通インターフェース。
+ * - shopCode / mode を持つ
+ * - search() は ShopSearchResult を返す（エラーは throw せず結果に包む）
  */
 export interface SearchAdapter {
   shopCode: string;
-  search(query: string, options?: SearchAdapterOptions): Promise<ShopSearchResult>;
+  mode: IntegrationMode;
+  search(input: SearchAdapterInput): Promise<ShopSearchResult>;
 }
 
+/**
+ * アダプタへの入力型 (Phase 5 追加)
+ */
+export interface SearchAdapterInput {
+  query: string;
+  normalizedQuery: string;
+  locale?: string;
+  currency?: string;
+  maxResults?: number;
+  timeoutMs?: number;
+}
+
+/**
+ * @deprecated Phase 5 以前の互換シグネチャ。新コードでは SearchAdapterInput を使う。
+ */
 export interface SearchAdapterOptions {
   maxResults?: number;
   locale?: string;

@@ -10,7 +10,8 @@
 | 3 | Supabase Auth + お気に入り | ✅ 完了（実DB適用待ち）| - |
 | 3.5 | Auth動作確認・graceful degradation | ✅ 完了（2026-05-24）| - |
 | 4 | 管理画面 | ✅ 完了（土台・2026-05-24）| - |
-| 5 | 取得アダプタ実装（API接続） | 🔜 未着手 | ★★☆ |
+| 5 | 取得アダプタ土台 | ✅ 完了（registry・mock・2026-05-24）| - |
+| 6 | 収益化（アフィリエイト） | 🔜 未着手 | ★★☆ |
 | 5 | 取得アダプタ実装（API接続） | 🔜 未着手 | ★★☆ |
 | 6 | 収益化（アフィリエイト） | 🔜 未着手 | ★★☆ |
 | 7 | 一般公開準備 | 🔜 未着手 | ★★☆ |
@@ -145,22 +146,25 @@ Authentication > URL Configuration > Redirect URL に /auth/callback を追加
 
 ---
 
-## Phase 5: 取得アダプタ実装 🔜
+## Phase 5: 取得アダプタ土台 ✅ 完了（2026-05-24）
 
-**完了条件:** 少なくとも1ショップで商品一覧取得・他ショップはfallbackで成立
+**完了条件（Phase 5 土台）:** アダプタ registry が動作し、取得方式を安全に差し替えられる構造
 
-優先順:
-1. AliExpress Affiliate API / 外部API（TKAPI等）
-2. Amazon Creators API / PA-API代替調査
-3. SHEIN Developer Platform
-4. Temu Partner Platform
-
-各ショップ:
-- [ ] API調査・申請（外部作業）
-- [ ] アダプタ実装
-- [ ] キャッシュ実装（search_results_cache）
-- [ ] 取得失敗時のfallback
-- [ ] 取得ログ保存
+- [x] `SearchAdapter` インターフェース拡張（`SearchAdapterInput` / `warnings` / `requestedMode`）
+- [x] アダプタ registry（`registry.ts`）— モード別選択・安全 fallback
+- [x] `ExternalMockAdapter` — external_api モックアダプタ（参照実装）
+- [x] `DisabledAdapter` — disabled モード専用
+- [x] 検索エンジン更新（registry 経由・全ショップ並列・オファー集約）
+- [x] `SearchStatusSummary` コンポーネント（検索ページの取得状態バッジ）
+- [x] `docs/ADAPTER_ARCHITECTURE.md` — アダプタ設計書
+- [x] live-check-runner P5V-1〜10 全 10件 PASS
+- [ ] 本格 API アダプタ実装 → 各 API 申請後に実装
+  - AliExpress Affiliate API / TKAPI（優先）
+  - Amazon PA-API 5.0（審査必要）
+  - SHEIN Developer Platform（審査制）
+  - Temu Partner Platform（招待制）
+- [ ] キャッシュ実装（search_results_cache テーブル）→ Supabase 設定後
+- [ ] 取得ログ DB 保存 → Supabase 設定後
 
 ---
 

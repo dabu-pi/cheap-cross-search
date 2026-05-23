@@ -1,22 +1,23 @@
 import {
   SearchAdapter,
-  SearchAdapterOptions,
+  SearchAdapterInput,
   ShopSearchResult,
 } from './types';
 import { buildSearchUrl, getShopByCode } from '@/lib/shops/shops';
 
 /**
- * link_only アダプタ
- * 商品データは取得せず、各ショップの検索結果ページへのリンクのみ返す
+ * link_only アダプタ (Phase 5 更新)
+ *
+ * 商品データは取得せず、各ショップの検索結果ページへのリンクのみ返す。
+ * - API 未設定時・API 障害時の最終フォールバックとして使用
+ * - status: 'link_only' を返す
  */
 export class LinkOnlyAdapter implements SearchAdapter {
+  readonly mode = 'link_only' as const;
+
   constructor(public shopCode: string) {}
 
-  async search(
-    query: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _options?: SearchAdapterOptions
-  ): Promise<ShopSearchResult> {
+  async search(input: SearchAdapterInput): Promise<ShopSearchResult> {
     const shop = getShopByCode(this.shopCode);
     const now = new Date().toISOString();
 
@@ -33,7 +34,7 @@ export class LinkOnlyAdapter implements SearchAdapter {
       };
     }
 
-    const searchUrl = buildSearchUrl(shop, query);
+    const searchUrl = buildSearchUrl(shop, input.query);
 
     return {
       shopCode: shop.code,

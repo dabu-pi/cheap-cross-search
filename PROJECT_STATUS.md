@@ -1,6 +1,6 @@
 # PROJECT_STATUS — 安買い横断サーチ
 
-最終更新: 2026-05-24（Phase 4 管理画面 土台実装完了）
+最終更新: 2026-05-24（Phase 5 取得アダプタ土台 実装完了）
 
 ## 現状
 
@@ -12,7 +12,8 @@
 | Phase 3（Auth・お気に入り） | ✅ 完了（実DB適用待ち・2026-05-24）|
 | Phase 3.5（Auth動作確認） | ✅ 完了（graceful degradation 検証・2026-05-24）|
 | Phase 4（管理画面） | ✅ 完了（土台・デモデータ・12/12 PASS・2026-05-24）|
-| Phase 5（取得アダプタ） | 🔜 未着手 |
+| Phase 5（取得アダプタ土台） | ✅ 完了（registry・mock・10/10 PASS・2026-05-24）|
+| Phase 6（収益化） | 🔜 未着手 |
 | Phase 5（取得アダプタ） | 🔜 未着手 |
 | Phase 6（収益化） | 🔜 未着手 |
 | Phase 7（一般公開準備） | 🔜 未着手 |
@@ -245,7 +246,68 @@
 
 ---
 
-## 次のアクション（Phase 5 候補）
+## Phase 5 完了内容（2026-05-24）
+
+### 取得アダプタ土台 実装
+
+| 項目 | 内容 |
+|---|---|
+| アダプタ共通インターフェース | `SearchAdapter` / `SearchAdapterInput` 型を拡張 |
+| アダプタ registry | `registry.ts` — モードに応じて安全にアダプタを選択・fallback |
+| ExternalMockAdapter | `external_api` モードのモックアダプタ（参照実装）|
+| DisabledAdapter | `disabled` モード専用アダプタ |
+| 検索エンジン更新 | `engine.ts` — registry 経由でアダプタを選択・全ショップ並列実行 |
+| CrossSearchResult 拡張 | `offers[]` / `globalWarnings` フィールド追加 |
+| ShopSearchResult 拡張 | `warnings[]` / `requestedMode` フィールド追加 |
+| SearchStatusSummary | 検索ページの取得状態サマリ UI |
+
+### 新規作成ファイル（Phase 5）
+
+| ファイル | 内容 |
+|---|---|
+| `src/lib/search/adapters/registry.ts` | アダプタ registry + フォールバック + ラベル/カラー |
+| `src/lib/search/adapters/external-mock.ts` | external_api モックアダプタ（参照実装） |
+| `src/lib/search/adapters/disabled.ts` | disabled アダプタ |
+| `src/components/search/SearchStatusSummary.tsx` | ショップ別取得状態バッジ |
+| `docs/ADAPTER_ARCHITECTURE.md` | アダプタ設計・フォールバック方針・将来接続手順 |
+
+### 変更ファイル（Phase 5）
+
+| ファイル | 変更内容 |
+|---|---|
+| `src/lib/search/adapters/types.ts` | `SearchAdapterInput` / `warnings` / `requestedMode` / `offers` / `globalWarnings` 追加 |
+| `src/lib/search/adapters/link-only.ts` | `SearchAdapterInput` シグネチャに対応 / `mode` フィールド追加 |
+| `src/lib/search/engine.ts` | registry 経由でアダプタ選択・全ショップ処理・オファー集約 |
+| `src/app/search/page.tsx` | `SearchStatusSummary` 追加・registry 経由オファー優先表示 |
+
+### フォールバック方針（Phase 5）
+
+| モード | アダプタ | オファー返却 |
+|---|---|---|
+| `official_api` | LinkOnlyAdapter（警告付き fallback）| ❌ |
+| `affiliate_api` | LinkOnlyAdapter（警告付き fallback）| ❌ |
+| `external_api` | ExternalMockAdapter | ✅（モック）|
+| `link_only` | LinkOnlyAdapter | ❌ |
+| `disabled` | DisabledAdapter | ❌ |
+
+### live-check-runner spec 結果（Phase 5・2026-05-24）
+
+| テスト | 結果 | 内容 |
+|---|---|---|
+| P5V-1: トップページ | ✅ PASS | タイトル確認 |
+| P5V-2: 商品カード表示 | ✅ PASS | /search?q=スマホケース 複数カード確認 |
+| P5V-3: 取得状態サマリ | ✅ PASS | 4ショップ名バッジ表示確認 |
+| P5V-4: link_only バッジ | ✅ PASS | 「リンクのみ」バッジ確認 |
+| P5V-5: デモバナー | ✅ PASS | 「サンプル表示中」バナー確認 |
+| P5V-6: ShopCard 直接検索 | ✅ PASS | 「で検索」リンク確認 |
+| P5V-7: 特殊クエリ耐性 | ✅ PASS | 記号含むクエリでクラッシュなし |
+| P5V-8: 管理画面 取得方式 | ✅ PASS | /admin/shops リンクのみ表示 |
+| P5V-9: Supabase 未設定耐性 | ✅ PASS | 全ページ graceful degradation |
+| P5V-10: スマホ幅 | ✅ PASS | 375px 崩れなし |
+
+---
+
+## 次のアクション（Phase 6 候補）
 
 1. **Supabase 本番接続** — `docs/SUPABASE_SETUP.md` の手順を実施
 2. **検索履歴重複排除** — 同一 user_id + normalized_query の upsert 化
