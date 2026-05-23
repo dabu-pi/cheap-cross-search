@@ -1,6 +1,6 @@
 # PROJECT_STATUS — 安買い横断サーチ
 
-最終更新: 2026-05-24（Phase 2 商品カード比較UI 完了）
+最終更新: 2026-05-24（Phase 3 Supabase Auth + お気に入り 完了）
 
 ## 現状
 
@@ -9,7 +9,7 @@
 | Phase 0（土台） | ✅ 完了 |
 | Phase 1（link_only横断検索UI） | ✅ 完了 |
 | Phase 2（商品カード比較UI） | ✅ 完了（デモデータ・2026-05-24）|
-| Phase 3（Auth・お気に入り） | 🔜 未着手 |
+| Phase 3（Auth・お気に入り） | ✅ 完了（実DB適用待ち・2026-05-24）|
 | Phase 4（管理画面） | 🔜 未着手 |
 | Phase 5（取得アダプタ） | 🔜 未着手 |
 | Phase 6（収益化） | 🔜 未着手 |
@@ -94,10 +94,59 @@
 - アダプタ差し替え方針を維持（engine.ts は変更なし）
 - 価格は参考価格として扱い、カード内に注意文を表示
 
-## 次のアクション（Phase 3 候補）
+## Phase 3 完了内容（2026-05-24）
 
-1. **Supabase テーブル設計・作成**
-   - users / search_queries / favorite_products / favorite_queries
+### 新規作成ファイル
+
+| ファイル | 内容 |
+|---|---|
+| `supabase/migrations/0001_auth_favorites.sql` | DB スキーマ + RLS（SQL 適用は手動）|
+| `middleware.ts` | セッションリフレッシュ + 保護ルートリダイレクト |
+| `src/lib/supabase/config.ts` | `isSupabaseConfigured()` helper |
+| `src/lib/supabase/middleware.ts` | updateSession ロジック |
+| `src/lib/auth/session.ts` | `getCurrentUser()` server helper |
+| `src/lib/favorites/actions.ts` | Server Actions（お気に入り・検索履歴） |
+| `src/app/login/page.tsx` | メール + Google ログインページ |
+| `src/app/auth/callback/route.ts` | OAuth コールバック Route Handler |
+| `src/app/account/page.tsx` | マイページ |
+| `src/app/account/LogoutButton.tsx` | ログアウトボタン（Client Component）|
+| `src/app/favorites/products/page.tsx` | お気に入り商品一覧 |
+| `src/app/favorites/queries/page.tsx` | お気に入り検索ワード一覧 |
+| `src/app/favorites/queries/RemoveFavoriteQueryButton.tsx` | 削除ボタン |
+| `src/app/history/page.tsx` | 検索履歴 |
+| `src/components/search/FavoriteProductButton.tsx` | お気に入りトグル（楽観的UI）|
+| `src/components/search/FavoriteQueryButton.tsx` | 検索ワード保存ボタン |
+
+### 変更ファイル
+
+| ファイル | 変更内容 |
+|---|---|
+| `src/lib/supabase/client.ts` | null-safe（未設定時は null 返す） |
+| `src/lib/supabase/server.ts` | null-safe（未設定時は null 返す） |
+| `src/components/search/ProductCard.tsx` | FavoriteProductButton に差し替え |
+| `src/app/search/page.tsx` | 検索履歴保存 + FavoriteQueryButton 追加 |
+| `src/app/page.tsx` | ヘッダーに「マイページ」リンク追加 |
+
+### 設計方針（Phase 3時点）
+
+- **SQL 適用**: `supabase/migrations/0001_auth_favorites.sql` を Supabase ダッシュボードで手動実行
+- **Supabase 未設定**: Auth 機能は非表示・graceful degradation。ビルドは通る
+- **RLS**: 全テーブルで自分のデータのみ操作可能
+- **検索履歴重複排除**: Phase 3 では毎回 insert（Phase 4 以降で upsert 対応予定）
+- **お気に入り商品**: ProductOffer スナップショット保存（正規化 products テーブルは Phase 5 以降）
+
+### 本番稼働に必要な手動ステップ
+
+1. Supabase プロジェクト作成
+2. `.env.local` に `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` を設定
+3. `supabase/migrations/0001_auth_favorites.sql` を Supabase SQL Editor で実行
+4. Authentication > Providers > Google を有効化（Google OAuth を使う場合）
+5. Authentication > URL Configuration > Redirect URL に `/auth/callback` を追加
+
+## 次のアクション（Phase 4 候補）
+
+1. **管理画面**（`/admin/shops`・`/admin/affiliate`・`/admin/blocked-keywords`）
+2. **検索履歴重複排除** — 同一 user_id + normalized_query の upsert 化
 
 2. **Supabase テーブル設計・実テーブル作成**
    - shops / shop_integrations / search_queries / search_results_cache

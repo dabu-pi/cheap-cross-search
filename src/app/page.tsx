@@ -24,9 +24,14 @@ export default function HomePage() {
         <span className="text-xl font-bold text-gray-900">
           🛒 安買い横断サーチ
         </span>
-        <Link href="/disclaimer" className="text-xs text-gray-400 hover:text-gray-600">
-          免責事項
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href="/account" className="text-xs text-blue-500 hover:text-blue-700 font-medium">
+            マイページ
+          </Link>
+          <Link href="/disclaimer" className="text-xs text-gray-400 hover:text-gray-600">
+            免責事項
+          </Link>
+        </div>
       </header>
 
       <div className="max-w-2xl mx-auto px-4 py-10 space-y-8">

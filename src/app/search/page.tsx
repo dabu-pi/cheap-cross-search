@@ -3,9 +3,11 @@ import Link from 'next/link';
 import { SearchBar } from '@/components/search/SearchBar';
 import { ShopCard } from '@/components/search/ShopCard';
 import { ProductCardGrid } from '@/components/search/ProductCardGrid';
+import { FavoriteQueryButton } from '@/components/search/FavoriteQueryButton';
 import { DisclaimerBanner } from '@/components/ui/DisclaimerBanner';
 import { crossSearch } from '@/lib/search/engine';
 import { getDemoOffers } from '@/lib/search/demo-results';
+import { saveSearchQuery } from '@/lib/favorites/actions';
 
 interface SearchPageProps {
   searchParams: Promise<{ q?: string }>;
@@ -46,21 +48,24 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
 /** 検索結果（Server Component） */
 async function SearchResults({ query }: { query: string }) {
+  const normalizedQuery = query.trim().replace(/\s+/g, ' ');
+
   const [crossResult, demoOffers] = await Promise.all([
     crossSearch(query),
     Promise.resolve(getDemoOffers()),
+    // ログイン中なら検索履歴を保存（エラーは無視 — 検索の妨げにしない）
+    saveSearchQuery(query, normalizedQuery).catch(() => {}),
   ]);
 
   return (
     <>
-      {/* 検索情報 */}
-      <div className="flex items-center justify-between">
+      {/* 検索情報 + 保存ボタン */}
+      <div className="flex items-center justify-between gap-2">
         <p className="text-sm text-gray-600">
           <span className="font-semibold text-gray-900">「{query}」</span> の比較結果
+          <span className="text-gray-400 ml-1">({demoOffers.length} 件)</span>
         </p>
-        <p className="text-xs text-gray-400">
-          {demoOffers.length} 件
-        </p>
+        <FavoriteQueryButton query={query} />
       </div>
 
       {/* デモ注意バナー */}

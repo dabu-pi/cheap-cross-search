@@ -1,11 +1,17 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { isSupabaseConfigured } from './config';
 
 /**
  * サーバー用 Supabase クライアント
- * Server Components / Route Handlers から使う
+ * Server Components / Route Handlers / Server Actions から使う
+ *
+ * 環境変数未設定時は null を返す。
+ * 使う側は null チェックを行うこと。
  */
 export async function createClient() {
+  if (!isSupabaseConfigured()) return null;
+
   const cookieStore = await cookies();
 
   return createServerClient(
@@ -22,7 +28,7 @@ export async function createClient() {
               cookieStore.set(name, value, options)
             );
           } catch {
-            // Server Component では set できない場合がある（読み取り専用）
+            // Server Component の読み取り専用コンテキストでは無視
           }
         },
       },

@@ -7,7 +7,7 @@
 | 0 | プロジェクト土台 | ✅ 完了 | - |
 | 1 | 検索UI + link_only横断検索 | ✅ 完了 | - |
 | 2 | 商品カード比較UI | ✅ 完了（デモ） | - |
-| 3 | Supabase Auth + お気に入り | 🔜 未着手 | ★★☆ |
+| 3 | Supabase Auth + お気に入り | ✅ 完了（実DB適用待ち）| - |
 | 4 | 管理画面 | 🔜 未着手 | ★★☆ |
 | 5 | 取得アダプタ実装（API接続） | 🔜 未着手 | ★★☆ |
 | 6 | 収益化（アフィリエイト） | 🔜 未着手 | ★★☆ |
@@ -70,19 +70,38 @@
 
 ---
 
-## Phase 3: Supabase Auth + お気に入り 🔜
+## Phase 3: Supabase Auth + お気に入り ✅ 完了（2026-05-24）
 
 **完了条件:** 未ログインでも検索可能・ログイン時のみ保存系機能が使える
 
-- [ ] Supabase テーブル作成
-  - users / search_queries / favorite_products / favorite_queries
-- [ ] メールログイン
-- [ ] Googleログイン
-- [ ] お気に入り商品（ログイン時）
-- [ ] お気に入り検索ワード（ログイン時）
-- [ ] 検索履歴（ログイン時）
-- [ ] ログアウト
-- [ ] Claude検証用管理者アカウント（live-check-runner用）
+- [x] Supabase DB スキーマ設計（`supabase/migrations/0001_auth_favorites.sql`）
+  - profiles / search_queries / favorite_products / favorite_queries
+  - RLS 設定（自分のデータのみ操作可能）
+  - click_events は Phase 6 向けコメントアウト案として記載
+- [x] メールログイン（`/login`）
+- [x] Googleログイン（OAuth → `/auth/callback`）
+- [x] 未ログイン時ログイン誘導（全保護ページ）
+- [x] お気に入り商品（`/favorites/products`・`FavoriteProductButton` 楽観的UI）
+- [x] お気に入り検索ワード（`/favorites/queries`・`FavoriteQueryButton`）
+- [x] 検索履歴自動保存（ログイン時、`/history` に表示）
+- [x] ログアウト（`/account` > `LogoutButton`）
+- [x] マイページ（`/account`）
+- [x] Middleware（セッションリフレッシュ・保護ルートリダイレクト）
+- [x] Supabase 未設定でもビルド可能・graceful degradation
+- [x] `npm run lint` 警告0・`npm run build` 成功（10 routes）
+
+**⚠️ 本番 Supabase への SQL 適用はまだ実施していない（手動ステップ）:**
+
+```
+Supabase ダッシュボード > SQL Editor で
+supabase/migrations/0001_auth_favorites.sql を実行すること
+```
+
+**Supabase ダッシュボード設定も必要（Google OAuth）:**
+```
+Authentication > Providers > Google を有効化
+Authentication > URL Configuration > Redirect URL に /auth/callback を追加
+```
 
 ---
 

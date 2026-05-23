@@ -7,6 +7,7 @@ import {
   formatRating,
   formatReviewCount,
 } from '@/lib/format/price';
+import { FavoriteProductButton } from './FavoriteProductButton';
 
 interface ProductCardProps {
   offer: ProductOffer;
@@ -137,29 +138,8 @@ export function ProductCard({ offer }: ProductCardProps) {
 
       {/* ─── アクションバー ─── */}
       <div className="px-4 py-2.5 border-t border-gray-100 flex items-center justify-between gap-2">
-        {/* お気に入り（Phase 3+ プレースホルダー） */}
-        <button
-          className="flex items-center gap-1 text-xs text-gray-300 px-2 py-1 rounded-lg transition-colors cursor-not-allowed select-none"
-          title="ログイン後に保存できます（準備中）"
-          disabled
-          aria-label="お気に入りに追加（ログイン後に利用できます）"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-            />
-          </svg>
-          <span className="hidden sm:inline">ログイン後に保存</span>
-        </button>
+        {/* お気に入り（Phase 3: Supabase Auth 連動） */}
+        <FavoriteProductButton offer={offer} />
 
         <div className="flex items-center gap-3">
           {/* 問題報告（Phase 3+ プレースホルダー） */}
