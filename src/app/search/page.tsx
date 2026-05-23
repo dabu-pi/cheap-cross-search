@@ -2,8 +2,10 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import { SearchBar } from '@/components/search/SearchBar';
 import { ShopCard } from '@/components/search/ShopCard';
+import { ProductCardGrid } from '@/components/search/ProductCardGrid';
 import { DisclaimerBanner } from '@/components/ui/DisclaimerBanner';
 import { crossSearch } from '@/lib/search/engine';
+import { getDemoOffers } from '@/lib/search/demo-results';
 
 interface SearchPageProps {
   searchParams: Promise<{ q?: string }>;
@@ -19,7 +21,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
           <Link href="/" className="text-gray-400 hover:text-gray-700 shrink-0" aria-label="トップへ">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </Link>
@@ -42,41 +44,63 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   );
 }
 
-/** 検索結果（Server Component で fetch） */
+/** 検索結果（Server Component） */
 async function SearchResults({ query }: { query: string }) {
-  const result = await crossSearch(query);
+  const [crossResult, demoOffers] = await Promise.all([
+    crossSearch(query),
+    Promise.resolve(getDemoOffers()),
+  ]);
 
   return (
     <>
       {/* 検索情報 */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-600">
-          <span className="font-semibold text-gray-900">「{query}」</span> の検索結果
+          <span className="font-semibold text-gray-900">「{query}」</span> の比較結果
         </p>
         <p className="text-xs text-gray-400">
-          {new Date(result.searchedAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })} 時点
+          {demoOffers.length} 件
         </p>
       </div>
 
-      {/* 免責 */}
+      {/* デモ注意バナー */}
+      <div className="rounded-xl bg-blue-50 border border-blue-200 px-4 py-3 space-y-0.5">
+        <p className="text-sm font-semibold text-blue-700">⚠️ サンプル表示中</p>
+        <p className="text-xs text-blue-600 leading-relaxed">
+          現在表示している商品・価格はサンプルデータです。<br />
+          実際の検索結果は下部「ショップで直接検索」からご確認ください。
+        </p>
+      </div>
+
+      {/* 免責バナー */}
       <DisclaimerBanner />
 
-      {/* ショップカード一覧 */}
+      {/* ─── 商品カード比較UI（並び替え付き） ─── */}
+      <ProductCardGrid offers={demoOffers} />
+
+      {/* セパレータ */}
+      <div className="flex items-center gap-3 pt-2">
+        <div className="flex-1 h-px bg-gray-200" />
+        <p className="text-xs text-gray-400 shrink-0 font-medium">ショップで直接検索</p>
+        <div className="flex-1 h-px bg-gray-200" />
+      </div>
+
+      {/* link_only フォールバック — ShopCard */}
       <div className="space-y-4">
-        {result.shops.map((shopResult) => (
+        {crossResult.shops.map((shopResult) => (
           <ShopCard key={shopResult.shopCode} result={shopResult} query={query} />
         ))}
       </div>
 
-      {/* フッター注意 */}
-      <div className="text-center py-4">
+      {/* フッター注意文 */}
+      <div className="text-center py-4 space-y-1">
         <p className="text-xs text-gray-400 leading-relaxed">
-          表示されている価格・送料・到着日は取得時点の参考情報です。<br />
-          実際の金額・条件は各ショップの購入画面にてご確認ください。<br />
+          表示価格・送料・到着予定・在庫は取得時点の参考情報です。<br />
+          クーポン適用後価格・実在庫は各ショップの購入画面でご確認ください。<br />
           当サイトは商品・価格の正確性を保証しません。
         </p>
-        <Link href="/disclaimer" className="text-xs text-blue-400 hover:underline mt-1 inline-block">
-          免責事項を読む
+        <Link href="/disclaimer" className="text-xs text-blue-400 hover:underline inline-block">
+          免責事項を読む →
         </Link>
       </div>
     </>
@@ -98,14 +122,23 @@ function EmptyState() {
 function SearchingSkeleton() {
   return (
     <div className="space-y-4">
-      {[1, 2, 3, 4].map((i) => (
+      {[1, 2, 3, 4, 5].map((i) => (
         <div key={i} className="rounded-2xl border shadow-sm bg-white overflow-hidden animate-pulse">
-          <div className="px-5 py-4 flex items-center gap-3">
-            <div className="h-5 bg-gray-200 rounded w-24" />
-            <div className="h-5 bg-gray-100 rounded w-16" />
+          <div className="px-4 py-2.5 flex items-center gap-3">
+            <div className="h-5 bg-gray-200 rounded-full w-16" />
+            <div className="h-4 bg-gray-100 rounded-full w-20" />
           </div>
-          <div className="px-5 py-4 bg-gray-50">
-            <div className="h-4 bg-gray-200 rounded w-48" />
+          <div className="px-4 py-3 flex gap-3">
+            <div className="w-16 h-16 bg-gray-100 rounded-xl shrink-0" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 bg-gray-200 rounded w-full" />
+              <div className="h-4 bg-gray-100 rounded w-3/4" />
+              <div className="h-5 bg-gray-200 rounded w-24" />
+            </div>
+          </div>
+          <div className="px-4 py-2.5 border-t border-gray-100 flex justify-between items-center">
+            <div className="h-4 bg-gray-100 rounded w-20" />
+            <div className="h-8 bg-gray-200 rounded-xl w-28" />
           </div>
         </div>
       ))}

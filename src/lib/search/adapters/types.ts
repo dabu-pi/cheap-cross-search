@@ -49,6 +49,10 @@ export interface ProductOffer {
   reviewCount?: number;
   priceConfidence: PriceConfidence;
   fetchedAt: string; // ISO 8601
+  /** データソース識別子 ('official_api' | 'affiliate_api' | 'external_api' | 'demo') */
+  source?: string;
+  /** スポンサー商品かどうか */
+  isSponsored?: boolean;
   rawData?: Record<string, unknown>;
 }
 

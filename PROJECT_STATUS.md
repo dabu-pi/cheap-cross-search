@@ -1,6 +1,6 @@
 # PROJECT_STATUS — 安買い横断サーチ
 
-最終更新: 2026-05-24（repo独立化・ブランチ整理完了）
+最終更新: 2026-05-24（Phase 2 商品カード比較UI 完了）
 
 ## 現状
 
@@ -8,7 +8,7 @@
 |---|---|
 | Phase 0（土台） | ✅ 完了 |
 | Phase 1（link_only横断検索UI） | ✅ 完了 |
-| Phase 2（商品カード比較UI） | 🔜 未着手 |
+| Phase 2（商品カード比較UI） | ✅ 完了（デモデータ・2026-05-24）|
 | Phase 3（Auth・お気に入り） | 🔜 未着手 |
 | Phase 4（管理画面） | 🔜 未着手 |
 | Phase 5（取得アダプタ） | 🔜 未着手 |
@@ -67,13 +67,37 @@
 | DB未接続 | Supabase 雛形のみ。テーブル未作成 |
 | PWA アイコン | placeholder（`/icons/icon-192.png` 等が未作成） |
 
-## 次のアクション（Phase 2候補）
+## Phase 2 完了内容（2026-05-24）
 
-1. **商品カード比較UIの実装**
-   - ダミーデータまたは外部APIの仮データで比較UIを構築
-   - 商品画像・価格・送料・評価の表示
-   - おすすめ順 / 安い順の並び替え
-   - Phase 5 API実装時に差し替えやすい構造
+### 新規作成ファイル
+
+| ファイル | 内容 |
+|---|---|
+| `src/components/search/ProductCard.tsx` | 商品比較カード（欠損値安全・affiURL優先・お気に入り/問題報告プレースホルダー）|
+| `src/components/search/ProductCardGrid.tsx` | 並び替えUI付きグリッド（Client Component・即時切替）|
+| `src/lib/search/sort.ts` | 並び順ロジック（5種・スコア計算・欠損値安全）|
+| `src/lib/search/demo-results.ts` | デモ商品データ（4ショップ×2〜3件・欠損パターン含む）|
+| `src/lib/format/price.ts` | 価格表示ユーティリティ（JPY対応・null安全）|
+
+### 変更ファイル
+
+| ファイル | 変更内容 |
+|---|---|
+| `src/app/search/page.tsx` | ProductCardGrid + デモバナー + link_only共存に拡張 |
+| `src/lib/search/adapters/types.ts` | `source?: string` / `isSponsored?: boolean` を追加 |
+
+### 設計方針（Phase 2時点）
+
+- 実 API 接続はまだ未実装（Phase 5で実装予定）
+- デモデータで比較 UI の完成形を確認できる状態
+- link_only fallback ShopCard と共存（削除しない）
+- アダプタ差し替え方針を維持（engine.ts は変更なし）
+- 価格は参考価格として扱い、カード内に注意文を表示
+
+## 次のアクション（Phase 3 候補）
+
+1. **Supabase テーブル設計・作成**
+   - users / search_queries / favorite_products / favorite_queries
 
 2. **Supabase テーブル設計・実テーブル作成**
    - shops / shop_integrations / search_queries / search_results_cache
