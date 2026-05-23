@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
 
 /** 報告理由 */
 const REPORT_REASONS = [
@@ -23,33 +24,61 @@ interface ReportFormProps {
   demoMode: boolean;
 }
 
-export function ReportForm({ offerId, shopCode, demoMode }: ReportFormProps) {
+export function ReportForm({ offerId, shopCode, titleText, demoMode }: ReportFormProps) {
   const [reason, setReason] = useState<ReportReason | ''>('');
   const [comment, setComment] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!reason) return;
 
     setSubmitting(true);
+    setSubmitError(null);
 
-    // Phase 7: デモモード（Supabase 未設定）では実際には送信しない
-    await new Promise((r) => setTimeout(r, 600)); // UX 用の疑似待機
+    if (demoMode) {
+      // デモモード: 実際には送信しない
+      await new Promise((r) => setTimeout(r, 600));
+      setSubmitting(false);
+      setSubmitted(true);
+      return;
+    }
 
-    // TODO: Supabase 設定後に以下を実装
-    // const supabase = createClient();
-    // await supabase?.from('reported_products').insert({
-    //   offer_id: offerId,
-    //   shop_code: shopCode,
-    //   reason,
-    //   comment: comment.trim() || null,
-    //   created_at: new Date().toISOString(),
-    // });
+    // Supabase 設定済み時: reported_products テーブルへ INSERT
+    try {
+      const supabase = createClient();
+      if (!supabase) {
+        // フォールバック: Supabase クライアント取得失敗
+        setSubmitError('送信に失敗しました。時間をおいて再度お試しください。');
+        setSubmitting(false);
+        return;
+      }
 
-    setSubmitting(false);
-    setSubmitted(true);
+      const { error } = await supabase.from('reported_products').insert({
+        offer_id:       offerId       ?? null,
+        shop_code:      shopCode      ?? null,
+        title_snapshot: titleText     ?? null,
+        reason,
+        comment:        comment.trim() || null,
+        status:         'pending',
+      });
+
+      if (error) {
+        console.warn('[report] insert error:', error.message);
+        setSubmitError('送信に失敗しました。時間をおいて再度お試しください。');
+        setSubmitting(false);
+        return;
+      }
+
+      setSubmitted(true);
+    } catch (err) {
+      console.warn('[report] unexpected error:', err);
+      setSubmitError('送信に失敗しました。時間をおいて再度お試しください。');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (submitted) {
@@ -76,6 +105,13 @@ export function ReportForm({ offerId, shopCode, demoMode }: ReportFormProps) {
   return (
     <form onSubmit={handleSubmit} className="rounded-2xl bg-white border border-gray-200 px-5 py-5 space-y-4">
       <p className="text-sm font-semibold text-gray-900">報告内容</p>
+
+      {/* エラー表示 */}
+      {submitError && (
+        <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-2.5">
+          <p className="text-xs text-red-700">{submitError}</p>
+        </div>
+      )}
 
       {/* 報告理由 */}
       <div className="space-y-2">

@@ -14,7 +14,7 @@
 | 6 | 収益化（アフィリエイト）土台 | ✅ 完了（2026-05-24）| - |
 | 7 | 安全公開準備・ポリシー | ✅ 完了（2026-05-24）| - |
 | 5b | 取得アダプタ実装（実 API 接続） | 🔜 未着手（申請後）| ★★☆ |
-| 8 | 本番Supabase接続・デプロイ | 🔜 未着手 | ★★★ |
+| 8 | 本番Supabase接続・デプロイ準備 | ✅ 実装完了（⏳ 手動適用待ち・2026-05-24）| ★★★ |
 
 ---
 
@@ -210,19 +210,26 @@ Authentication > URL Configuration > Redirect URL に /auth/callback を追加
 - [ ] `blocked_keywords` テーブルへの移行 → 管理画面から動的編集
 - [ ] ポリシーページの法的レビュー → 公開前に弁護士確認推奨
 
-## Phase 8: 本番Supabase接続・デプロイ 🔜
+## Phase 8: 本番Supabase接続・デプロイ準備 ✅ 完了（実装・2026-05-24）
 
-**完了条件:** 一般ユーザーが実際に使える状態
+**完了条件（実装部分）:** SQL・手順書・DB INSERT 実装が揃い、手動適用のみ残った状態
 
-- [ ] Supabase プロジェクト作成・`.env.local` 設定
-- [ ] SQL マイグレーション適用（auth / favorites / affiliate / click_events）
-- [ ] Google OAuth 有効化
-- [ ] アフィリエイトプログラム申請・ID 設定
-- [ ] click_events DB INSERT 有効化
-- [ ] 管理者権限チェック実装
+- [x] `supabase/migrations/0002_tracking_reports_admin.sql` 作成（click_events / reported_products / admin_users / affiliate_settings / blocked_keywords）
+- [x] RLS ポリシー設計・実装（全5テーブル）
+- [x] click_events DB INSERT 有効化（Supabase 設定済み時）
+- [x] reported_products DB INSERT 有効化（Supabase 設定済み時）
+- [x] `src/lib/admin/auth.ts` — `isAdmin()` / `requireAdmin()` ヘルパー
+- [x] `docs/VERCEL_DEPLOYMENT.md` — Vercel デプロイ手順書
+- [x] `docs/SUPABASE_SETUP.md` — Phase 8 テーブル・手順追記
+- [x] live-check-runner `phase8-supabase-vercel-verify.spec.ts` — 10/10 PASS
+- [ ] **手動実施待ち:** Supabase プロジェクト作成・`.env.local` 設定
+- [ ] **手動実施待ち:** SQL マイグレーション適用（0001 → 0002 の順）
+- [ ] **手動実施待ち:** Google OAuth 有効化
+- [ ] **手動実施待ち:** 管理者ユーザー登録（admin_users INSERT）
+- [ ] **手動実施待ち:** Vercel 本番デプロイ
+- [ ] アフィリエイトプログラム申請・ID 設定（申請後）
 - [ ] SEO（title / description / OGP）
 - [ ] PWA アイコン作成（192x192 / 512x512）
-- [ ] Vercel 本番デプロイ
 - [ ] カスタムドメイン設定
 
 ---

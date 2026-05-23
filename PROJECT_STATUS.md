@@ -1,6 +1,6 @@
 # PROJECT_STATUS — 安買い横断サーチ
 
-最終更新: 2026-05-24（Phase 6 アフィリエイト収益化土台 実装完了）
+最終更新: 2026-05-24（Phase 8 Supabase本番接続・Vercelデプロイ準備 実装完了）
 
 ## 現状
 
@@ -15,8 +15,9 @@
 | Phase 5（取得アダプタ土台） | ✅ 完了（registry・mock・10/10 PASS・2026-05-24）|
 | Phase 6（収益化・アフィリエイト土台） | ✅ 完了（土台・デモID・click計測・2026-05-24）|
 | Phase 7（安全公開準備・ポリシー） | ✅ 完了（安全フィルター・通報・ポリシー・2026-05-24）|
+| Phase 8（本番Supabase接続・デプロイ準備） | ✅ 完了（SQL・手順書・DB実装・10/10 PASS・2026-05-24）|
 | Phase 5b（実 API アダプタ） | 🔜 未着手（申請後に実装）|
-| Phase 8（本番Supabase・デプロイ） | 🔜 未着手 |
+| 本番適用（Supabase プロジェクト作成・SQL 実行・Vercel デプロイ） | ⏳ 手動実施待ち |
 
 ## 完了内容（Phase 0-1）
 
@@ -59,16 +60,18 @@
 - [x] 検索バーコンポーネント（router.push 連携）
 - [x] ショップカードコンポーネント（Phase 5以降の商品カード拡張前提）
 
-## 現在の制約
+## 現在の制約（Phase 8 時点）
 
 | 制約 | 内容 |
 |---|---|
-| 商品データなし | 全ショップが link_only（検索リンクのみ） |
-| API接続なし | Phase 5まで未接続 |
-| Auth未実装 | Phase 3まで未実装 |
-| 管理画面なし | Phase 4まで未実装 |
-| DB未接続 | Supabase 雛形のみ。テーブル未作成 |
-| PWA アイコン | placeholder（`/icons/icon-192.png` 等が未作成） |
+| 商品データなし | 全ショップが link_only（デモデータのみ）|
+| API接続なし | Phase 5b で実装（申請後）|
+| DB未接続（本番） | SQL 定義済み・Supabase プロジェクト作成と手動適用が必要 |
+| Vercel 未デプロイ | `docs/VERCEL_DEPLOYMENT.md` の手順に従い手動実施 |
+| アフィリエイト ID 未設定 | 各ショップへの申請後 Supabase DB に手動 UPDATE |
+| 管理者未登録 | Supabase 適用後 `admin_users` に手動 INSERT |
+| PWA アイコン | placeholder（`/icons/icon-192.png` 等が未作成）|
+| SEO/OGP | title / description / OGP が未最適化 |
 
 ## Phase 2 完了内容（2026-05-24）
 
@@ -404,15 +407,66 @@
 
 ---
 
-## 次のアクション（Phase 8 候補）
+## Phase 8 完了内容（2026-05-24）
 
-1. **Supabase 本番接続** — `docs/SUPABASE_SETUP.md` の手順を実施
-2. **アフィリエイトプログラム申請** — 各ショップのプログラムに申請
-3. **click_events DB 有効化** — Supabase 設定後に `logClickEvent()` の TODO を実装
-4. **`reported_products` テーブル作成** — 通報機能のDB有効化
-5. **管理者権限チェック** — `admin_users` テーブル作成 + Middleware
-6. **Vercel デプロイ** — 本番公開
-7. **ポリシーページの法的レビュー** — 弁護士確認推奨
+### Supabase本番接続・Vercelデプロイ準備
+
+| 項目 | 内容 |
+|---|---|
+| SQL Migration | `supabase/migrations/0002_tracking_reports_admin.sql` — 5テーブル（click_events / reported_products / admin_users / affiliate_settings / blocked_keywords）|
+| click_events DB INSERT | `src/lib/analytics/click-events.ts` — Supabase 設定済み時に INSERT、未設定時は no-op |
+| reported_products DB INSERT | `src/app/report/ReportForm.tsx` — Supabase 設定済み時に INSERT、未設定時はデモモード |
+| 管理者判定ヘルパー | `src/lib/admin/auth.ts` — `isAdmin()` / `requireAdmin()` — admin_users テーブル照合 |
+| Vercel デプロイ手順 | `docs/VERCEL_DEPLOYMENT.md` — Step 1〜7（Vercel設定・Redirect URL・管理者登録・ロールバック）|
+| SUPABASE_SETUP.md 更新 | Phase 8 テーブル・SQL 実行順・管理者登録・live-check 手順 |
+| live-check spec | `phase8-supabase-vercel-verify.spec.ts` — 10/10 PASS（P8V-11/12 は手動 SKIP）|
+
+### 新規作成ファイル（Phase 8）
+
+| ファイル | 内容 |
+|---|---|
+| `supabase/migrations/0002_tracking_reports_admin.sql` | Phase 8 DB スキーマ（5テーブル・RLS・初期データ）|
+| `src/lib/admin/auth.ts` | 管理者判定ヘルパー |
+| `docs/VERCEL_DEPLOYMENT.md` | Vercel デプロイ手順書 |
+| `tools/live-check-runner/projects/cheap-cross-search/phase8-supabase-vercel-verify.spec.ts` | Phase 8 live-check spec |
+
+### 変更ファイル（Phase 8）
+
+| ファイル | 変更内容 |
+|---|---|
+| `src/lib/analytics/click-events.ts` | Supabase 設定済み時の click_events INSERT 有効化 |
+| `src/app/report/ReportForm.tsx` | Supabase 設定済み時の reported_products INSERT 有効化・エラー表示追加 |
+| `docs/SUPABASE_SETUP.md` | Phase 8 テーブル・手順追記 |
+| `docs/SAFETY_PUBLICATION_CHECKLIST.md` | Phase 8 項目追記 |
+| `tools/live-check-runner/package.json` | `test:cheap-cross-search:phase8` スクリプト追加 |
+
+### live-check 結果（Phase 8）
+
+| テスト | 結果 | 内容 |
+|---|---|---|
+| P8V-1: graceful degradation | ✅ PASS | 9ページ全て 200 |
+| P8V-2: 安全フィルター | ✅ PASS | caution ラベル確認 |
+| P8V-3: /api/click 有効URL | ✅ PASS | Amazon 3xx リダイレクト |
+| P8V-4: /api/click http URL | ✅ PASS | ブロック確認 |
+| P8V-5: /api/click 許可外ホスト | ✅ PASS | ブロック確認 |
+| P8V-6: /report デモモード | ✅ PASS | フォーム・デモバナー |
+| P8V-7: ポリシーページ | ✅ PASS | terms / privacy / safety-policy |
+| P8V-8: フッターナビ | ✅ PASS | 3リンク確認 |
+| P8V-9: 管理画面 | ✅ PASS | /admin 表示 |
+| P8V-10: blocked-keywords | ✅ PASS | ルール件数表示 |
+| P8V-11: lint/build | ⏳ MANUAL | lint 0 / 20 routes 確認済み |
+| P8V-12: Vercel 本番 | ⏳ MANUAL | デプロイ後に実施 |
+
+---
+
+## 次のアクション（手動実施待ち）
+
+1. **Supabase プロジェクト作成** — `docs/SUPABASE_SETUP.md` Step 1〜3 を実施
+2. **SQL 手動適用** — `0001_auth_favorites.sql` → `0002_tracking_reports_admin.sql` の順で実行
+3. **Vercel デプロイ** — `docs/VERCEL_DEPLOYMENT.md` Step 1〜5
+4. **管理者ユーザー登録** — `SUPABASE_SETUP.md` Step 6
+5. **アフィリエイトプログラム申請** — 承認後に `affiliate_settings` へ ID を UPDATE
+6. **ポリシーページの法的レビュー** — 公開前に弁護士確認推奨
 
 ## 技術スタック
 

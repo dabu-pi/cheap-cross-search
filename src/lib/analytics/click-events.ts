@@ -1,10 +1,12 @@
 /**
- * クリックイベント計測ユーティリティ (Phase 6)
+ * クリックイベント計測ユーティリティ (Phase 6+)
  *
- * 現時点: Supabase 未設定のため no-op（コンソールログのみ）。
- * 将来: Supabase click_events テーブルへ insert する。
+ * - Supabase 未設定時: no-op（コンソールログのみ）
+ * - Supabase 設定済み時: click_events テーブルへ INSERT（Phase 8 有効化）
+ * - エラーが発生しても throw せず、サイレントに失敗する（クリック動作を妨げない）
  *
  * @see docs/AFFILIATE_TRACKING_DESIGN.md
+ * @see supabase/migrations/0002_tracking_reports_admin.sql
  */
 
 import type { ClickEventData } from '@/lib/affiliate/types';
@@ -12,15 +14,11 @@ import { isSupabaseConfigured } from '@/lib/supabase/config';
 
 /**
  * クリックイベントをログ記録する。
- *
- * - Supabase 未設定時: コンソールに情報を出力するのみ（no-op）
- * - Supabase 設定済み時: click_events テーブルへ insert（TODO: Phase 6以降で実装）
- * - エラーが発生しても throw せず、サイレントに失敗する（クリック動作を妨げない）
  */
 export async function logClickEvent(data: ClickEventData): Promise<void> {
   try {
     if (!isSupabaseConfigured()) {
-      // Supabase 未設定時は no-op（開発時のみコンソール出力）
+      // Supabase 未設定時は no-op
       if (process.env.NODE_ENV === 'development') {
         console.info('[click-events] (no-op: Supabase未設定)', {
           shop: data.shopCode,
@@ -32,24 +30,26 @@ export async function logClickEvent(data: ClickEventData): Promise<void> {
       return;
     }
 
-    // TODO: Supabase 設定後に以下を実装
-    // const supabase = await createClient();
-    // if (!supabase) return;
-    // const { error } = await supabase.from('click_events').insert({
-    //   shop_code: data.shopCode,
-    //   offer_id: data.offerId ?? null,
-    //   query: data.query ?? null,
-    //   clicked_url: data.clickedUrl,
-    //   destination_host: data.destinationHost,
-    //   source: data.source ?? null,
-    //   user_id: data.userId ?? null,
-    //   session_id: data.sessionId ?? null,
-    // });
-    // if (error) console.warn('[click-events] insert error:', error.message);
+    // Supabase 設定済み時: click_events テーブルへ INSERT
+    const { createClient } = await import('@/lib/supabase/server');
+    const supabase = await createClient();
+    if (!supabase) return;
 
-    // 現時点は Supabase 設定済みでも no-op
-    if (process.env.NODE_ENV === 'development') {
-      console.info('[click-events] (TODO: DB未実装)', data.shopCode, data.destinationHost);
+    const { error } = await supabase.from('click_events').insert({
+      shop_code:        data.shopCode,
+      offer_id:         data.offerId         ?? null,
+      query:            data.query           ?? null,
+      clicked_url:      data.clickedUrl,
+      destination_host: data.destinationHost,
+      source:           data.source          ?? null,
+      user_id:          data.userId          ?? null,
+      session_id:       data.sessionId       ?? null,
+    });
+
+    if (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[click-events] insert error:', error.message);
+      }
     }
   } catch (err) {
     // クリック動作を妨げないようにエラーはサイレントに握りつぶす

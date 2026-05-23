@@ -1,7 +1,10 @@
 # 一般公開前チェックリスト — 安買い横断サーチ
 
-Phase 7 で整備した安全対策・ポリシーの公開前確認リスト。
-「✅ 済」: Phase 7 時点で実装完了 / 「⏳ 要実施」: 公開前に手動または追加実装が必要
+Phase 7 で整備した安全対策・ポリシー、Phase 8 で追加した DB 設計・Vercel 手順の公開前確認リスト。
+「✅ 済」: 実装完了 / 「⏳ 要実施」: 公開前に手動または追加実装が必要
+
+Phase 8 追加項目: `0002_tracking_reports_admin.sql` / `VERCEL_DEPLOYMENT.md` / `isAdmin()` ヘルパー /
+`logClickEvent` DB INSERT 有効化 / `ReportForm` DB INSERT 有効化 — すべて実装済み（⏳ 本番適用待ち）
 
 ---
 
