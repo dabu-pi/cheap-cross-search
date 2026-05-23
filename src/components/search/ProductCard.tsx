@@ -8,9 +8,12 @@ import {
   formatReviewCount,
 } from '@/lib/format/price';
 import { FavoriteProductButton } from './FavoriteProductButton';
+import { buildOfferClickUrl } from '@/lib/affiliate/link-builder';
 
 interface ProductCardProps {
   offer: ProductOffer;
+  /** 検索クエリ（クリック計測に使用） */
+  query?: string;
 }
 
 const CONFIDENCE_BADGE: Record<
@@ -24,16 +27,21 @@ const CONFIDENCE_BADGE: Record<
 };
 
 /**
- * 商品比較カード
- * - affiliateUrl があれば優先
+ * 商品比較カード (Phase 6 更新)
+ *
+ * - affiliateUrl がある場合は /api/click 経由で遷移 (計測 + open redirect 対策)
+ * - affiliateUrl がない場合も /api/click 経由（productUrl 行先のクリック計測）
+ * - PR / アフィリエイト表記を明示
  * - 欠損値でクラッシュしない
- * - お気に入り / 問題報告は Phase 3+ 向けプレースホルダー
  */
-export function ProductCard({ offer }: ProductCardProps) {
+export function ProductCard({ offer, query }: ProductCardProps) {
   const shop       = getShopByCode(offer.shopCode);
   const logoColor  = shop?.logoColor ?? '#666';
-  const linkUrl    = offer.affiliateUrl ?? offer.productUrl;
   const confidence = CONFIDENCE_BADGE[offer.priceConfidence] ?? CONFIDENCE_BADGE.unknown;
+
+  // クリック計測 URL (/api/click 経由)
+  const clickUrl   = buildOfferClickUrl(offer, query);
+  const isAffiliate = !!offer.affiliateUrl;
 
   const totalText  = formatTotalEstimate(offer.itemPrice ?? null, offer.shippingPrice ?? null);
   const ratingText = formatRating(offer.rating ?? null);
@@ -54,14 +62,23 @@ export function ProductCard({ offer }: ProductCardProps) {
           >
             {offer.shopName}
           </span>
-          {offer.isSponsored && (
-            <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-400">
+          {/* PR / アフィリエイト表記 (Phase 6) */}
+          {(offer.isSponsored || isAffiliate) && (
+            <span
+              className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 border border-gray-200"
+              title="このリンクはアフィリエイトリンクです。クリックして購入された場合、当サービスに報酬が発生することがあります。"
+            >
               PR
             </span>
           )}
           {offer.source === 'demo' && (
             <span className="text-xs px-1.5 py-0.5 rounded bg-blue-50 text-blue-400 border border-blue-200">
               デモ
+            </span>
+          )}
+          {offer.source === 'external_api_mock' && (
+            <span className="text-xs px-1.5 py-0.5 rounded bg-purple-50 text-purple-400 border border-purple-200">
+              モック
             </span>
           )}
         </div>
@@ -142,7 +159,7 @@ export function ProductCard({ offer }: ProductCardProps) {
         <FavoriteProductButton offer={offer} />
 
         <div className="flex items-center gap-3">
-          {/* 問題報告（Phase 3+ プレースホルダー） */}
+          {/* 問題報告（Phase 7プレースホルダー） */}
           <button
             className="text-xs text-gray-300 hover:text-gray-400 transition-colors cursor-not-allowed"
             title="価格・情報の問題を報告（準備中）"
@@ -152,11 +169,11 @@ export function ProductCard({ offer }: ProductCardProps) {
             ⚑
           </button>
 
-          {/* 商品ページへ */}
+          {/* 商品ページへ（Phase 6: /api/click 経由） */}
           <a
-            href={linkUrl}
+            href={clickUrl}
             target="_blank"
-            rel="noopener noreferrer"
+            rel={`noopener noreferrer${isAffiliate ? ' sponsored' : ''}`}
             className="flex items-center gap-1 text-sm font-semibold text-white px-4 py-1.5 rounded-xl transition-opacity hover:opacity-85 active:opacity-70"
             style={{ backgroundColor: logoColor }}
             aria-label={`${offer.shopName}で商品ページを開く`}
@@ -180,10 +197,11 @@ export function ProductCard({ offer }: ProductCardProps) {
         </div>
       </div>
 
-      {/* ─── 参考価格注意文 ─── */}
+      {/* ─── 参考価格・PR 注意文 (Phase 6) ─── */}
       <div className="px-4 py-1.5 bg-gray-50 border-t border-gray-100">
         <p className="text-xs text-gray-400 leading-tight">
           ※ 表示価格は取得時の参考価格です。実際の金額・送料・在庫は各ショップでご確認ください。
+          {isAffiliate && ' リンクはアフィリエイトリンクです。'}
         </p>
       </div>
 

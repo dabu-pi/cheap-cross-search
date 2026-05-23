@@ -115,6 +115,14 @@ async function SearchResults({ query }: { query: string }) {
       {/* 免責バナー */}
       <DisclaimerBanner />
 
+      {/* Phase 6: PR・アフィリエイト開示ノート */}
+      <p className="text-xs text-gray-400 leading-relaxed px-1">
+        ※ 一部リンクは<strong className="font-medium">アフィリエイトリンク（PR）</strong>です。
+        リンク経由で購入されると当サービスに報酬が発生する場合があります。
+        表示価格・ランキングへの影響はありません。
+        <Link href="/disclaimer" className="text-blue-400 hover:underline ml-1 inline-block">詳細 →</Link>
+      </p>
+
       {/* ─── 商品カード比較UI（並び替え付き） ─── */}
       <ProductCardGrid offers={displayOffers} />
 

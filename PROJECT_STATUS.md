@@ -1,6 +1,6 @@
 # PROJECT_STATUS — 安買い横断サーチ
 
-最終更新: 2026-05-24（Phase 5 取得アダプタ土台 実装完了）
+最終更新: 2026-05-24（Phase 6 アフィリエイト収益化土台 実装完了）
 
 ## 現状
 
@@ -13,9 +13,8 @@
 | Phase 3.5（Auth動作確認） | ✅ 完了（graceful degradation 検証・2026-05-24）|
 | Phase 4（管理画面） | ✅ 完了（土台・デモデータ・12/12 PASS・2026-05-24）|
 | Phase 5（取得アダプタ土台） | ✅ 完了（registry・mock・10/10 PASS・2026-05-24）|
-| Phase 6（収益化） | 🔜 未着手 |
-| Phase 5（取得アダプタ） | 🔜 未着手 |
-| Phase 6（収益化） | 🔜 未着手 |
+| Phase 6（収益化・アフィリエイト土台） | ✅ 完了（土台・デモID・click計測・2026-05-24）|
+| Phase 5b（実 API アダプタ） | 🔜 未着手（申請後に実装）|
 | Phase 7（一般公開準備） | 🔜 未着手 |
 
 ## 完了内容（Phase 0-1）
@@ -307,17 +306,59 @@
 
 ---
 
-## 次のアクション（Phase 6 候補）
+## Phase 6 完了内容（2026-05-24）
+
+### アフィリエイト収益化 土台実装
+
+| 項目 | 内容 |
+|---|---|
+| アフィリエイト URL 生成 | `buildAffiliateUrl()` / `buildOfferClickUrl()` — ID 空文字時は productUrl にフォールバック |
+| クリック計測 Route | `GET /api/click` — open redirect 対策・ALLOWED_DESTINATION_HOSTS 検証・302 リダイレクト |
+| クリックイベント記録 | `logClickEvent()` — no-op（Supabase 設定後に有効化）|
+| ProductCard PR 表記 | PR バッジ・`rel=sponsored`・アフィリエイト注意文 |
+| 管理画面強化 | `/admin/affiliate` にセキュリティ警告・tracking params 表示・テストプレビュー追加 |
+| 免責事項強化 | `/disclaimer` にアフィリエイト開示・クリック計測説明を追加 |
+| 検索ページ開示 | `/search` ページ内に PR 一文追加 |
+| DB 設計 | `docs/AFFILIATE_TRACKING_DESIGN.md` — affiliate_settings / click_events スキーマ |
+
+### 新規作成ファイル（Phase 6）
+
+| ファイル | 内容 |
+|---|---|
+| `src/lib/affiliate/types.ts` | 型定義（AffiliateSettings / AffiliateLinkInput / ClickEventData）|
+| `src/lib/affiliate/link-builder.ts` | アフィリエイト URL 生成・クリック URL 生成 |
+| `src/lib/affiliate/demo-settings.ts` | デモ設定（affiliateId はすべて空文字）|
+| `src/lib/analytics/click-events.ts` | クリックイベント記録（現在 no-op）|
+| `src/app/api/click/route.ts` | クリック計測 + リダイレクト Route Handler |
+| `docs/AFFILIATE_TRACKING_DESIGN.md` | DB スキーマ・フロー設計書 |
+
+### 変更ファイル（Phase 6）
+
+| ファイル | 変更内容 |
+|---|---|
+| `src/components/search/ProductCard.tsx` | `buildOfferClickUrl()` 使用・PR バッジ・rel=sponsored |
+| `src/app/admin/affiliate/page.tsx` | セキュリティ警告・tracking params・テストプレビュー・実装状況一覧 |
+| `src/app/disclaimer/page.tsx` | アフィリエイト・PR 開示セクション強化 |
+| `src/app/search/page.tsx` | PR/アフィリエイト開示ノート追加 |
+
+### セキュリティ設計（Phase 6）
+
+| 項目 | 設計 |
+|---|---|
+| アフィリエイト ID | `affiliateId = ''`（空文字）。実 ID は `.env.local` or Supabase DB のみ |
+| open redirect 対策 | `ALLOWED_DESTINATION_HOSTS` Set による宛先ホスト検証。https のみ許可 |
+| クリックデータ | Supabase 設定後に `click_events` テーブル INSERT（現在 no-op）|
+| `rel` 属性 | アフィリエイトリンクは `rel="noopener noreferrer sponsored"` |
+
+---
+
+## 次のアクション（Phase 7 候補）
 
 1. **Supabase 本番接続** — `docs/SUPABASE_SETUP.md` の手順を実施
-2. **検索履歴重複排除** — 同一 user_id + normalized_query の upsert 化
-
-3. **Supabase テーブル設計・実テーブル作成**
-   - shops / shop_integrations / search_queries / search_results_cache
-   - product_offers / favorite_products / favorite_queries
-
-4. **検索ログ保存**
-   - ログインなし検索も session_id で記録
+2. **アフィリエイトプログラム申請** — 各ショップのプログラムに申請
+3. **click_events DB 有効化** — Supabase 設定後に `logClickEvent()` の TODO を実装
+4. **検索履歴重複排除** — 同一 user_id + normalized_query の upsert 化
+5. **Supabase テーブル作成** — `docs/AFFILIATE_TRACKING_DESIGN.md` の SQL を実行
 
 ## 技術スタック
 

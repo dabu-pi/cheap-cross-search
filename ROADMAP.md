@@ -11,9 +11,8 @@
 | 3.5 | Auth動作確認・graceful degradation | ✅ 完了（2026-05-24）| - |
 | 4 | 管理画面 | ✅ 完了（土台・2026-05-24）| - |
 | 5 | 取得アダプタ土台 | ✅ 完了（registry・mock・2026-05-24）| - |
-| 6 | 収益化（アフィリエイト） | 🔜 未着手 | ★★☆ |
-| 5 | 取得アダプタ実装（API接続） | 🔜 未着手 | ★★☆ |
-| 6 | 収益化（アフィリエイト） | 🔜 未着手 | ★★☆ |
+| 6 | 収益化（アフィリエイト）土台 | ✅ 完了（2026-05-24）| - |
+| 5b | 取得アダプタ実装（実 API 接続） | 🔜 未着手（申請後）| ★★☆ |
 | 7 | 一般公開準備 | 🔜 未着手 | ★★☆ |
 
 ---
@@ -168,15 +167,25 @@ Authentication > URL Configuration > Redirect URL に /auth/callback を追加
 
 ---
 
-## Phase 6: 収益化（アフィリエイト）🔜
+## Phase 6: 収益化（アフィリエイト）土台 ✅ 完了（2026-05-24）
 
-**完了条件:** 商品クリックが計測される・アフィリエイトリンクへ遷移できる
+**完了条件:** アフィリエイトリンク生成・クリック計測 Route・PR 表記が実装されている
 
-- [ ] アフィリエイトURL生成（ショップ別テンプレート）
-- [ ] クリックログ（click_events テーブル）
-- [ ] ショップ別CV計測準備
-- [ ] 免責文強化
-- [ ] キャッシュ時間管理（price_confidence連動）
+- [x] アフィリエイトURL生成（`lib/affiliate/link-builder.ts`）
+  - ID 未設定 → productUrl パススルー（安全フォールバック）
+  - linkTemplate / trackingParams 両方式対応
+- [x] クリック計測 Route（`/api/click`）
+  - open redirect 対策（ALLOWED_DESTINATION_HOSTS 許可リスト）
+  - https のみ許可
+  - `Cache-Control: no-store` でキャッシュ防止
+- [x] クリックイベント記録（`logClickEvent`）— no-op（Supabase 設定後に有効化）
+- [x] ProductCard PR バッジ・`rel=sponsored`・アフィリエイト注意文
+- [x] 管理画面 `/admin/affiliate` 強化（セキュリティ警告・tracking params・テストプレビュー）
+- [x] 免責事項ページ強化（アフィリエイト開示・クリック計測説明）
+- [x] 検索ページ PR 開示ノート
+- [x] `docs/AFFILIATE_TRACKING_DESIGN.md` — DB スキーマ設計書
+- [ ] アフィリエイトプログラム申請後: `affiliate_settings` テーブルに実 ID を INSERT → 有効化
+- [ ] Supabase 設定後: `click_events` DB INSERT 有効化
 
 ---
 
