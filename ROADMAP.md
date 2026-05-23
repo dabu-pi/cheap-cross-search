@@ -8,6 +8,7 @@
 | 1 | 検索UI + link_only横断検索 | ✅ 完了 | - |
 | 2 | 商品カード比較UI | ✅ 完了（デモ） | - |
 | 3 | Supabase Auth + お気に入り | ✅ 完了（実DB適用待ち）| - |
+| 3.5 | Auth動作確認・graceful degradation | ✅ 完了（2026-05-24）| - |
 | 4 | 管理画面 | 🔜 未着手 | ★★☆ |
 | 5 | 取得アダプタ実装（API接続） | 🔜 未着手 | ★★☆ |
 | 6 | 収益化（アフィリエイト） | 🔜 未着手 | ★★☆ |
@@ -102,6 +103,24 @@ supabase/migrations/0001_auth_favorites.sql を実行すること
 Authentication > Providers > Google を有効化
 Authentication > URL Configuration > Redirect URL に /auth/callback を追加
 ```
+
+---
+
+## Phase 3.5: Auth 動作確認・graceful degradation ✅ 完了（2026-05-24）
+
+**完了条件:** Supabase 未設定状態でビルド・全ページが正常表示される
+
+- [x] live-check-runner spec 作成（`tools/live-check-runner/projects/cheap-cross-search/phase3-auth-verify.spec.ts`）
+- [x] P3V-1〜P3V-9: 自動テスト 9件 PASS（graceful degradation 確認）
+- [x] P3V-10/11: SKIP（Supabase テストアカウント設定後に確認）
+- [x] `docs/SUPABASE_SETUP.md` 作成（本番設定手順）
+- [x] PROJECT_STATUS.md / ROADMAP.md 更新
+
+**Supabase 接続状態（2026-05-24 時点）:**
+- `.env.local`: 未作成
+- Supabase プロジェクト: 未作成
+- SQL 適用: 未実施
+- Google OAuth: 未設定
 
 ---
 

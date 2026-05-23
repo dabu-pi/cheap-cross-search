@@ -1,6 +1,6 @@
 # PROJECT_STATUS — 安買い横断サーチ
 
-最終更新: 2026-05-24（Phase 3 Supabase Auth + お気に入り 完了）
+最終更新: 2026-05-24（Phase 3.5 Auth動作確認・graceful degradation 検証完了）
 
 ## 現状
 
@@ -10,6 +10,7 @@
 | Phase 1（link_only横断検索UI） | ✅ 完了 |
 | Phase 2（商品カード比較UI） | ✅ 完了（デモデータ・2026-05-24）|
 | Phase 3（Auth・お気に入り） | ✅ 完了（実DB適用待ち・2026-05-24）|
+| Phase 3.5（Auth動作確認） | ✅ 完了（graceful degradation 検証・2026-05-24）|
 | Phase 4（管理画面） | 🔜 未着手 |
 | Phase 5（取得アダプタ） | 🔜 未着手 |
 | Phase 6（収益化） | 🔜 未着手 |
@@ -142,6 +143,42 @@
 3. `supabase/migrations/0001_auth_favorites.sql` を Supabase SQL Editor で実行
 4. Authentication > Providers > Google を有効化（Google OAuth を使う場合）
 5. Authentication > URL Configuration > Redirect URL に `/auth/callback` を追加
+
+## Phase 3.5 完了内容（2026-05-24）
+
+### Auth 動作確認・graceful degradation 検証
+
+| 確認項目 | 結果 |
+|---|---|
+| Supabase 設定状態 | 未設定（`.env.local` なし）|
+| Google OAuth 設定 | 未設定（Supabase プロジェクト未作成）|
+| SQL 適用状態 | 未適用（`supabase/migrations/0001_auth_favorites.sql` のみ作成済み）|
+| `npm run build` | ✅ 成功（graceful degradation 動作確認）|
+| live-check-runner spec | ✅ 9/11 PASS・2 SKIP（P3V-10/11: Supabase 設定後に確認）|
+
+### live-check-runner spec 結果（2026-05-24）
+
+| テスト | 結果 | 内容 |
+|---|---|---|
+| P3V-1: トップページ | ✅ PASS | タイトル「安買い」・検索バー表示確認 |
+| P3V-2: 商品カード表示 | ✅ PASS | /search?q=スマホケース で複数カード表示 |
+| P3V-3: デモバナー | ✅ PASS | 「サンプル表示中」バナー確認 |
+| P3V-4: 並び替えUI | ✅ PASS | 「おすすめ順」「安い順」ボタン確認 |
+| P3V-5: /login | ✅ PASS | 「認証機能は未設定です」表示確認 |
+| P3V-6: /account | ✅ PASS | 「認証機能は未設定です」表示確認 |
+| P3V-7: /favorites/products | ✅ PASS | 「認証機能は未設定です」表示確認 |
+| P3V-8: /favorites/queries | ✅ PASS | 「認証機能は未設定です」表示確認 |
+| P3V-9: /history | ✅ PASS | 「認証機能は未設定です」表示確認 |
+| P3V-10: ログイン後お気に入り保存 | ⏭ SKIP | Supabase テストアカウント未設定 |
+| P3V-11: ログイン後検索履歴保存 | ⏭ SKIP | Supabase テストアカウント未設定 |
+
+### 新規作成ファイル（Phase 3.5）
+
+| ファイル | 内容 |
+|---|---|
+| `docs/SUPABASE_SETUP.md` | Supabase 本番設定手順（段階別）|
+
+---
 
 ## 次のアクション（Phase 4 候補）
 
