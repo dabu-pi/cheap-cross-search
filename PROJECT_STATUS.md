@@ -1,6 +1,6 @@
 # PROJECT_STATUS — 安買い横断サーチ
 
-最終更新: 2026-05-24
+最終更新: 2026-05-24（repo独立化・ブランチ整理完了）
 
 ## 現状
 
@@ -27,6 +27,9 @@
 - [x] PROJECT_STATUS.md 作成
 - [x] ROADMAP.md 作成
 - [x] Git 初期化（workspace 内サブディレクトリとして管理）
+- [x] **独立 Git repo 化**（2026-05-24）— `dabu-pi/cheap-cross-search` として独立管理
+- [x] **ブランチ整理**（2026-05-24）— main（安定版）/ feature/phase2-product-card-ui（Phase2作業用）
+- [x] **開発ワークフロー記録**（2026-05-24）— `docs/DEVELOPMENT_WORKFLOW.md`
 
 ### Phase 1
 
