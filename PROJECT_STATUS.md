@@ -1,6 +1,6 @@
 # PROJECT_STATUS — 安買い横断サーチ
 
-最終更新: 2026-05-24（Phase 3.5 Auth動作確認・graceful degradation 検証完了）
+最終更新: 2026-05-24（Phase 4 管理画面 土台実装完了）
 
 ## 現状
 
@@ -11,7 +11,8 @@
 | Phase 2（商品カード比較UI） | ✅ 完了（デモデータ・2026-05-24）|
 | Phase 3（Auth・お気に入り） | ✅ 完了（実DB適用待ち・2026-05-24）|
 | Phase 3.5（Auth動作確認） | ✅ 完了（graceful degradation 検証・2026-05-24）|
-| Phase 4（管理画面） | 🔜 未着手 |
+| Phase 4（管理画面） | ✅ 完了（土台・デモデータ・12/12 PASS・2026-05-24）|
+| Phase 5（取得アダプタ） | 🔜 未着手 |
 | Phase 5（取得アダプタ） | 🔜 未着手 |
 | Phase 6（収益化） | 🔜 未着手 |
 | Phase 7（一般公開準備） | 🔜 未着手 |
@@ -180,16 +181,80 @@
 
 ---
 
-## 次のアクション（Phase 4 候補）
+## Phase 4 完了内容（2026-05-24）
 
-1. **管理画面**（`/admin/shops`・`/admin/affiliate`・`/admin/blocked-keywords`）
+### 管理画面 土台実装
+
+| ページ | 内容 |
+|---|---|
+| `/admin` | 管理ダッシュボード（KPIサマリ・メニュー・取得状態一覧） |
+| `/admin/shops` | ショップ管理（4ショップ・enabled/mode/URLテンプレート表示）|
+| `/admin/affiliate` | アフィリエイト設定（ID/リンクテンプレート/画像許可等）|
+| `/admin/blocked-keywords` | 除外キーワード管理（15件デモデータ・カテゴリ別）|
+| `/admin/fetch-logs` | 取得ログ・状態表示（ショップ別API取得状態）|
+
+### 新規作成ファイル（Phase 4）
+
+| ファイル | 内容 |
+|---|---|
+| `src/lib/admin/types.ts` | 管理画面用型定義（ShopAdminConfig / AffiliateConfig / BlockedKeyword / FetchLogEntry）|
+| `src/lib/admin/demo-settings.ts` | ショップ・アフィリエイト設定デモデータ |
+| `src/lib/admin/blocked-keywords.ts` | 除外キーワードデモデータ（15件・6カテゴリ）|
+| `src/lib/admin/fetch-logs.ts` | 取得ログデモデータ・ステータスユーティリティ |
+| `src/app/admin/layout.tsx` | 管理画面共通レイアウト（AdminNav 内包）|
+| `src/app/admin/page.tsx` | 管理ダッシュボード |
+| `src/app/admin/shops/page.tsx` | ショップ管理 |
+| `src/app/admin/affiliate/page.tsx` | アフィリエイト設定 |
+| `src/app/admin/blocked-keywords/page.tsx` | 除外キーワード管理 |
+| `src/app/admin/fetch-logs/page.tsx` | 取得ログ表示 |
+| `src/components/admin/AdminNav.tsx` | 管理ナビゲーション（横スクロール対応・スマホ最適化）|
+| `src/components/admin/AdminSectionCard.tsx` | AdminSectionCard / AdminDevPreviewBanner / AdminSaveUnavailableBanner |
+
+### live-check-runner spec 結果（Phase 4・2026-05-24）
+
+| テスト | 結果 | 内容 |
+|---|---|---|
+| P4V-1: /admin 表示 | ✅ PASS | ダッシュボード表示確認 |
+| P4V-2: ショップサマリ | ✅ PASS | 有効ショップ数表示確認 |
+| P4V-3: /admin/shops 表示 | ✅ PASS | ショップ管理ページ表示確認 |
+| P4V-4: 4ショップ表示 | ✅ PASS | Amazon/SHEIN/AliExpress/Temu 全表示確認 |
+| P4V-5: 取得方式表示 | ✅ PASS | link_only バッジ表示確認 |
+| P4V-6: /admin/affiliate 表示 | ✅ PASS | アフィリエイト設定ページ表示確認 |
+| P4V-7: /admin/blocked-keywords 表示 | ✅ PASS | 除外キーワードページ表示確認 |
+| P4V-8: キーワード行表示 | ✅ PASS | 処方箋・医薬品系カテゴリ表示確認 |
+| P4V-9: /admin/fetch-logs 表示 | ✅ PASS | 取得ログページ表示確認 |
+| P4V-10: 開発プレビューバナー | ✅ PASS | Supabase未設定時バナー表示確認 |
+| P4V-11: 通常画面へ戻るリンク | ✅ PASS | 「通常画面へ」リンク確認 |
+| P4V-12: スマホ幅表示 | ✅ PASS | 375px でレイアウト崩れなし |
+
+### 設計方針（Phase 4時点）
+
+- **管理者権限**: 現時点は Supabase 未設定のため全ユーザーが管理画面にアクセス可能。Supabase 設定後に `admin_users` テーブルで制御する
+- **データ**: デモデータ / 静的設定ベース。Supabase 設定後に DB テーブルへ移行
+- **graceful degradation**: Supabase 未設定でも全管理ページが「開発プレビュー表示」バナー付きで動作
+- **保存機能**: 「保存機能は Supabase 設定後に有効化予定」バナーを表示
+- **将来の DB テーブル**: admin_shop_configs / admin_affiliate_configs / blocked_keywords / fetch_logs
+
+### 本番で必要な追加実装
+
+1. `admin_users` テーブル作成 + Middleware で管理者チェック
+2. ショップ設定を DB 保存・UI から編集・保存できるようにする
+3. アフィリエイト ID を DB に保存し商品リンクに自動適用（Phase 6）
+4. 除外キーワードを DB に保存・検索フィルターに適用
+5. 取得ログを実 API アダプタ接続時に DB 記録（Phase 5）
+
+---
+
+## 次のアクション（Phase 5 候補）
+
+1. **Supabase 本番接続** — `docs/SUPABASE_SETUP.md` の手順を実施
 2. **検索履歴重複排除** — 同一 user_id + normalized_query の upsert 化
 
-2. **Supabase テーブル設計・実テーブル作成**
+3. **Supabase テーブル設計・実テーブル作成**
    - shops / shop_integrations / search_queries / search_results_cache
    - product_offers / favorite_products / favorite_queries
 
-3. **検索ログ保存**
+4. **検索ログ保存**
    - ログインなし検索も session_id で記録
 
 ## 技術スタック

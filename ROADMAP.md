@@ -9,7 +9,8 @@
 | 2 | 商品カード比較UI | ✅ 完了（デモ） | - |
 | 3 | Supabase Auth + お気に入り | ✅ 完了（実DB適用待ち）| - |
 | 3.5 | Auth動作確認・graceful degradation | ✅ 完了（2026-05-24）| - |
-| 4 | 管理画面 | 🔜 未着手 | ★★☆ |
+| 4 | 管理画面 | ✅ 完了（土台・2026-05-24）| - |
+| 5 | 取得アダプタ実装（API接続） | 🔜 未着手 | ★★☆ |
 | 5 | 取得アダプタ実装（API接続） | 🔜 未着手 | ★★☆ |
 | 6 | 収益化（アフィリエイト） | 🔜 未着手 | ★★☆ |
 | 7 | 一般公開準備 | 🔜 未着手 | ★★☆ |
@@ -124,18 +125,23 @@ Authentication > URL Configuration > Redirect URL に /auth/callback を追加
 
 ---
 
-## Phase 4: 管理画面 🔜
+## Phase 4: 管理画面 ✅ 完了（土台・2026-05-24）
 
-**完了条件:** 管理画面からショップ設定・除外キーワードを変更できる
+**完了条件（Phase 4 土台）:** 管理画面の UI・型・デモデータ が動作し、Supabase 設定後に DB 移行できる構造
 
-- [ ] 管理者権限チェック（admin_users テーブル）
-- [ ] ショップ管理（/admin/shops）
-  - ON/OFF / 取得方式切替 / 表示順
-- [ ] アフィリエイト設定（/admin/affiliate）
-- [ ] 除外キーワード管理（/admin/blocked-keywords）
-- [ ] 除外カテゴリ管理（/admin/blocked-categories）
-- [ ] 取得ログ確認（/admin/fetch-logs）
-- [ ] 通報管理（/admin/reports）
+- [x] 管理画面ルート (`/admin`, `/admin/shops`, `/admin/affiliate`, `/admin/blocked-keywords`, `/admin/fetch-logs`)
+- [x] 管理画面共通レイアウト (`AdminNav` / `AdminSectionCard` / `AdminDevPreviewBanner`)
+- [x] ショップ管理 UI（4ショップ・enabled/mode/URLテンプレート表示）
+- [x] アフィリエイト設定 UI（ID/リンクテンプレート/画像許可）
+- [x] 除外キーワード管理 UI（15件デモデータ・6カテゴリ）
+- [x] 取得ログ UI（ショップ別 API 取得状態）
+- [x] 管理画面用型定義 (`src/lib/admin/types.ts`)
+- [x] Supabase 未設定でもビルド可能・graceful degradation
+- [x] live-check-runner P4V-1〜12 全 12件 PASS
+- [ ] 管理者権限チェック（admin_users テーブル） → Supabase 設定後に実装
+- [ ] ショップ設定の DB 保存・UI から編集 → Supabase 設定後に実装
+- [ ] 除外キーワードの DB 保存・検索フィルター適用 → Supabase 設定後に実装
+- [ ] 通報管理（/admin/reports） → Phase 7 以降
 
 ---
 
