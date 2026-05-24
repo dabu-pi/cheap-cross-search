@@ -24,9 +24,9 @@
 | 0003 SQL 適用 | ✅ 完了（GRANT 確認済み・anon INSERT 権限付与済み）|
 | .env.local 設定 | ✅ 完了・修正済み（ANON KEY 重複行削除・2026-05-24）|
 | Supabase CLI | ✅ 設定完了（npx supabase login + link 済み・db query --linked 動作確認済み）|
-| /report DB 保存 | ⏳ dev server 再起動後に送信テスト（P8B-7）|
-| 管理者ユーザー登録 | ⏳ 手動実施待ち（P8B-10）|
-| アカウント作成・ログイン確認 | ⏳ 手動実施待ち（P8B-8）|
+| /report DB 保存 | ✅ 完了（P8B-7・フォーム送信 → reported_products id=4 確認済み・2026-05-24）|
+| 管理者ユーザー登録 | ✅ 完了（P8B-10・admin_users INSERT 済み・2026-05-24）|
+| アカウント作成・ログイン確認 | ✅ 完了（P8B-8・ログイン済み・UUID取得済み）|
 | Vercel デプロイ | ⏳ 手動実施待ち |
 
 ## 🔍 /report 送信失敗の根本原因（2026-05-24 調査完了）
@@ -51,19 +51,12 @@
 
 ## ⚠️ 次に実施すること（優先順）
 
-1. **dev server を再起動** → `.env.local` の修正を反映させる
-   ```powershell
-   cd C:\hirayama-ai-workspace\workspace\cheap-cross-search
-   npm run dev
-   ```
-2. `/report` フォームで送信テスト → 「報告を受け付けました」が表示されることを確認（P8B-7）
-3. CLI で行確認:
-   ```
-   ! npx supabase db query --linked "SELECT id, reason, status, created_at FROM public.reported_products ORDER BY created_at DESC LIMIT 5;"
-   ```
-4. アカウント作成 → ログイン → `/account` 確認（P8B-8）
-5. 管理者ユーザー登録（P8B-10）
-6. Vercel デプロイ（`docs/VERCEL_DEPLOYMENT.md` 参照）
+1. ✅ dev server 再起動済み
+2. ✅ `/report` 送信テスト → reported_products id=4 確認済み（P8B-7）
+3. ✅ アカウント作成・ログイン確認（P8B-8）
+4. ✅ 管理者ユーザー登録（admin_users INSERT済み・P8B-10）
+5. ⏳ `/admin` でログイン状態で管理画面が表示されることを確認
+6. ⏳ Vercel デプロイ（`docs/VERCEL_DEPLOYMENT.md` 参照）
 
 ## 完了内容（Phase 0-1）
 
