@@ -2,16 +2,28 @@ import { SearchBar } from '@/components/search/SearchBar';
 import { SHOPS } from '@/lib/shops/shops';
 import Link from 'next/link';
 
-/** 人気の検索ワード例 */
-const POPULAR_QUERIES = [
-  'ワイヤレスイヤホン',
-  'スマホケース',
-  'エコバッグ',
-  'タンブラー',
-  'デスクライト',
-  'ヨガマット',
-  '収納ボックス',
-  'USBハブ',
+/** Phase 21: カテゴリ別人気キーワード */
+const CATEGORY_QUERIES = [
+  {
+    label: '家電・ガジェット',
+    emoji: '📱',
+    queries: ['ワイヤレスイヤホン', 'スマートウォッチ', 'モバイルバッテリー', 'USBハブ'],
+  },
+  {
+    label: 'ファッション・バッグ',
+    emoji: '👜',
+    queries: ['スマホケース', 'バッグ', 'リュック', '財布'],
+  },
+  {
+    label: 'スポーツ・健康',
+    emoji: '💪',
+    queries: ['プロテイン', 'ヨガマット', '水筒', 'ランニングシューズ'],
+  },
+  {
+    label: '日用品・ペット',
+    emoji: '🐾',
+    queries: ['ペット用品', '収納ボックス', 'タンブラー', 'エコバッグ'],
+  },
 ];
 
 export default function HomePage() {
@@ -49,20 +61,27 @@ export default function HomePage() {
         {/* 検索バー */}
         <SearchBar autoFocus placeholder="例: ワイヤレスイヤホン、バッグ..." />
 
-        {/* 人気検索 */}
-        <div className="space-y-2">
-          <p className="text-xs text-gray-400 font-semibold tracking-wide uppercase">人気の検索</p>
-          <div className="flex flex-wrap gap-2">
-            {POPULAR_QUERIES.map((q) => (
-              <Link
-                key={q}
-                href={`/search?q=${encodeURIComponent(q)}`}
-                className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:border-blue-400 hover:text-blue-600 transition-colors shadow-sm"
-              >
-                {q}
-              </Link>
-            ))}
-          </div>
+        {/* Phase 21: カテゴリ別人気キーワード */}
+        <div className="space-y-4">
+          <p className="text-xs text-gray-400 font-semibold tracking-wide uppercase">人気カテゴリから探す</p>
+          {CATEGORY_QUERIES.map((cat) => (
+            <div key={cat.label} className="space-y-2">
+              <p className="text-xs font-semibold text-gray-600">
+                {cat.emoji} {cat.label}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {cat.queries.map((q) => (
+                  <Link
+                    key={q}
+                    href={`/search?q=${encodeURIComponent(q)}`}
+                    className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:border-blue-400 hover:text-blue-600 transition-colors shadow-sm"
+                  >
+                    {q}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* 対象ショップ */}
@@ -85,6 +104,20 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* 外部検索モード説明（Phase 21: 自然な説明を追加） */}
+        <div className="rounded-xl border border-gray-100 bg-white px-4 py-3 space-y-1">
+          <p className="text-xs font-semibold text-gray-500">🔍 現在の動作モード</p>
+          <p className="text-xs text-gray-500 leading-relaxed">
+            現在は各ECサイトの検索結果ページへご案内する
+            <strong className="font-medium text-gray-700">外部検索モード</strong>
+            で動作しています。
+            実際の価格・在庫・商品詳細は遷移先のショップでご確認ください。
+          </p>
+          <p className="text-xs text-gray-400">
+            ※ Amazon アソシエイトプログラム参加中。リンク経由でご購入の場合、当サービスに報酬が発生することがあります。
+          </p>
         </div>
 
         {/* 免責短縮版 */}

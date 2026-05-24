@@ -230,6 +230,9 @@ async function SearchResults({ query }: { query: string }) {
         </div>
       )}
 
+      {/* Phase 21: 関連キーワード候補 */}
+      <RelatedKeywords query={query} />
+
       {/* フッター注意文 */}
       <div className="text-center py-4 space-y-1">
         <p className="text-xs text-gray-400 leading-relaxed">
@@ -304,23 +307,89 @@ function applyAmazonTag(productUrl: string, affiliateTag: string): string {
   }
 }
 
-/** クエリなし状態（Phase 12: 人気キーワード候補付き） */
-const POPULAR_QUERIES = [
-  'スマホケース',
-  'ワイヤレスイヤホン',
-  '財布',
-  'リュック',
-  'プロテイン',
-  'マウス',
-  '充電器',
-  'ヘアアイロン',
-  'ゲームコントローラー',
-  '水筒',
+// ─────────────────────────────────────────────────────────────────
+// Phase 21: 関連キーワード候補 + カテゴリ別 EmptyState
+// ─────────────────────────────────────────────────────────────────
+
+/** Phase 21: カテゴリ別人気キーワード（EmptyState / 関連キーワードで共用） */
+const CATEGORY_QUERIES = [
+  {
+    label: '家電・ガジェット',
+    emoji: '📱',
+    queries: ['ワイヤレスイヤホン', 'スマートウォッチ', 'モバイルバッテリー', 'USBハブ'],
+  },
+  {
+    label: 'ファッション・バッグ',
+    emoji: '👜',
+    queries: ['スマホケース', 'バッグ', 'リュック', '財布'],
+  },
+  {
+    label: 'スポーツ・健康',
+    emoji: '💪',
+    queries: ['プロテイン', 'ヨガマット', '水筒', 'ランニングシューズ'],
+  },
+  {
+    label: '日用品・ペット',
+    emoji: '🐾',
+    queries: ['ペット用品', '収納ボックス', 'タンブラー', 'エコバッグ'],
+  },
 ];
 
+/**
+ * Phase 21: クエリに関連するキーワード候補を返す静的マップ。
+ * 完全一致 → 部分一致 → 人気カテゴリ一覧 の順でフォールバック。
+ */
+const RELATED_KEYWORDS_MAP: Record<string, string[]> = {
+  ワイヤレスイヤホン: ['ノイズキャンセリングイヤホン', '完全ワイヤレスイヤホン', '骨伝導イヤホン', 'ヘッドホン', 'スピーカー'],
+  イヤホン: ['ワイヤレスイヤホン', 'ノイズキャンセリングイヤホン', '有線イヤホン', 'ヘッドホン'],
+  スマホケース: ['iPhoneケース', 'Androidケース', '手帳型ケース', 'スマートフォンアクセサリー', '保護フィルム'],
+  バッグ: ['リュック', 'トートバッグ', 'ショルダーバッグ', 'ハンドバッグ', '財布'],
+  リュック: ['バッグ', 'トートバッグ', 'ショルダーバッグ', 'デイパック'],
+  プロテイン: ['プロテインバー', 'BCAAサプリ', 'クレアチン', 'スポーツドリンク', 'ダイエット食品'],
+  ペット用品: ['猫用品', '犬用品', 'ペットフード', 'キャットタワー', 'ペットシーツ'],
+  家電: ['掃除機', '電気ケトル', 'コーヒーメーカー', '空気清浄機', '加湿器'],
+  スマートウォッチ: ['活動量計', 'スマートバンド', 'Apple Watch', 'ウォッチバンド'],
+  充電器: ['モバイルバッテリー', 'USBケーブル', 'ワイヤレス充電', 'USB-Cケーブル'],
+  財布: ['長財布', '二つ折り財布', 'マネークリップ', 'カードケース', 'バッグ'],
+  水筒: ['タンブラー', 'マグボトル', 'スポーツボトル', 'エコバッグ'],
+};
+
+function getRelatedKeywords(query: string): string[] {
+  const q = query.trim();
+  if (RELATED_KEYWORDS_MAP[q]) return RELATED_KEYWORDS_MAP[q];
+  // 部分一致
+  for (const [key, values] of Object.entries(RELATED_KEYWORDS_MAP)) {
+    if (q.includes(key) || key.includes(q)) return values;
+  }
+  // フォールバック: 全カテゴリから1件ずつ
+  return CATEGORY_QUERIES.flatMap((c) => c.queries.slice(0, 1));
+}
+
+/** Phase 21: 関連キーワード候補セクション */
+function RelatedKeywords({ query }: { query: string }) {
+  const related = getRelatedKeywords(query);
+  return (
+    <div className="rounded-xl border border-gray-100 bg-white px-4 py-3 space-y-2">
+      <p className="text-xs font-semibold text-gray-500">🔗 こんなキーワードも人気</p>
+      <div className="flex flex-wrap gap-2">
+        {related.map((kw) => (
+          <a
+            key={kw}
+            href={`/search?q=${encodeURIComponent(kw)}`}
+            className="text-xs px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 text-gray-600 hover:border-blue-400 hover:text-blue-600 transition-colors"
+          >
+            {kw}
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Phase 21: カテゴリ別 EmptyState */
 function EmptyState() {
   return (
-    <div className="py-10 space-y-6">
+    <div className="py-8 space-y-6">
       {/* メインメッセージ */}
       <div className="text-center space-y-2">
         <p className="text-4xl">🛒</p>
@@ -330,20 +399,37 @@ function EmptyState() {
         </p>
       </div>
 
-      {/* 人気キーワード */}
-      <div className="space-y-2">
-        <p className="text-xs font-semibold text-gray-500">人気のキーワード</p>
-        <div className="flex flex-wrap gap-2">
-          {POPULAR_QUERIES.map((q) => (
-            <a
-              key={q}
-              href={`/search?q=${encodeURIComponent(q)}`}
-              className="text-sm px-3 py-1.5 rounded-full border border-gray-200 bg-white text-gray-700 hover:border-orange-300 hover:text-orange-600 transition-colors"
-            >
-              {q}
-            </a>
-          ))}
-        </div>
+      {/* 外部検索モード説明 */}
+      <div className="rounded-xl bg-blue-50 border border-blue-100 px-3 py-2.5 flex items-start gap-2">
+        <span className="text-blue-400 text-sm mt-0.5 shrink-0">🔍</span>
+        <p className="text-xs text-blue-700 leading-relaxed">
+          <strong className="font-semibold">外部検索モード</strong> —
+          現在は各ECサイトの検索結果ページへご案内します。
+          実際の価格・在庫・商品詳細は遷移先のショップでご確認ください。
+        </p>
+      </div>
+
+      {/* Phase 21: カテゴリ別人気キーワード */}
+      <div className="space-y-4">
+        <p className="text-xs font-semibold text-gray-500">人気カテゴリから探す</p>
+        {CATEGORY_QUERIES.map((cat) => (
+          <div key={cat.label} className="space-y-1.5">
+            <p className="text-xs text-gray-500 font-medium">
+              {cat.emoji} {cat.label}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {cat.queries.map((q) => (
+                <a
+                  key={q}
+                  href={`/search?q=${encodeURIComponent(q)}`}
+                  className="text-sm px-3 py-1.5 rounded-full border border-gray-200 bg-white text-gray-700 hover:border-blue-400 hover:text-blue-600 transition-colors shadow-sm"
+                >
+                  {q}
+                </a>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* 使い方ガイド */}
@@ -352,7 +438,7 @@ function EmptyState() {
         <ol className="text-xs text-gray-500 space-y-1 list-decimal list-inside leading-relaxed">
           <li>上の検索バーにキーワードを入力して Enter</li>
           <li>4ショップの参考価格帯を一覧比較</li>
-          <li>気になるショップのリンクから実際の商品ページへ</li>
+          <li>気になるショップのリンクから各ECサイトの検索結果ページへ</li>
         </ol>
         <p className="text-xs text-gray-400 pt-1">
           ※ 表示価格は参考価格です。実際の金額は各ショップでご確認ください。

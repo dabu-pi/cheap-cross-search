@@ -27,7 +27,8 @@
 | 18 | Amazon アソシエイトタグ付与 | ✅ 完了（サーバーサイドタグ付与・RPC fix・10/10 PASS・2026-05-24）| - |
 | 19 | Amazonタグ付きクリック分析・収益導線確認 | ✅ 完了（💰カード・🏷バッジ・SQL追加・5/5 PASS+5 skip・Phase9–18 全 PASS・2026-05-24）| - |
 | 20 | SEO・信頼性・審査向け整備 | ✅ 完了（sitemap/robots/OGP/Twitter card・Amazon承認済み表記・15/15 PASS・2026-05-24）| - |
-| 20A | 検索UI視認性・外部検索モード説明改善 | ✅ 完了（text-gray-900・外部検索モード説明・外部サイト誘導明記・15/15 PASS・2026-05-24）| - |
+| 20A | 検索UI視認性・外部検索モード説明改善 | ✅ 完了（text-gray-900・外部検索モード説明・外部サイト誘導明記・15/15 PASS・production確認OK・2026-05-24）| - |
+| 21 | 検索体験・カテゴリ導線改善 | ✅ 完了（カテゴリ別人気KW・関連KW候補・EmptyState改善・21/21 PASS・2026-05-24）| - |
 
 ---
 
@@ -398,6 +399,7 @@ Authentication > URL Configuration > Redirect URL に /auth/callback を追加
 - [x] live-check-runner `phase20a-search-ui-verify.spec.ts` — **15/15 PASS**
 - [x] Phase 9–20 regression: 全 PASS
 - [x] Vercel deploy `dpl_3VkUiAS6fGgwStKDFZ8db83fTdvE` — READY
+- [x] **production 実機確認 OK（2026-05-24）** — 「検索視認確認、OKです。問題ありません。」「現段階ではこれでいいんじゃないかな」（ユーザー判断・CLOSED）
 
 **将来の商品ページ直リンク化方針（Roadmap 記録）:**
 
@@ -412,6 +414,28 @@ Authentication > URL Configuration > Redirect URL に /auth/callback を追加
 
 - `isSearchPage: false` にすると ProductCard CTA が「Amazonで見る」（商品詳細ページ）に切り替わる実装済み
 - `ProductOffer.affiliateUrl` / `productUrl` の切り替えで対応可能な構造になっている
+
+---
+
+## Phase 21: 検索体験・カテゴリ導線改善 ✅ 完了（2026-05-24）
+
+**背景:** Phase 20A production 確認 OK（「現段階ではこれでいい」）後、検索体験・カテゴリ導線の改善を実施。
+
+**完了条件:** トップページにカテゴリ別人気キーワードが表示される。検索結果ページに関連キーワード候補がある。EmptyStateがカテゴリ別になっている。
+
+- [x] `src/app/page.tsx`:
+  - `POPULAR_QUERIES` フラットリストを `CATEGORY_QUERIES` カテゴリ別構造に刷新
+  - 家電・ガジェット / ファッション・バッグ / スポーツ・健康 / 日用品・ペット の4カテゴリ
+  - ユーザー指定キーワード（スマホケース・ワイヤレスイヤホン・バッグ・プロテイン・ペット用品）を包含
+  - 「現在の動作モード」ブロックで外部検索モード説明を自然に追加
+- [x] `src/app/search/page.tsx`:
+  - `CATEGORY_QUERIES` と `RELATED_KEYWORDS_MAP` を追加
+  - `getRelatedKeywords(query)` ヘルパー（完全一致 → 部分一致 → フォールバック）
+  - `RelatedKeywords` コンポーネント（「🔗 こんなキーワードも人気」セクション）を SearchResults 末尾に追加
+  - `EmptyState` を大幅改善: カテゴリ別人気キーワード + 外部検索モード説明 + 使い方ガイド
+- [x] live-check-runner `phase21-search-experience-verify.spec.ts` — **21/21 PASS**
+- [x] Phase 9–20A regression: 全 PASS（P21-13〜P21-21 で確認）
+- [x] Vercel deploy `dpl_A5sRhYAXxJhhhtmjK6FSWVXPNwvv` — READY (production)
 
 ---
 
