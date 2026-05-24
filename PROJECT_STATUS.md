@@ -1,6 +1,10 @@
 # PROJECT_STATUS — ECサイト比較.com
 
-最終更新: 2026-05-24（Phase 23 楽天市場 real_api 有効化 — RAKUTEN_APP_ID 設定・dataStatus=real_api・Production deploy READY）
+最終更新: 2026-05-24（Phase 23A 楽天APIエラー fallback 修正 — HTTP 400 wrong_parameter 原因特定・link_only fallback 実装・dpl_5Nvk24wASG4NNcyqF5o7suPrnF9f READY）
+
+> **次回再開時の最優先作業:**
+> 楽天市場 real_api 有効化には **RAKUTEN_APP_ID の値を正しい applicationId に Vercel で更新** → redeploy が必要。
+> 詳細は「Phase 23」「Phase 23A」セクション参照。
 
 ## 現状
 

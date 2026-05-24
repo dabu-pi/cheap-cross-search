@@ -527,6 +527,36 @@ Vercel: Project Settings > Environment Variables に設定後 `vercel --prod` �
 
 ---
 
+## Phase 23B: 楽天実商品表示 有効化（次回・人が RAKUTEN_APP_ID を再設定後に実施）
+
+**前提条件（人が実施してから Claude に依頼）:**
+
+1. https://webservice.rakuten.co.jp/ → アプリ一覧 → **アプリID（applicationId）** を確認
+   - affiliateId（アフィリエイトID）とは別物。アプリID を使うこと
+   - 形式：長い英数字または数字のみの文字列
+2. Vercel: Project `cheap-cross-search` > Settings > Environment Variables
+   - `RAKUTEN_APP_ID` の値を正しい applicationId に更新
+   - Sensitive: ON / Environments: Production, Preview
+   - 実値はチャット・docs・git に記録しない
+3. Claude に「Vercel に RAKUTEN_APP_ID を更新した」と伝える
+
+**Claude が実施する作業:**
+
+- [ ] `vercel env ls` で `RAKUTEN_APP_ID` が Production/Preview に Encrypted として確認
+- [ ] `vercel --prod` で Production Redeploy
+- [ ] Vercel logs で `[rakuten] API` エラーが出なくなることを確認
+- [ ] 確認URL で楽天実商品カードが表示されることを確認:
+  - https://cheap-cross-search.vercel.app/search?q=%E3%83%AF%E3%82%A4%E3%83%A4%E3%83%AC%E3%82%B9%E3%82%A4%E3%83%A4%E3%83%9B%E3%83%B3
+  - https://cheap-cross-search.vercel.app/search?q=%E3%82%B9%E3%83%9E%E3%83%9B%E3%82%B1%E3%83%BC%E3%82%B9
+- [ ] 確認項目（実商品カード）: 商品名・価格・画像・ショップ名・「楽天で見る」CTA・商品ページ直リンク
+- [ ] PROJECT_STATUS.md / ROADMAP.md に Phase 23B 完了を記録
+- [ ] commit / push / clean / 0/0
+
+**RAKUTEN_ACCESS_KEY について:**
+不要。楽天ウェブサービス IchibaItem/Search API は `applicationId` のみで動作する。
+
+---
+
 ## 将来の拡張候補
 
 | アイデア | 優先度 |
