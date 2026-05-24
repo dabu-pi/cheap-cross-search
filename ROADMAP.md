@@ -14,7 +14,7 @@
 | 6 | 収益化（アフィリエイト）土台 | ✅ 完了（2026-05-24）| - |
 | 7 | 安全公開準備・ポリシー | ✅ 完了（2026-05-24）| - |
 | 5b | 取得アダプタ実装（実 API 接続） | 🔜 未着手（申請後）| ★★☆ |
-| 8 | 本番Supabase接続・デプロイ準備 | ✅ 実装完了（0001適用済み・0002修正済み要再実行・2026-05-24）| ★★★ |
+| 8 | 本番Supabase接続・デプロイ準備 | ✅ 実装完了（0001+0002適用済み・0003 hotfix 実行待ち・2026-05-24）| ★★★ |
 
 ---
 
@@ -222,8 +222,11 @@ Authentication > URL Configuration > Redirect URL に /auth/callback を追加
 - [x] `docs/VERCEL_DEPLOYMENT.md` — Vercel デプロイ手順書
 - [x] `docs/SUPABASE_SETUP.md` — Phase 8 テーブル・手順追記
 - [x] live-check-runner `phase8-supabase-vercel-verify.spec.ts` — 10/10 PASS
-- [ ] **手動実施待ち:** Supabase プロジェクト作成・`.env.local` 設定
-- [ ] **手動実施待ち:** SQL マイグレーション適用（0001 → 0002 の順）
+- [x] **完了:** Supabase プロジェクト作成・`.env.local` 設定（2026-05-24）
+- [x] **完了:** SQL マイグレーション適用（0001 + 0002 実行済み・2026-05-24）
+- [x] **完了:** /report INSERT 失敗修正（0003 hotfix 作成・2026-05-24）
+- [ ] **手動実施待ち:** `0003_fix_reported_products_insert_policy.sql` を Supabase SQL Editor で実行
+- [ ] **手動実施待ち:** /report 送信テスト（reported_products に行が追加される確認）
 - [ ] **手動実施待ち:** Google OAuth 有効化
 - [ ] **手動実施待ち:** 管理者ユーザー登録（admin_users INSERT）
 - [ ] **手動実施待ち:** Vercel 本番デプロイ

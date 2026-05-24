@@ -50,23 +50,40 @@ export function ReportForm({ offerId, shopCode, titleText, demoMode }: ReportFor
     try {
       const supabase = createClient();
       if (!supabase) {
-        // フォールバック: Supabase クライアント取得失敗
+        // フォールバック: Supabase クライアント取得失敗（NEXT_PUBLIC_ env vars が未設定の可能性）
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[report] createClient() returned null — NEXT_PUBLIC_SUPABASE_URL or ANON_KEY が未設定です。dev サーバーを再起動してください。');
+        }
         setSubmitError('送信に失敗しました。時間をおいて再度お試しください。');
         setSubmitting(false);
         return;
       }
 
-      const { error } = await supabase.from('reported_products').insert({
+      const payload = {
         offer_id:       offerId       ?? null,
         shop_code:      shopCode      ?? null,
         title_snapshot: titleText     ?? null,
         reason,
         comment:        comment.trim() || null,
         status:         'pending',
-      });
+      };
+
+      if (process.env.NODE_ENV === 'development') {
+        console.info('[report] inserting payload:', payload);
+      }
+
+      const { error } = await supabase.from('reported_products').insert(payload);
 
       if (error) {
-        console.warn('[report] insert error:', error.message);
+        // 開発時: error の全詳細をログに出す（診断用）
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[report] insert failed:', {
+            code:    error.code,
+            message: error.message,
+            details: error.details,
+            hint:    error.hint,
+          });
+        }
         setSubmitError('送信に失敗しました。時間をおいて再度お試しください。');
         setSubmitting(false);
         return;
@@ -74,7 +91,9 @@ export function ReportForm({ offerId, shopCode, titleText, demoMode }: ReportFor
 
       setSubmitted(true);
     } catch (err) {
-      console.warn('[report] unexpected error:', err);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[report] unexpected error:', err);
+      }
       setSubmitError('送信に失敗しました。時間をおいて再度お試しください。');
     } finally {
       setSubmitting(false);

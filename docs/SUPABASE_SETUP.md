@@ -1,6 +1,19 @@
 # SUPABASE_SETUP.md — 安買い横断サーチ Supabase 設定手順
 
-最終更新: 2026-05-24（Phase 8 migration 0002 修正）
+最終更新: 2026-05-24（Phase 8b /report INSERT 失敗修正・0003 hotfix）
+
+---
+
+## ⚠️ /report 送信失敗修正（2026-05-24）— `0003_fix_reported_products_insert_policy.sql`
+
+**症状:** `/report` フォームで「送信に失敗しました。時間をおいて再度お試しください。」が表示される
+
+**原因:** `0002` migration で RLS policy（`with check (true)`）は設定済みだが、
+Supabase SQL Editor 経由で作成したテーブルには `ALTER DEFAULT PRIVILEGES` が自動適用されない場合がある。
+`anon` ロールが `INSERT` 権限を持たないため Supabase が 403/RLS エラーを返す。
+
+**修正:** `supabase/migrations/0003_fix_reported_products_insert_policy.sql` を SQL Editor で実行  
+→ `anon` / `authenticated` に対して明示的 GRANT を付与（Step 3-3 参照）
 
 ---
 
@@ -28,14 +41,15 @@ PostgreSQL はトランザクション全体をロールバックしたため、
 | 項目 | 状態 |
 |---|---|
 | Supabase プロジェクト | 作成済み |
-| `.env.local` | 未作成 |
+| `.env.local` | ✅ 設定済み（NEXT_PUBLIC_SUPABASE_URL / ANON_KEY）|
 | `0001_auth_favorites.sql` | ✅ 適用済み（profiles / search_queries / favorite_products / favorite_queries）|
-| `0002_tracking_reports_admin.sql` | ⏳ 要再実行（順序修正済み）|
+| `0002_tracking_reports_admin.sql` | ✅ 適用済み（admin_users / click_events / reported_products / affiliate_settings / blocked_keywords）|
+| `0003_fix_reported_products_insert_policy.sql` | ⏳ **要実行**（/report INSERT 失敗修正・anon GRANT 追加）|
 | Google OAuth | 未設定 |
-| Auth 機能 | graceful degradation（未設定案内を表示）|
-| click_events 保存 | Supabase 設定後に自動有効化 |
-| reported_products 保存 | Supabase 設定後に自動有効化 |
-| admin_users | 手動 INSERT が必要（0002 適用後）|
+| Auth 機能 | ✅ ログインフォーム表示確認済み |
+| click_events 保存 | ✅ 実装済み（0003 適用後に動作確認）|
+| reported_products 保存 | ⚠️ INSERT 失敗中（0003 適用で修正）|
+| admin_users | ⏳ 手動 INSERT が必要（P8B-10）|
 
 ---
 
@@ -145,6 +159,54 @@ profiles
 reported_products
 search_queries
 ```
+
+### 3-3: /report INSERT 修正・anon GRANT 追加（0003 hotfix）
+
+ファイル: `supabase/migrations/0003_fix_reported_products_insert_policy.sql`
+
+⚠️ 0001 + 0002 の実行後に実行すること。  
+⚠️ 既存テーブルの DROP / データ削除はなし（べき等・再実行安全）。
+
+**この SQL が行うこと:**
+
+| ステップ | 内容 |
+|---|---|
+| STEP 1 | `grant usage on schema public to anon, authenticated`（念のため再付与）|
+| STEP 2 | `grant insert on public.reported_products to anon`（anon が INSERT できるように）|
+| STEP 3 | `grant insert on public.click_events to anon`（クリック計測も同様）|
+| STEP 4 | `affiliate_settings` / `blocked_keywords` への SELECT GRANT |
+| STEP 5 | `admin_users` への authenticated SELECT GRANT |
+| STEP 6 | `reported_products` RLS policy 再作成（idempotent）|
+| STEP 7 | `click_events` RLS policy 再作成（idempotent）|
+
+**実行後の確認 SQL（SQL Editor で別途実行）:**
+
+```sql
+SELECT grantee, table_name, privilege_type
+FROM information_schema.role_table_grants
+WHERE table_name IN ('reported_products', 'click_events')
+  AND grantee IN ('anon', 'authenticated')
+ORDER BY table_name, grantee, privilege_type;
+```
+
+期待される結果:
+```
+authenticated | click_events    | INSERT
+authenticated | click_events    | SELECT
+authenticated | reported_products | INSERT
+authenticated | reported_products | SELECT
+anon          | click_events    | INSERT
+anon          | reported_products | INSERT
+```
+
+**適用後の動作確認:**
+
+1. `/report` フォームを開く
+2. 「偽物疑い・コピー品の可能性」を選択
+3. 「報告する」をクリック
+4. 「報告を受け付けました」が表示されることを確認
+5. Supabase Dashboard > Table Editor > `reported_products` に行が追加されることを確認
+6. ブラウザ DevTools console に `[report] insert failed:` が出ないことを確認
 
 ---
 

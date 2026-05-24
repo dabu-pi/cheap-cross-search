@@ -1,6 +1,6 @@
 # PROJECT_STATUS — 安買い横断サーチ
 
-最終更新: 2026-05-24（Phase 8b Supabase接続確認・live-check 6/6 PASS）
+最終更新: 2026-05-24（Phase 8b /report INSERT 失敗修正・0003 hotfix）
 
 ## 現状
 
@@ -17,13 +17,25 @@
 | Phase 7（安全公開準備・ポリシー） | ✅ 完了（安全フィルター・通報・ポリシー・2026-05-24）|
 | Phase 8（本番Supabase接続・デプロイ準備） | ✅ 完了（SQL・手順書・DB実装・10/10 PASS・2026-05-24）|
 | Phase 8b（Supabase接続済み動作確認） | ✅ 完了（6/6 PASS・2026-05-24）|
+| Phase 8c（/report INSERT 修正） | ✅ 実装完了（0003 hotfix・SUPABASE SQL 要実行・2026-05-24）|
 | Phase 5b（実 API アダプタ） | 🔜 未着手（申請後に実装）|
 | 0001 SQL 適用 | ✅ 完了（profiles / search_queries / favorite_products / favorite_queries）|
 | 0002 SQL 適用 | ✅ 完了（admin_users / click_events / reported_products / affiliate_settings / blocked_keywords）|
+| 0003 SQL 適用 | ⏳ **要実行**（Supabase SQL Editor で 0003 hotfix を実行・docs/SUPABASE_SETUP.md Step 3-3 参照）|
 | .env.local 設定 | ✅ 完了（NEXT_PUBLIC_SUPABASE_URL / ANON_KEY 設定済み）|
+| /report DB 保存 | ⚠️ 0003 SQL 適用後に手動確認が必要（P8B-7）|
 | 管理者ユーザー登録 | ⏳ 手動実施待ち（P8B-10）|
 | アカウント作成・ログイン確認 | ⏳ 手動実施待ち（P8B-8）|
 | Vercel デプロイ | ⏳ 手動実施待ち |
+
+## ⚠️ 次に実施すること（優先順）
+
+1. **Supabase SQL Editor で `0003_fix_reported_products_insert_policy.sql` を実行**
+   → `docs/SUPABASE_SETUP.md` Step 3-3 の手順・確認 SQL を参照
+2. `/report` フォームで送信テスト → `reported_products` に行が追加されることを確認（P8B-7）
+3. アカウント作成 → ログイン → `/account` 確認（P8B-8）
+4. 管理者ユーザー登録（P8B-10）
+5. Vercel デプロイ（`docs/VERCEL_DEPLOYMENT.md` 参照）
 
 ## 完了内容（Phase 0-1）
 
