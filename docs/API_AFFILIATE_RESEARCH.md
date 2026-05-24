@@ -1,7 +1,7 @@
 # 実API/アフィリエイト調査レポート — 安買い横断サーチ Phase 5b
 
 作成: 2026-05-24  
-最終更新: 2026-05-24（AliExpress Portals 申請完了・審査中）  
+最終更新: 2026-05-24（Temu / SHEIN 申請準備調査完了）  
 対象ブランチ: `feature/phase8-supabase-vercel`  
 本番URL: https://cheap-cross-search.vercel.app
 
@@ -13,8 +13,8 @@
 |---|---|---|---|---|
 | Amazon | ✅ PA-API v5（要アソシエイト）| ✅ **登録完了** | `ready_to_apply` | ✅ 申請完了・DB登録済み / 次: PA-API有効化 |
 | AliExpress | ✅ Portals Affiliate API（要登録）| ✅ AliExpress Portals | `submitted_under_review` | ⏳ 申請済み・審査中（2026-05-23）|
-| SHEIN | ❌ 公式なし | ✅ 提携ネットワーク経由 | `needs_review` | バリューコマース/A8経由で申請 |
-| Temu | ❌ 公式なし | ✅ Temu Affiliate（公式）| `needs_review` | Temu Affiliate登録・API確認 |
+| SHEIN | ❌ 公式なし | ✅ A8.net / impact.com 経由 | `ready_to_apply` | A8.net でSHEINプログラム申請 |
+| Temu | ❌ 公式なし | ✅ Temu Affiliate / impact.com | `ready_to_apply` | temu.com/affiliate.html 申請 |
 | 楽天 | ✅ 楽天商品検索API（無料）| ✅ 楽天アフィリエイト | `ready_to_apply` | 楽天デベロッパー登録（将来候補）|
 | Yahoo!ショッピング | ✅ Yahoo!ショッピング API（無料）| ✅ Yahoo!アフィリエイト | `ready_to_apply` | YDN登録（将来候補）|
 
@@ -153,39 +153,95 @@
 
 | 項目 | 内容 |
 |---|---|
-| 公式API | ❌ なし（SHEINは非公開EC。APIは提供していない）|
-| パートナーAPI | 大手インフルエンサー・メディア向けに個別契約の可能性あり |
-| スクレイピング | ❌ 禁止（規約 §2.1. 自動クロール禁止）|
-| 代替手段 | アフィリエイトネットワーク経由のリンク生成のみ |
-| データ取得 | 商品カードは `link_only` で対応（商品URLのみ生成）|
+| 公式商品検索API | ❌ なし（SHEIN は非公開EC）|
+| パートナーAPI | 大手インフルエンサー / 大規模メディア向けに個別契約の可能性あり |
+| スクレイピング | ❌ 禁止（利用規約 §2.1 / §7）|
+| 代替手段 | ASP 経由アフィリエイトリンク + `link_only` |
 
-### 3-2. アフィリエイト
+### 3-2. アフィリエイト申請経路
+
+**経路1: A8.net（日本・最優先）**
 
 | 項目 | 内容 |
 |---|---|
-| 申請方法 | アフィリエイトネットワーク経由（直接申請不可の場合が多い）|
-| 主な提携ネットワーク（日本）| **バリューコマース**・**A8.net**・**afb** |
-| バリューコマース | https://www.valuecommerce.com/ |
-| A8.net | https://www.a8.net/ |
-| 必要情報 | サイト登録・コンテンツ確認・月間PV目安 |
-| リンク生成 | ネットワーク発行のアフィリエイトリンク（商品個別URLにパラメータ付与）|
-| 本番URLで申請可否 | ✅ 可（比較サイトとして登録）|
-| 商品画像 | ❌ SHEIN商品画像のAPI取得は不可。ネットワーク提供の場合もあり |
+| プラットフォーム | A8.net（エーハチネット）— 日本最大のアフィリエイトASP |
+| A8.net 登録URL | https://www.a8.net/ |
+| SHEIN プログラム検索 | A8 ログイン後 → 「広告主を探す」→「SHEIN」で検索 |
+| 申請手順 | A8.net 会員登録（無料）→ SHEIN プログラムに申請 → 審査通過後リンク発行 |
+| 審査目安 | 数日〜1週間 |
+| 本番URLで申請可否 | ✅ 可（比較・検索サイトカテゴリで登録）|
+| リンク形式 | `https://px.a8.net/svt/ejp?a8mat=...&a8ejpuid=...` 形式 |
+| コミッション | セール期間中に高騰することがある（5〜15%程度が目安）|
 
-### 3-3. 規約上の注意点
+**経路2: impact.com（グローバル）**
 
-- 商品画像はSHEINのCDNから直接引用禁止（利用規約 §7）
-- 価格はSHEINサイトで確認するよう誘導する形式が安全
-- 「PR」「広告」開示必須（景表法・ASA対応）
+| 項目 | 内容 |
+|---|---|
+| URL | https://app.impact.com/ |
+| 方法 | impact.com にサインアップ → SHEIN プログラムを検索して申請 |
+| 日本語対応 | △（英語インターフェース）|
+| SHEIN の掲載 | グローバルプログラムあり。JP市場への適用可否は要確認 |
 
-### 3-4. 実装方針
+**経路3: ValueCommerce（日本）**
+
+| 項目 | 内容 |
+|---|---|
+| URL | https://www.valuecommerce.com/ |
+| 申請方法 | ValueCommerce 登録 → 広告主一覧で SHEIN を検索して申請 |
+| 備考 | Yahoo!ショッピング連携が強み。SHEIN掲載可否は要確認 |
+
+**経路4: afb（日本）**
+
+| 項目 | 内容 |
+|---|---|
+| URL | https://www.afb.ne.jp/ |
+| 備考 | A8・VC と並ぶ日本の主要ASP。SHEIN掲載可否は要確認 |
+
+### 3-3. 申請に必要な準備情報
+
+ASP（A8.net）の申請フォームへの入力に備えて以下を準備する:
 
 ```
-Phase 5b では link_only のまま維持。
-アフィリエイトリンク（ネットワーク経由）が発行されたら、
-affiliate_settings.link_template にテンプレートを設定するだけで対応可能。
-商品カードは「SHEINで検索する」リンクのみ表示。
+サイト名:       安買い横断サーチ / Cheap Cross Search
+サイトURL:      https://cheap-cross-search.vercel.app
+カテゴリ:       ショッピング・価格比較
+コンテンツ説明:
+  Amazon・SHEIN・AliExpress・Temu の商品を横断検索し、
+  価格を比較できるサービスです。ユーザーが商品を検索すると
+  各ショップの結果が一覧で表示され、各ショップの商品ページへ誘導します。
+プロモーション手法: Webサイト（価格比較）
+月間PV目安:     ローンチ初期（< 1,000 / 月）
 ```
+
+### 3-4. 規約上の注意点
+
+- 商品画像を SHEIN CDN から直接引用禁止（利用規約 §7）
+- 価格表示には「SHEIN にて確認」の誘導が安全（リアルタイム取得不可のため）
+- 「PR」「広告」「アフィリエイト」開示必須（景表法・ASA対応）→ 免責バナー対応済み
+
+### 3-5. 実装方針
+
+```
+申請・承認後:
+  affiliate_settings.shein を DB UPDATE
+  （enabled=true、link_template にA8.net リンクテンプレートを設定）
+
+現時点: link_only のまま維持
+  商品カードは「SHEIN で検索する」リンクのみ
+  アフィリエイトリンク取得後は link_template の差し替えだけで対応可能
+
+将来:
+  商品APIが提供される場合は external_api アダプタへ昇格
+  （現状では不可）
+```
+
+### 3-6. 申請状況
+
+| 項目 | 状態 |
+|---|---|
+| 申請状態 | 🔜 未申請（準備完了）|
+| 推奨申請経路 | A8.net → SHEIN プログラム申請（最優先）|
+| 申請準備 | ✅ 準備情報整理済み（§3-3 参照）|
 
 ---
 
@@ -197,37 +253,89 @@ affiliate_settings.link_template にテンプレートを設定するだけで�
 
 | 項目 | 内容 |
 |---|---|
-| 公式API | ❌ 商品検索APIの一般公開なし |
-| パートナーAPI | 公式アフィリエイトプログラム参加後に一部提供の可能性 |
-| スクレイピング | ❌ 禁止（Terms of Use §4）|
-| 代替手段 | アフィリエイトリンク + `link_only` |
+| 公式商品検索API | ❌ 一般公開なし |
+| パートナー向け商品フィード | △ 大口パートナーに提供の事例あり。申請後に確認 |
+| スクレイピング | ❌ 禁止（Terms of Use §4 – Prohibited Conduct）|
+| 代替手段 | アフィリエイトリンク（link_only）|
 
-### 4-2. アフィリエイト
+### 4-2. アフィリエイト申請情報
+
+**経路1: Temu 公式 Affiliate ページ（グローバル・メイン）**
 
 | 項目 | 内容 |
 |---|---|
-| プログラム名 | Temu Affiliate（公式）|
+| プログラム名 | Temu Affiliate Program |
 | 申請URL | https://www.temu.com/affiliate.html |
-| 必要情報 | SNSアカウント / サイトURL / フォロワー数またはPV / プロモーション方法 |
-| サイト審査 | ✅ あり（数日）|
-| 本番URLで申請可否 | ✅ 可 |
-| 報酬対象 | クリック後購入（コミッション率高め：カテゴリ別に異なる）|
-| リンク生成 | カスタムリンク生成（アフィリエイトダッシュボードから）|
-| API提供 | 申請後に確認（一部パートナーに商品フィード提供の情報あり）|
+| プラットフォーム | impact.com（Temu のアフィリエイト管理基盤）|
+| 必要情報 | サイトURL・コンテンツ種別・月間PV目安・プロモーション手法 |
+| サイト審査 | ✅ あり（数日〜1週間） |
+| 本番URLで申請可否 | ✅ 可（価格比較サイトとして登録）|
+| 報酬 | 新規購入者限定コミッション高め（キャンペーン依存）|
+| リンク生成 | impact.com ダッシュボードからカスタムリンク発行 |
+| API提供 | impact.com 経由で商品フィード（XML/CSV）提供の可能性あり |
 
-### 4-3. 規約上の注意点
+**経路2: impact.com（アフィリエイトネットワーク直接）**
 
-- Temu の商品価格・画像は急変動することがある
-- 「パートナーリンク」開示必要
-- 商品在庫・価格の保証なし → 免責バナー対応済み
+| 項目 | 内容 |
+|---|---|
+| URL | https://app.impact.com/ |
+| 方法 | impact.com にサインアップ → Temu のプログラムを検索して申請 |
+| 日本語対応 | △（英語インターフェース） |
+| メリット | impact.com 上で複数ブランドをまとめて管理できる |
 
-### 4-4. 実装方針
+**経路3: 日本ASP経由（確認推奨）**
+
+| ASP | URL | SHEIN掲載可否 |
+|---|---|---|
+| A8.net | https://www.a8.net/ | 要確認（Temu JPプログラムの有無を広告主一覧で検索）|
+| バリューコマース | https://www.valuecommerce.com/ | 要確認 |
+
+### 4-3. 申請に必要な準備情報
+
+申請フォームへの入力に備えて以下を準備する:
 
 ```
-Phase 5b では link_only のまま維持。
-Temu Affiliate 登録後、アフィリエイトリンクを affiliate_settings に設定。
-商品フィードAPIが利用可能になれば external_api アダプタに昇格。
+サイト名（英語）: Cheap Cross Search
+サイト名（日本語）: 安買い横断サーチ
+サイトURL:        https://cheap-cross-search.vercel.app
+カテゴリ:         Shopping / Price Comparison
+コンテンツ説明:
+  A price comparison website that aggregates search results from
+  Amazon, SHEIN, AliExpress, and Temu. Visitors can compare prices
+  across multiple shops and click through to purchase.
+プロモーション手法: Website / Price Comparison Tool
+月間PV目安:       Launch stage（具体的数値を求められた場合は「< 1,000 / month (new site)」）
+SNS:              （なければ「Website only」）
 ```
+
+### 4-4. 規約上の注意点
+
+- 価格・画像は急変動（Temu はセール・クーポン多用）→ 免責バナー対応済み
+- 「パートナーリンク」「PR」「広告」開示必須（景表法対応）
+- 商品画像の直接ホスティング禁止
+- 新規ユーザー限定コミッションが中心 → 既存ユーザーは対象外になる場合あり
+
+### 4-5. 実装方針
+
+```
+申請・承認後:
+  affiliate_settings.temu を DB UPDATE（enabled=true、link_template設定）
+  affiliate_settings.temu の notes に承認日・impact.com publisher ID を記録
+
+将来（API提供確認後）:
+  src/lib/search/adapters/temu-affiliate.ts
+  impact.com 商品フィードが利用可能であれば external_api アダプタへ昇格
+
+現時点: link_only のまま維持
+```
+
+### 4-6. 申請状況
+
+| 項目 | 状態 |
+|---|---|
+| 申請状態 | 🔜 未申請（準備完了）|
+| 推奨申請経路 | temu.com/affiliate.html → impact.com |
+| 申請準備 | ✅ 準備情報整理済み（§4-3 参照）|
 
 ---
 
@@ -267,16 +375,16 @@ Temu Affiliate 登録後、アフィリエイトリンクを affiliate_settings 
 | **4位** | Temu | アフィリエイト登録のみ（API不明）| Temu Affiliate申請 |
 | **5位** | SHEIN | APIなし・ネットワーク経由のみ | バリューコマース/A8登録 |
 
-### 分類まとめ
+### 分類まとめ（2026-05-24 更新）
 
-| ショップ | 分類 | 理由 |
+| ショップ | 分類 | 状態 |
 |---|---|---|
-| Amazon | `ready_to_apply` | PA-API完備・日本市場最重要 |
-| AliExpress | `ready_to_apply` | Portals API完備・申請比較的容易 |
-| 楽天 | `ready_to_apply` | 即日APIキー取得可・将来候補 |
-| Temu | `needs_review` | アフィリエイト登録後にAPI可否確認 |
-| SHEIN | `needs_review` | APIなし・ネットワーク申請必要 |
-| Yahoo! | `ready_to_apply` | 将来候補・即日APIキー取得可 |
+| Amazon | `approved` | ✅ 登録完了・DB設定済み |
+| AliExpress | `submitted_under_review` | ⏳ 審査中（2026-05-23 22:16 PST）|
+| Temu | `ready_to_apply` | 🔜 未申請・準備完了 |
+| SHEIN | `ready_to_apply` | 🔜 未申請・準備完了（A8.net 経由）|
+| 楽天 | `ready_to_apply` | 🔜 将来候補・即日APIキー取得可 |
+| Yahoo! | `ready_to_apply` | 🔜 将来候補・即日APIキー取得可 |
 
 ---
 
@@ -289,12 +397,13 @@ Temu Affiliate 登録後、アフィリエイトリンクを affiliate_settings 
 | 1 | ~~AliExpress~~ | ~~Portals Affiliate~~ | ~~https://portals.aliexpress.com/signup~~ | **⏳ 申請済み・審査中**（2026-05-23 22:16 PST）|
 | 2 | ~~Amazon~~ | ~~Amazonアソシエイト~~ | ~~https://affiliate.amazon.co.jp/~~ | **✅ 登録完了（2026-05-24）**。次: PA-API有効化（売上3件後）|
 
-### 優先度中（申請開始後、並行で）
+### 優先度中（次に申請する）
 
-| # | ショップ | 申請先 | URL | 必要なもの |
-|---|---|---|---|---|
-| 3 | Temu | Temu Affiliate | https://www.temu.com/affiliate.html | サイトURL・PV |
-| 4 | バリューコマース（SHEIN用）| ValueCommerce | https://www.valuecommerce.com/ | サイト登録 |
+| # | ショップ | 申請先 | URL | 必要なもの | 状態 |
+|---|---|---|---|---|---|
+| 3 | Temu | temu.com Affiliate | https://www.temu.com/affiliate.html | サイトURL・コンテンツ説明・PV目安 | 🔜 未申請（準備完了）|
+| 4 | SHEIN | **A8.net**（最優先）| https://www.a8.net/ | A8会員登録 → SHEIN プログラム申請 | 🔜 未申請（準備完了）|
+| 4b | SHEIN | impact.com（代替）| https://app.impact.com/ | impact.com 登録 → SHEIN 検索 | 🔜 補助経路 |
 
 ### 将来（Phase 5b 後半以降）
 
@@ -305,31 +414,54 @@ Temu Affiliate 登録後、アフィリエイトリンクを affiliate_settings 
 
 ---
 
-## Phase 5b 次アクション
+## Phase 5b 次アクション（2026-05-24 更新）
 
-### 人が実施すること（Claudeは実装しない）
+### 申請状況まとめ
 
-1. **AliExpress Portals** に `https://cheap-cross-search.vercel.app` で申請登録
-2. **Amazonアソシエイト** に申請（振込先口座情報が必要）
-3. 審査通過後、各アフィリエイトIDを Supabase DB の `affiliate_settings` に UPDATE
-   ```sql
-   UPDATE public.affiliate_settings
-   SET affiliate_id = 'YOUR-ID', enabled = true, updated_at = now()
-   WHERE shop_code = 'aliexpress';
-   ```
+| ショップ | 状態 | 次アクション |
+|---|---|---|
+| Amazon | ✅ 登録完了・DB設定済み | PA-API 有効化待ち（売上3件後）|
+| AliExpress | ⏳ **審査中**（2026-05-23 22:16 PST）| 承認メール待ち |
+| Temu | 🔜 未申請（準備完了） | temu.com/affiliate.html で申請 |
+| SHEIN | 🔜 未申請（準備完了） | A8.net 登録 → SHEIN プログラム申請 |
 
-### Claudeが実装すること（申請通過後）
+### 人が次に実施すること
 
-1. `src/lib/search/adapters/aliexpress-portals.ts` — Portals API アダプタ（最初）
-2. `src/lib/search/adapters/amazon-pa-api.ts` — PA-API v5 アダプタ（2番目）
-3. `src/lib/shops/shops.ts` — 各ショップの `integrationMode` を更新
-4. Server-side API Routes / Route Handlers でAPIキーを隠す
-5. 免責・PR表記の自動付与（リンクにアフィリエイトフラグがある場合）
+**① Temu Affiliate 申請（優先）**
+```
+URL:  https://www.temu.com/affiliate.html
+入力値（§4-3 参照）:
+  - サイト名: Cheap Cross Search
+  - サイトURL: https://cheap-cross-search.vercel.app
+  - カテゴリ: Shopping / Price Comparison
+  - 月間PV: Launch stage / < 1,000 / month (new site)
+```
 
-### 規約対応で今すぐ可能な軽微な修正
+**② SHEIN / A8.net 申請（並行可）**
+```
+URL:  https://www.a8.net/
+手順:
+  1. A8.net 会員登録（無料・メール認証）
+  2. ログイン → 「広告主を探す」→「SHEIN」で検索
+  3. SHEIN プログラムに申請
+  4. 審査通過後、A8 管理画面からアフィリエイトリンクを取得
+```
 
-- `affiliate_settings` の `notes` フィールドに申請状況を記録（DB UPDATE）
-- `docs/SAFETY_PUBLICATION_CHECKLIST.md` に「PR表記確認」を追加
+**③ AliExpress 承認後**
+```
+承認メール受領後:
+  Supabase DB の affiliate_settings.aliexpress を更新
+  → Claude が aliexpress-portals.ts アダプタ実装へ進む
+```
+
+### Claudeが実装すること（各申請通過後）
+
+| 優先 | 実装内容 | トリガー |
+|---|---|---|
+| 1位 | `src/lib/search/adapters/aliexpress-portals.ts` | AliExpress 承認後 |
+| 2位 | `src/lib/search/adapters/amazon-pa-api.ts` | PA-API有効化後（売上3件）|
+| 3位 | Temu / SHEIN アフィリエイトリンク設定 | 各承認後 |
+| 将来 | `src/lib/shops/shops.ts` の integrationMode 更新 | 上記と同時 |
 
 ---
 

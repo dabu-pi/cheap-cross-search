@@ -1,6 +1,6 @@
 # PROJECT_STATUS — 安買い横断サーチ
 
-最終更新: 2026-05-24（AliExpress Portals 申請完了・審査中）
+最終更新: 2026-05-24（Temu/SHEIN 申請準備完了・AliExpress 審査中実機確認）
 
 ## 現状
 
@@ -32,7 +32,9 @@
 | Amazonアソシエイト登録 | ✅ 完了（ID: DB登録済み `cheapc***-22`・2026-05-24）|
 | Amazon affiliate_settings | ✅ 更新済み（enabled=true・DB保存・Gitコミットなし）|
 | Phase 5b（API調査・申請準備） | ✅ 調査完了（docs/API_AFFILIATE_RESEARCH.md 作成済み・2026-05-24）|
-| AliExpress Portals 申請 | ⏳ 審査中（Submitted 2026-05-23 22:16 PST・審査1時間〜2営業日）|
+| AliExpress Portals 申請 | ⏳ 審査中（Submitted 2026-05-23 22:16 PST・実機確認済み・メール通知待ち）|
+| Temu Affiliate 申請準備 | ✅ 準備完了（申請情報整理済み・未申請）|
+| SHEIN / A8.net 申請準備 | ✅ 準備完了（A8.net 経由手順整理済み・未申請）|
 
 ## 🔍 /report 送信失敗の根本原因（2026-05-24 調査完了）
 
@@ -97,7 +99,9 @@
 8. 🔜 Supabase Dashboard → Auth → URL Configuration に `https://cheap-cross-search.vercel.app/auth/callback` 追加（メール認証用・任意）
 9. ✅ Phase 5b 調査完了（docs/API_AFFILIATE_RESEARCH.md 作成）
 10. ✅ Amazonアソシエイト登録完了・affiliate_settings DB更新済み
-11. ⏳ AliExpress Portals 申請 → **審査中**（承認通知待ち）
+11. ⏳ AliExpress Portals → **審査中**（実機確認済み・メール待ち）
+12. 🔜 **Temu Affiliate 申請**（次タスク — https://www.temu.com/affiliate.html）
+13. 🔜 **SHEIN / A8.net 申請**（次タスク — https://www.a8.net/ → SHEIN プログラム）
 12. 🔜 Amazon PA-API アクセスキー取得（アソシエイト承認後・売上3件達成後）
 13. 🔜 Amazon PA-API アダプタ実装（`src/lib/search/adapters/amazon-pa-api.ts`）
 14. 🔜 Temu Affiliate 申請
