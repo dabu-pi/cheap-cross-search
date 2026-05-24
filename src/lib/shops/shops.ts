@@ -136,12 +136,12 @@ export const SHOPS: ShopDefinition[] = [
     trustScore: 88,
     logoColor: '#BF0000',
     description: '国内最大手モール型EC。ポイント還元・送料無料対応多数。',
-    // Phase 22: 実商品API（RAKUTEN_APP_ID 設定後に real_api へ）
-    dataStatus: 'external_search',
+    // Phase 23: RAKUTEN_APP_ID 設定済み → real_api モードへ移行（2026-05-24）
+    dataStatus: 'real_api',
     affiliateApprovalStatus: 'not_applied',
     affiliateNote:
       '楽天アフィリエイト（https://affiliate.rakuten.co.jp/）申請準備中。' +
-      'API: 楽天ウェブサービス（RAKUTEN_APP_ID）設定後に real_api モードへ移行。',
+      'API: 楽天ウェブサービス（RAKUTEN_APP_ID）設定済み・real_api モード有効。',
   },
   {
     code: 'yahoo',
