@@ -90,7 +90,8 @@ function StatusBadge({
       <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-600">エラー</span>
     );
   }
-  if (mode === 'link_only') {
+  // status=link_only（APIエラー時のフォールバック含む）または mode=link_only
+  if (status === 'link_only' || mode === 'link_only') {
     return (
       <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">検索対応</span>
     );

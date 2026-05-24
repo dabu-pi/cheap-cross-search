@@ -95,12 +95,18 @@ export class RakutenIchibaAdapter implements SearchAdapter {
       });
 
       if (!res.ok) {
-        throw new Error(`Rakuten API HTTP ${res.status}: ${res.statusText}`);
+        // レスポンス本文を取得してログ出力（secrets なし・本文のみ）
+        let body = '';
+        try { body = await res.text(); } catch { /* ignore */ }
+        const safeBody = body.slice(0, 300);
+        console.error(`[rakuten] API HTTP ${res.status} ${res.statusText}:`, safeBody);
+        throw new Error(`Rakuten API HTTP ${res.status}: ${res.statusText} — ${safeBody}`);
       }
 
       const data = (await res.json()) as RakutenSearchResponse;
 
       if (data.error) {
+        console.error('[rakuten] API error response:', data.error, data.error_description ?? '');
         throw new Error(`Rakuten API error: ${data.error} — ${data.error_description ?? ''}`);
       }
 
@@ -144,17 +150,22 @@ export class RakutenIchibaAdapter implements SearchAdapter {
             : undefined,
       };
     } catch (err) {
-      const msg = String(err);
+      const msg = err instanceof Error ? err.message : String(err);
+      // secrets を含まないようにマスクしてログ出力
+      const safeMsg = msg.replace(/applicationId=[^&\s"]+/gi, 'applicationId=[MASKED]');
+      console.error('[rakuten] API エラーのため外部検索フォールバック:', safeMsg);
+
+      // ユーザー向けには link_only フォールバックを提供（エラー表示しない）
+      // searchUrl = 楽天市場の通常検索URL（「楽天で検索」ボタンで表示）
       return {
         shopCode: this.shopCode,
         shopName: shop?.name ?? '楽天市場',
-        status: 'error',
+        status: 'link_only',
         integrationMode: 'official_api',
         searchUrl,
         offers: [],
-        errorMessage: msg,
         fetchedAt: now,
-        warnings: [`[rakuten] API エラー: ${msg}`],
+        warnings: [`[rakuten] API エラーのため外部検索フォールバック: ${safeMsg}`],
       };
     }
   }
