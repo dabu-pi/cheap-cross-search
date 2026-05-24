@@ -119,14 +119,15 @@ async function SearchResults({ query }: { query: string }) {
       {/* ショップ別取得状態サマリ */}
       <SearchStatusSummary shops={crossResult.shops} />
 
-      {/* 参考価格バナー（モックデータ or レガシーデモ） */}
+      {/* 参考価格バナー + 外部検索モード説明（モックデータ or レガシーデモ） */}
       {(usingMock || usingLegacyDemo) && (
         <div className="rounded-xl bg-blue-50 border border-blue-100 px-3 py-2.5 flex items-start gap-2">
           <span className="text-blue-400 text-sm mt-0.5 shrink-0">📊</span>
           <div className="flex-1 min-w-0">
             <p className="text-xs text-blue-700 leading-relaxed">
-              <strong className="font-semibold">参考価格を表示中</strong> —
-              各ショップの価格帯イメージです。実際の価格・在庫は各ショップでご確認ください。
+              <strong className="font-semibold">参考価格を表示中 · 外部検索モード</strong> —
+              現在は各ECサイトの検索結果ページへご案内します。
+              実際の価格・在庫・商品詳細は遷移先のショップでご確認ください。
             </p>
             {crossResult.globalWarnings && crossResult.globalWarnings.length > 0 && (
               <details className="mt-1">
@@ -178,7 +179,10 @@ async function SearchResults({ query }: { query: string }) {
       {linkOnlyShops.length > 0 && (
         <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 space-y-2.5">
           <p className="text-xs font-semibold text-gray-500">
-            🔍 各ショップで「{query}」を検索
+            🔍 各ECサイトで「{query}」を検索する
+          </p>
+          <p className="text-xs text-gray-400 -mt-1">
+            ボタンを押すと各ECサイトの検索結果ページが開きます
           </p>
           <div className="grid grid-cols-2 gap-2">
             {linkOnlyShops.map((shopResult) => {

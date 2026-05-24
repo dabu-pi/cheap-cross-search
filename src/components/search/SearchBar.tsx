@@ -35,7 +35,7 @@ export function SearchBar({
         onChange={(e) => setQuery(e.target.value)}
         placeholder={placeholder}
         autoFocus={autoFocus}
-        className="flex-1 px-4 py-3 text-base rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm bg-white"
+        className="flex-1 px-4 py-3 text-base text-gray-900 placeholder:text-gray-400 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm bg-white"
         aria-label="検索キーワードを入力"
       />
       <button

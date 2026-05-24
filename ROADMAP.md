@@ -27,6 +27,7 @@
 | 18 | Amazon アソシエイトタグ付与 | ✅ 完了（サーバーサイドタグ付与・RPC fix・10/10 PASS・2026-05-24）| - |
 | 19 | Amazonタグ付きクリック分析・収益導線確認 | ✅ 完了（💰カード・🏷バッジ・SQL追加・5/5 PASS+5 skip・Phase9–18 全 PASS・2026-05-24）| - |
 | 20 | SEO・信頼性・審査向け整備 | ✅ 完了（sitemap/robots/OGP/Twitter card・Amazon承認済み表記・15/15 PASS・2026-05-24）| - |
+| 20A | 検索UI視認性・外部検索モード説明改善 | ✅ 完了（text-gray-900・外部検索モード説明・外部サイト誘導明記・15/15 PASS・2026-05-24）| - |
 
 ---
 
@@ -376,6 +377,41 @@ Authentication > URL Configuration > Redirect URL に /auth/callback を追加
 1. `src/lib/config/site.ts` の SITE_URL を新ドメインに変更
 2. (または) Vercel 環境変数 `NEXT_PUBLIC_SITE_URL` に新ドメインを設定
 3. sitemap.xml / robots.txt は自動的に新ドメインで再生成される
+
+---
+
+## Phase 20A: 検索UI視認性・外部検索モード説明改善 ✅ 完了（2026-05-24）
+
+**背景:** ユーザー実機確認で検索入力欄の文字が読みにくい問題と、
+現在の「外部検索モード」（各ショップの検索結果ページへ遷移）がユーザーに分かりにくい問題を確認。
+
+**完了条件:** 検索入力が白背景でも明確に読める。現状が外部検索モードであることが自然に伝わる。
+
+- [x] `src/components/search/SearchBar.tsx`:
+  - input に `text-gray-900` 追加（入力文字を濃い色に）
+  - `placeholder:text-gray-400` 追加（placeholder も読める色に）
+- [x] `src/app/search/page.tsx`:
+  - 「参考価格を表示中」バナーに「外部検索モード」説明を追加:
+    「現在は各ECサイトの検索結果ページへご案内します。実際の価格・在庫・商品詳細は遷移先のショップでご確認ください。」
+  - 外部検索 CTA セクションに「ボタンを押すと各ECサイトの検索結果ページが開きます」注釈追加
+- [x] 商品カード CTA は「Amazonで検索」（`isSearchPage: true`）であること確認 → 変更不要
+- [x] live-check-runner `phase20a-search-ui-verify.spec.ts` — **15/15 PASS**
+- [x] Phase 9–20 regression: 全 PASS
+- [x] Vercel deploy `dpl_3VkUiAS6fGgwStKDFZ8db83fTdvE` — READY
+
+**将来の商品ページ直リンク化方針（Roadmap 記録）:**
+
+現在は実 API 未連携のため、各ショップの検索結果ページへ誘導する「外部検索モード」で動作している。
+将来の API 連携後、以下の段階で商品ページ直リンクへ進化させる。
+
+| フェーズ | 条件 | 実装内容 |
+|---|---|---|
+| Amazon PA-API 有効化 | アソシエイト売上3件後に自動有効化 | PA-API でリアルタイム商品検索 → 個別商品 URL → `isSearchPage: false` |
+| AliExpress Portals API | Portals 審査承認後 | AliExpress API 連携 → 商品詳細 URL |
+| SHEIN / Temu | 申請・承認後 | 各 API 連携後に順次対応 |
+
+- `isSearchPage: false` にすると ProductCard CTA が「Amazonで見る」（商品詳細ページ）に切り替わる実装済み
+- `ProductOffer.affiliateUrl` / `productUrl` の切り替えで対応可能な構造になっている
 
 ---
 
