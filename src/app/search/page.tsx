@@ -11,7 +11,6 @@ import { saveSearchQuery } from '@/lib/favorites/actions';
 import { filterProductOffers } from '@/lib/safety/filter-product-offers';
 import { getShopByCode } from '@/lib/shops/shops';
 import { buildClickTrackingUrl } from '@/lib/affiliate/link-builder';
-import { createClient } from '@/lib/supabase/server';
 import type { ProductOffer } from '@/lib/search/adapters/types';
 
 interface SearchPageProps {
@@ -247,24 +246,36 @@ async function SearchResults({ query }: { query: string }) {
 // ─────────────────────────────────────────────────────────────────
 
 /**
- * Supabase DB から Amazon アフィリエイト設定を取得し、affiliate_id を返す。
+ * Supabase REST API から Amazon アフィリエイト設定を取得し、affiliate_id を返す。
  * DB 未接続・行なし・enabled=false の場合は null を返す（フォールバック）。
+ *
+ * cookie-based SSR クライアントを避け、直接 REST API を呼ぶ。
+ * RLS "public read enabled" ポリシーにより anon キーで enabled=true 行が読める。
  *
  * ⚠️ この関数の戻り値は Server Component 内でのみ使用すること。
  *    affiliate_id をそのままクライアントコンポーネントの props に渡さないこと。
  */
 async function getAmazonAffiliateTag(): Promise<string | null> {
   try {
-    const supabase = await createClient();
-    if (!supabase) return null;
-    const { data, error } = await supabase
-      .from('affiliate_settings')
-      .select('affiliate_id, enabled')
-      .eq('shop_code', 'amazon')
-      .eq('enabled', true)
-      .single();
-    if (error || !data) return null;
-    return (data.affiliate_id as string) || null;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !supabaseKey) return null;
+
+    const res = await fetch(
+      `${supabaseUrl}/rest/v1/affiliate_settings?shop_code=eq.amazon&enabled=eq.true&select=affiliate_id`,
+      {
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
+        },
+        // 毎リクエストごとに最新値を取得（キャッシュしない）
+        cache: 'no-store',
+      }
+    );
+
+    if (!res.ok) return null;
+    const rows = (await res.json()) as Array<{ affiliate_id: string | null }>;
+    return rows[0]?.affiliate_id || null;
   } catch {
     return null;
   }
