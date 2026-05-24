@@ -1,29 +1,45 @@
 /**
- * アダプタ レジストリ (Phase 5)
+ * アダプタ レジストリ (Phase 5 / Phase 17 更新)
  *
  * ショップコードと IntegrationMode からアダプタを選択して返す。
  *
  * フォールバック方針:
- * - official_api:  未実装 → link_only にフォールバック（警告付き）
- * - affiliate_api: 未実装 → link_only にフォールバック（警告付き）
+ * - official_api:  未実装 or 有効化前 → link_only にフォールバック（警告付き）
+ * - affiliate_api: 未承認 or 未設定 → link_only にフォールバック（警告付き）
  * - external_api:  ExternalMockAdapter を使用（本格 API 接続前のモック）
  * - link_only:     LinkOnlyAdapter
  * - disabled:      DisabledAdapter（検索対象外）
  *
- * 将来の本格 API アダプタ追加手順:
- * 1. `src/lib/search/adapters/{shopCode}-{mode}.ts` を作成
- * 2. 下記の switch に新ケースを追加
- * 3. shops.ts / 管理画面 DB で integrationMode を更新
+ * ─── Phase 17 時点の各ショップ状態 ────────────────────────────────────────
+ * | Shop       | integrationMode | 状態                          | 将来アダプタ          |
+ * |------------|-----------------|-------------------------------|----------------------|
+ * | Amazon     | link_only       | アソシエイト承認済み / PA-API待ち | amazon-pa-api.ts     |
+ * | SHEIN      | link_only       | 未申請                        | (未定)               |
+ * | AliExpress | link_only       | Portals 審査中（2026-05-23申請）| aliexpress-portals.ts|
+ * | Temu       | link_only       | HOLD                          | (HOLD)               |
  *
- * @see external-mock.ts  外部 API モックアダプタのリファレンス実装
- * @see link-only.ts      link_only アダプタ（フォールバック）
- * @see disabled.ts       disabled アダプタ
+ * ─── 実 API 有効化時の手順 ────────────────────────────────────────────────
+ * 1. shops.ts で対象ショップの integrationMode を変更
+ *    例: amazon → 'official_api', aliexpress → 'affiliate_api'
+ * 2. 下記 switch のコメントを外して対象アダプタを登録
+ * 3. .env.local / Vercel env に API キーを設定（commit 禁止）
+ * 4. live-check で動作確認
+ *
+ * @see amazon-pa-api.ts       Amazon PA-API スタブ（売上3件後に有効化）
+ * @see aliexpress-portals.ts  AliExpress Portals スタブ（承認後に有効化）
+ * @see external-mock.ts       外部 API モックアダプタのリファレンス実装
+ * @see link-only.ts           link_only アダプタ（フォールバック）
+ * @see disabled.ts            disabled アダプタ
+ * @see docs/ADAPTER_DEVELOPMENT_GUIDE.md  有効化手順詳細
  */
 
 import type { SearchAdapter, IntegrationMode } from './types';
 import { LinkOnlyAdapter } from './link-only';
 import { DisabledAdapter } from './disabled';
 import { ExternalMockAdapter } from './external-mock';
+// Phase 17 スタブ（アクティブ化時に使用 — 現在は import のみ）
+// import { AmazonPaApiAdapter } from './amazon-pa-api';
+// import { AliExpressPortalsAdapter } from './aliexpress-portals';
 
 /**
  * ショップ + モードに対応するアダプタを返す。
@@ -45,16 +61,22 @@ export function getAdapter(
       return new ExternalMockAdapter(shopCode);
 
     case 'official_api':
-      // 未実装 → link_only フォールバック
+      // ── Phase 17: Amazon PA-API スタブ ───────────────────────────────
+      // PA-API 有効化後は下記のコメントを外して有効化する:
+      // if (shopCode === 'amazon') return new AmazonPaApiAdapter();
+      // ─────────────────────────────────────────────────────────────────
       fallbackWarnings?.push(
-        `[${shopCode}] official_api は未実装です。link_only にフォールバックします。`
+        `[${shopCode}] official_api は準備中です。link_only にフォールバックします。`
       );
       return new LinkOnlyAdapter(shopCode);
 
     case 'affiliate_api':
-      // 未実装 → link_only フォールバック
+      // ── Phase 17: AliExpress Portals スタブ ──────────────────────────
+      // Portals 承認後は下記のコメントを外して有効化する:
+      // if (shopCode === 'aliexpress') return new AliExpressPortalsAdapter();
+      // ─────────────────────────────────────────────────────────────────
       fallbackWarnings?.push(
-        `[${shopCode}] affiliate_api は未実装です。link_only にフォールバックします。`
+        `[${shopCode}] affiliate_api は準備中です。link_only にフォールバックします。`
       );
       return new LinkOnlyAdapter(shopCode);
 

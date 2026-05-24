@@ -19,6 +19,29 @@ export type IntegrationMode =
   | 'disabled';
 
 /**
+ * ショップのデータソース状態 (Phase 17 追加)
+ *
+ * 現在ユーザーに見せているデータが何由来かを表す。
+ * - 'demo':            架空のデモ価格（参考のみ・実価格ではない）
+ * - 'external_search': 外部検索リンクのみ（商品価格データなし）
+ * - 'real_api':        実 API から商品・価格を取得中
+ *
+ * 全4ショップが 'demo' の状態で Phase 17 時点。
+ * API 有効化後に 'real_api' へ移行する。
+ */
+export type ShopDataStatus = 'demo' | 'external_search' | 'real_api';
+
+/**
+ * アフィリエイト / API プログラムの承認状態 (Phase 17 追加)
+ *
+ * - 'approved':     承認済み（ID 取得済み・API 有効化待ちを含む）
+ * - 'pending':      審査中（申請済み・結果待ち）
+ * - 'not_applied':  未申請
+ * - 'hold':         申請 HOLD 中（当面予定なし）
+ */
+export type AffiliateApprovalStatus = 'approved' | 'pending' | 'not_applied' | 'hold';
+
+/**
  * 価格信頼度
  * - high: 公式APIから直接取得
  * - medium: アフィリエイト/外部APIから取得

@@ -1,15 +1,27 @@
 /**
- * 検索取得状態サマリ (Phase 5)
+ * 検索取得状態サマリ (Phase 5 / Phase 17 更新)
  *
  * ショップごとの取得方式・結果ステータスをコンパクトに表示する。
  * - 商品取得できたショップ: 緑バッジ
- * - link_only フォールバック中: 黄バッジ
+ * - link_only フォールバック中: 青バッジ
  * - disabled: グレーバッジ
  * - error: 赤バッジ
+ *
+ * Phase 17: ツールチップ (title) にアフィリエイト承認状態を追加。
+ *           バッジの表示文言は変更しない（既存テスト回帰を保護）。
  */
 
-import type { ShopSearchResult } from '@/lib/search/adapters/types';
+import type { ShopSearchResult, AffiliateApprovalStatus } from '@/lib/search/adapters/types';
 import { INTEGRATION_MODE_LABELS } from '@/lib/search/adapters/registry';
+import { getShopByCode } from '@/lib/shops/shops';
+
+/** アフィリエイト承認状態のツールチップ用ラベル（内部専用） */
+const AFFILIATE_STATUS_TOOLTIP: Record<AffiliateApprovalStatus, string> = {
+  approved:    '提携承認済み',
+  pending:     '審査中',
+  not_applied: '未申請',
+  hold:        'HOLD',
+};
 
 interface SearchStatusSummaryProps {
   shops: ShopSearchResult[];
@@ -45,11 +57,17 @@ export function SearchStatusSummary({ shops }: SearchStatusSummaryProps) {
         const statusLabel = STATUS_LABEL[shop.status] ?? shop.status;
         const modeLabel = INTEGRATION_MODE_LABELS[shop.integrationMode] ?? shop.integrationMode;
 
+        // Phase 17: ショップ定義からアフィリエイト承認状態を取得してツールチップに追加
+        const shopDef = getShopByCode(shop.shopCode);
+        const affiliateTooltip = shopDef
+          ? ` | 提携: ${AFFILIATE_STATUS_TOOLTIP[shopDef.affiliateApprovalStatus]}`
+          : '';
+
         return (
           <div
             key={shop.shopCode}
             className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full border ${badge}`}
-            title={`${shop.shopName}: ${modeLabel} — ${statusLabel}${shop.errorMessage ? ` (${shop.errorMessage})` : ''}`}
+            title={`${shop.shopName}: ${modeLabel} — ${statusLabel}${shop.errorMessage ? ` (${shop.errorMessage})` : ''}${affiliateTooltip}`}
           >
             <span className="font-medium">{shop.shopName}</span>
             <span className="opacity-60">·</span>

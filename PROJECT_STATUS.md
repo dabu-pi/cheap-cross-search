@@ -1,6 +1,6 @@
 # PROJECT_STATUS — ECサイト比較.com
 
-最終更新: 2026-05-24（Phase 16 クリック分析UI改善・JST時刻・ソースラベル 完了・live-check 12/12 PASS）
+最終更新: 2026-05-24（Phase 17 実APIアダプタ準備・デモ/実データ切替基盤 完了・live-check 12/12 PASS）
 
 ## 現状
 
@@ -44,6 +44,7 @@
 | Phase 14（クリック計測・管理統計） | ✅ 完了（click_events DB確認・/admin/click-stats 追加・12/12 PASS・2026-05-24）|
 | Phase 15（クリック計測実測確認・検索導線改善） | ✅ 完了（DB実データ確認・admin統計改善・全4ショップ計測確認・12/12 PASS・2026-05-24）|
 | Phase 16（クリック分析UI改善・JST時刻・ソースラベル） | ✅ 完了（JST時刻表示・7日間集計・カードCTAラベル・クエリリンク・12/12 PASS・2026-05-24）|
+| Phase 17（実APIアダプタ準備・デモ/実データ切替基盤） | ✅ 完了（型追加・ショップ状態明確化・スタブアダプタ・切替ガイド・12/12 PASS・2026-05-24）|
 
 ## 🔍 /report 送信失敗の根本原因（2026-05-24 調査完了）
 
@@ -189,6 +190,46 @@
 - [x] 未承認アフィリエイト表現なし
 - [x] Phase 9/10/11 regression PASS
 
+## ✅ Phase 17 実APIアダプタ準備・デモ/実データ切替基盤（2026-05-24 完了）
+
+### アダプタ状態整理（Phase 17 時点）
+
+| ショップ | integrationMode | dataStatus | affiliateApprovalStatus | 将来アダプタ |
+|---------|-----------------|------------|------------------------|-------------|
+| Amazon | `link_only` | `demo` | `approved` | `amazon-pa-api.ts`（スタブ作成済み）|
+| AliExpress | `link_only` | `demo` | `pending` | `aliexpress-portals.ts`（スタブ作成済み）|
+| SHEIN | `link_only` | `demo` | `not_applied` | 未定 |
+| Temu | `link_only` | `demo` | `hold` | HOLD |
+
+### 実装内容
+
+| 変更 | 内容 |
+|---|---|
+| `adapters/types.ts` | `ShopDataStatus` 型追加（demo/external_search/real_api）|
+| `adapters/types.ts` | `AffiliateApprovalStatus` 型追加（approved/pending/not_applied/hold）|
+| `shops/shops.ts` | `ShopDefinition` に `dataStatus`・`affiliateApprovalStatus`・`affiliateNote` フィールド追加 |
+| `shops/shops.ts` | 全4ショップの現状を正確に記録（承認状態・メモ）|
+| `adapters/amazon-pa-api.ts`（新規）| Amazon PA-API スタブアダプタ（link_only フォールバック付き・TODO コメント完備）|
+| `adapters/aliexpress-portals.ts`（新規）| AliExpress Portals スタブアダプタ（link_only フォールバック付き・TODO コメント完備）|
+| `adapters/registry.ts` | フックポイントコメント追加・スタブ import コメント追加（行動変化なし）|
+| `components/search/SearchStatusSummary.tsx` | ツールチップにアフィリエイト承認状態を追加（バッジ表示は変更なし）|
+| `docs/ADAPTER_DEVELOPMENT_GUIDE.md`（新規）| API 有効化手順・データソース状態説明・affiliate_settings 統合方針 |
+| live-check | `phase17-adapter-infra-verify.spec.ts` — **12/12 PASS** |
+| Vercel deploy | `dpl_CZPHzZzes98fjWesEQ83EYvjBLtu` — READY |
+| regression | Phase 9〜16 全スペック継続 PASS |
+
+**完了条件（全満足）:**
+- [x] `ShopDataStatus` / `AffiliateApprovalStatus` 型が定義されコードで参照可能
+- [x] 全4ショップの承認状態がコード上で正確に記録されている
+- [x] `amazon-pa-api.ts` / `aliexpress-portals.ts` スタブが link_only フォールバック付きで作成済み
+- [x] registry.ts にフックポイントコメントあり（`integrationMode` 変更 → コメント外すだけで有効化）
+- [x] デモ fallback が壊れていない（全オファー正常表示）
+- [x] 未承認アフィリエイト表現がない（「Temu提携」「AliExpress提携済み」等なし）
+- [x] `docs/ADAPTER_DEVELOPMENT_GUIDE.md` に有効化手順・affiliate_settings 統合方針あり
+- [x] TypeScript / lint / build PASS
+- [x] Phase 17 live-check 12/12 PASS
+- [x] Phase 9〜16 regression 全 PASS
+
 ## ✅ Phase 16 クリック分析UI改善・JST時刻・ソースラベル（2026-05-24 完了）
 
 ### DB 実データ状況（Phase 16 時点）
@@ -305,14 +346,13 @@
 
 ## ⚠️ 次に実施すること（優先順）
 
-1. ⏳ **AliExpress Portals 承認待ち** — メール通知後 affiliate_settings DB 更新 + アダプタ実装
-2. 🔜 **SHEIN / A8.net 申請** — https://www.a8.net/ → SHEIN プログラム（申請準備完了）
-3. 🔜 **Temu Affiliate 申請**（HOLD — 現状サイト十分改善済み・申請タイミングを判断）— https://www.temu.com/affiliate.html
-4. 🔜 Amazon PA-API アクセスキー取得（売上3件達成後・自動有効化）
-5. 🔜 Amazon PA-API アダプタ実装（`src/lib/search/adapters/amazon-pa-api.ts`）
-6. 🔜 AliExpress Portals アダプタ実装（承認後）
+1. ⏳ **AliExpress Portals 承認待ち** — 承認メール → `docs/ADAPTER_DEVELOPMENT_GUIDE.md` 手順通りに実装
+2. 🔜 Amazon PA-API 有効化（売上3件達成後）→ `ADAPTER_DEVELOPMENT_GUIDE.md` 手順通りに実装
+3. 🔜 **SHEIN / A8.net 申請** — https://www.a8.net/ → SHEIN プログラム（申請準備完了）
+4. 🔜 **Temu Affiliate 申請**（HOLD — 申請タイミングを判断）— https://www.temu.com/affiliate.html
+5. 🔜 **Phase 18候補**: Amazon アソシエイトタグを現デモリンクに適用（Supabase DB から取得・affiliate_settings 利用・docs/ADAPTER_DEVELOPMENT_GUIDE.md §統合参照）
+6. 🔜 **Phase 18候補**: 人気クエリ候補をリアル click_events から自動生成（EmptyState / SearchBar）
 7. 🔜 Supabase Auth URL Configuration 追加（任意・メール認証用）
-8. 🔜 **Phase 17候補**: 人気クエリ候補をリアル click_events から自動生成（EmptyState / SearchBar）
 
 ## 完了内容（Phase 0-1）
 

@@ -1,4 +1,4 @@
-import { IntegrationMode } from '@/lib/search/adapters/types';
+import { IntegrationMode, ShopDataStatus, AffiliateApprovalStatus } from '@/lib/search/adapters/types';
 
 /**
  * ショップ定義
@@ -17,6 +17,23 @@ export interface ShopDefinition {
   trustScore: number;
   logoColor: string;
   description: string;
+  /**
+   * 現在のデータソース状態 (Phase 17 追加)
+   * - 'demo':            架空のデモ価格（参考のみ）
+   * - 'external_search': 外部検索リンクのみ（価格データなし）
+   * - 'real_api':        実 API 接続済み（将来）
+   */
+  dataStatus: ShopDataStatus;
+  /**
+   * アフィリエイト / API プログラムの承認状態 (Phase 17 追加)
+   * - 'approved':    承認済み（ID 設定済み・API 有効化待ちを含む）
+   * - 'pending':     審査中（申請済み・結果待ち）
+   * - 'not_applied': 未申請
+   * - 'hold':        申請 HOLD 中
+   */
+  affiliateApprovalStatus: AffiliateApprovalStatus;
+  /** 承認状態の補足説明（管理画面・コードコメント用） */
+  affiliateNote?: string;
 }
 
 /**
@@ -38,6 +55,12 @@ export const SHOPS: ShopDefinition[] = [
     trustScore: 95,
     logoColor: '#FF9900',
     description: '国内最大手EC。翌日配送対応商品多数。',
+    // Phase 17: データソース・承認状態
+    dataStatus: 'demo',
+    affiliateApprovalStatus: 'approved',
+    affiliateNote:
+      'Amazon アソシエイト登録済み（affiliate_settings DB設定済み）。' +
+      'PA-API は売上3件後に自動有効化。有効化後は amazon-pa-api.ts アダプタへ移行。',
   },
   {
     code: 'shein',
@@ -52,6 +75,11 @@ export const SHOPS: ShopDefinition[] = [
     trustScore: 70,
     logoColor: '#000000',
     description: '格安ファッション・雑貨。送料無料条件あり。',
+    // Phase 17: データソース・承認状態
+    dataStatus: 'demo',
+    affiliateApprovalStatus: 'not_applied',
+    affiliateNote:
+      'A8.net 経由 SHEIN アフィリエイトプログラム申請準備完了。未申請。',
   },
   {
     code: 'aliexpress',
@@ -66,6 +94,12 @@ export const SHOPS: ShopDefinition[] = [
     trustScore: 65,
     logoColor: '#E62E04',
     description: '中国発の格安EC。送料・到着日数に注意。',
+    // Phase 17: データソース・承認状態
+    dataStatus: 'demo',
+    affiliateApprovalStatus: 'pending',
+    affiliateNote:
+      'AliExpress Portals 申請済み（2026-05-23 22:16 PST）。承認メール待ち。' +
+      '承認後は aliexpress-portals.ts アダプタへ移行。',
   },
   {
     code: 'temu',
@@ -80,6 +114,11 @@ export const SHOPS: ShopDefinition[] = [
     trustScore: 60,
     logoColor: '#FF6533',
     description: '超格安価格の直送EC。到着まで数週間かかる場合あり。',
+    // Phase 17: データソース・承認状態
+    dataStatus: 'demo',
+    affiliateApprovalStatus: 'hold',
+    affiliateNote:
+      'Temu アフィリエイト申請は現在 HOLD。サイト改善後に申請タイミングを判断する。',
   },
 ];
 
