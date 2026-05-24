@@ -24,6 +24,7 @@
 | 15 | クリック計測実測確認・検索導線改善 | ✅ 完了（DB実データ15行確認・admin統計改善・全4ショップ確認・12/12 PASS・2026-05-24）| - |
 | 16 | クリック分析UI改善・JST時刻・ソースラベル | ✅ 完了（JST時刻・7日間集計・カードCTAラベル・クエリリンク・12/12 PASS・2026-05-24）| - |
 | 17 | 実APIアダプタ準備・デモ/実データ切替基盤 | ✅ 完了（型追加・ショップ状態明確化・スタブアダプタ・切替ガイド・12/12 PASS・2026-05-24）| - |
+| 18 | Amazon アソシエイトタグ付与 | ✅ 完了（サーバーサイドタグ付与・RPC fix・10/10 PASS・2026-05-24）| - |
 
 ---
 
@@ -278,6 +279,30 @@ Authentication > URL Configuration > Redirect URL に /auth/callback を追加
 - [x] live-check-runner `phase13-external-search-cta-verify.spec.ts` — **15/15 PASS**
 - [x] Phase 9/10/11/12 regression すべて PASS（Phase 11 spec を Phase 13 変更に合わせて更新）
 - [x] Vercel deploy `dpl_Dwpckt21NT94g9AusUKrBGcVQ8Gc` — READY
+
+---
+
+## Phase 18: Amazon アソシエイトタグ付与 ✅ 完了（2026-05-24）
+
+**完了条件:** Amazon Associates の承認済み affiliate_id を Amazon 検索リンクに安全に付与。PA-API は使わない。affiliate_id はコード・ログに残さない。
+
+- [x] `search/page.tsx`: `getAmazonAffiliateTag()` — Supabase RPC 経由でサーバーサイド取得
+- [x] `search/page.tsx`: `applyAmazonTag()` — `?tag=` パラメータを Amazon URL に付与
+- [x] `search/page.tsx`: `offersWithTags` — Amazon offer の `affiliateUrl` に tag 付き URL をセット（`productUrl` は変更しない）
+- [x] SHEIN / AliExpress / Temu は対象外（affiliateApprovalStatus が approved でないため）
+- [x] Supabase DB: `SECURITY DEFINER` 関数 `get_amazon_affiliate_tag()` 作成 + `GRANT EXECUTE TO anon`
+- [x] Supabase DB: `affiliate_settings: admin all` RLS ポリシーを `auth.uid() IS NOT NULL AND EXISTS(...)` に修正（anon の admin_users 権限問題を回避）
+- [x] affiliate_id 自体はクライアント props に渡さず、生成済みタグ付き URL のみをシリアライズ
+- [x] `/api/click` の ALLOWED_DESTINATION_HOSTS は `www.amazon.co.jp` を含むためリダイレクトそのまま動作
+- [x] live-check-runner `phase18-amazon-affiliate-tag-verify.spec.ts` — **10/10 PASS**
+- [x] Phase 10〜17 regression: 179/188 PASS（9 failures は Phase 3〜6 の stale spec — 事前から継続）
+- [x] Vercel deploy `dpl_5g1zSrsxDVVr8d5NMmqmZdCsm5Zd` — READY
+
+**技術的な対応点（RLS 権限問題）:**
+- `affiliate_settings` の "admin all" RLS ポリシーが `admin_users` を参照しており
+  anon ロールが `GRANT SELECT ON admin_users` を持たないため 401 エラーが発生
+- PostgreSQL はパース時に権限チェックするため短絡評価（`auth.uid() IS NOT NULL AND`）では回避不可
+- `SECURITY DEFINER` 関数でラップすることで anon が直接 affiliate_settings を読まずに値を取得
 
 ---
 
