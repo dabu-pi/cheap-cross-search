@@ -475,7 +475,7 @@ Vercel: Project Settings > Environment Variables に設定後 `vercel --prod` �
 
 ---
 
-## Phase 23: 楽天市場 real_api 有効化 ✅ 完了（2026-05-24）
+## Phase 23: 楽天市場 real_api 有効化 ⚠️ 要対応（applicationId 確認中・2026-05-24）
 
 **背景:** Phase 22 で実装済みのアダプタに `RAKUTEN_APP_ID` を Vercel に設定し、
 楽天市場を `dataStatus: 'external_search'` → `'real_api'` へ移行。
@@ -485,19 +485,44 @@ Vercel: Project Settings > Environment Variables に設定後 `vercel --prod` �
 - [x] `RAKUTEN_APP_ID` を Vercel Production/Preview に設定（値は非公開）
 - [x] `src/lib/shops/shops.ts` — 楽天 `dataStatus: 'external_search'` → `'real_api'`
   - Yahoo!ショッピングは `YAHOO_APP_ID` 未取得のため `external_search` 維持
-- [x] TypeScript チェック (`tsc --noEmit`) — エラーなし
-- [x] ESLint (`npm run lint`) — エラーなし
+- [x] TypeScript チェック / ESLint — エラーなし
 - [x] commit `811b2c1` — push 済み
-- [x] Vercel Production deploy `dpl_23cYjgoNL5JA7B1HQ3K92ZPKF6qr` — READY
-- [x] ランタイムエラー確認 — なし
-- [x] Production HTTP 200 OK 確認（ワイヤレスイヤホン・スマホケース検索）
-- [x] 楽天コンテンツ表示確認 ✅
+
+**問題:** Vercel に設定した `RAKUTEN_APP_ID` の値が無効
+- 楽天 API → HTTP 400 / `wrong_parameter` / `specify valid applicationId`
+- https://webservice.rakuten.co.jp/ のアプリ一覧で `applicationId`（アプリID）を確認し再設定が必要
+
+**次のアクション（人が実施）:**
+1. https://webservice.rakuten.co.jp/ → アプリ一覧 → アプリID（applicationId）をコピー
+2. Vercel: Settings > Environment Variables > `RAKUTEN_APP_ID` を正しい値に更新（Sensitive ON）
+3. Redeploy → 楽天実商品が表示されることを確認
+
+---
+
+## Phase 23A: 楽天 API エラー fallback 修正 ✅ 完了（2026-05-24）
+
+**背景:** Phase 23 で applicationId が無効 → 楽天が「エラー」表示になる問題を修正。
+
+**実施内容:**
+
+- [x] `src/lib/search/adapters/rakuten-ichiba.ts`
+  - API 非 OK 時: レスポンス本文をログ出力（secrets なし）
+  - catch block: `status: 'error'` → `status: 'link_only'` fallback に変更
+  - `console.error` でマスク済みエラーを Vercel logs に記録
+- [x] `src/components/search/ShopCard.tsx` — `StatusBadge`: `status === 'link_only'` にも「検索対応」バッジ
+- [x] TypeScript (`tsc --noEmit`) — エラーなし
+- [x] ESLint (`npm run lint`) — エラーなし
+- [x] commit `6cbef8e` — push 済み
+- [x] Vercel Production deploy `dpl_5Nvk24wASG4NNcyqF5o7suPrnF9f` — READY
+- [x] エラー原因確認: HTTP 400 / `wrong_parameter` / `specify valid applicationId`
+
+**現在の UX:** 楽天は「検索対応」バッジ + 「楽天で検索」ボタン（エラー表示なし）
 
 **次の実商品 API 有効化候補:**
 
 | ショップ | 状態 |
 |---|---|
-| 楽天市場 | ✅ `real_api` 稼働中 |
+| 楽天市場 | ⚠️ applicationId 再設定待ち（現在 link_only fallback） |
 | Yahoo!ショッピング | 🔜 `YAHOO_APP_ID` 取得後に有効化 |
 
 ---

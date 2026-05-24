@@ -52,29 +52,34 @@
 | Phase 20A production 実機確認 | ✅ **ユーザー確認 OK**（検索視認性OK・外部検索モード説明 "現段階ではこれでいい" と判断・2026-05-24）|
 | Phase 21（検索体験・カテゴリ導線改善） | ✅ 完了（カテゴリ別人気キーワード・関連キーワード候補・EmptyState改善・外部検索モード説明・21/21 PASS・2026-05-24）|
 | Phase 22（実商品検索API PoC） | ✅ 完了（楽天市場・Yahoo!ショッピング アダプタ実装・6ショップ体制・APIキー設定で即有効化・20/20 PASS・2026-05-24）|
-| Phase 23（楽天市場 real_api 有効化） | ✅ 完了（RAKUTEN_APP_ID Vercel設定・dataStatus=real_api・Production deploy dpl_23cYjgoNL5JA7B1HQ3K92ZPKF6qr READY・2026-05-24）|
+| Phase 23（楽天市場 real_api 有効化） | ⚠️ 要対応（RAKUTEN_APP_ID 値が invalid → applicationId 要確認・Phase 23A で調査済み・2026-05-24）|
+| Phase 23A（楽天APIエラー調査・fallback修正） | ✅ 完了（HTTP 400 wrong_parameter 原因特定・link_only fallback 実装・dpl_5Nvk24wASG4NNcyqF5o7suPrnF9f READY・2026-05-24）|
 | YAHOO_APP_ID / Yahoo!ショッピング | 🔜 未設定・external_search 維持（別フェーズで有効化）|
 
-## ✅ Phase 23 楽天市場 real_api 有効化（2026-05-24 完了）
+## ⚠️ Phase 23 楽天市場 real_api 有効化（要対応・2026-05-24）
 
 | 項目 | 内容 |
 |---|---|
 | RAKUTEN_APP_ID | Vercel Production/Preview に設定済み（値は非公開）|
-| `shops.ts` dataStatus | `'external_search'` → `'real_api'` に変更（commit: 811b2c1）|
-| Yahoo!ショッピング | `YAHOO_APP_ID` 未設定・`'external_search'` 維持（別フェーズ）|
-| TypeScript チェック | ✅ エラーなし（tsc --noEmit）|
+| `shops.ts` dataStatus | `'real_api'` に変更済み（commit: 811b2c1）|
+| 楽天 API 呼び出し結果 | ❌ HTTP 400 / `wrong_parameter` / `specify valid applicationId` |
+| 原因 | Vercel に設定した `RAKUTEN_APP_ID` の値が楽天で有効な applicationId として認識されない |
+| 対処（Phase 23A） | API エラー時を `link_only` fallback へ変更（エラー表示なし・「楽天で検索」ボタン表示）|
+| 人側で必要な作業 | https://webservice.rakuten.co.jp/ のアプリ一覧で「アプリID（applicationId）」を確認し Vercel の値を更新 |
+
+## ✅ Phase 23A 楽天 API エラー調査・fallback 修正（2026-05-24 完了）
+
+| 項目 | 内容 |
+|---|---|
+| エラー原因 | HTTP 400 / `wrong_parameter` / `specify valid applicationId`（applicationId が無効）|
+| 修正① | アダプタ catch → `status: 'error'` → `status: 'link_only'` fallback に変更 |
+| 修正② | `console.error` でマスク済みエラーを Vercel logs に出力 |
+| 修正③ | `ShopCard StatusBadge`: `status === 'link_only'` にも「検索対応」バッジを適用 |
+| TypeScript | ✅ エラーなし |
 | ESLint | ✅ エラーなし |
-| Vercel deploy | `dpl_23cYjgoNL5JA7B1HQ3K92ZPKF6qr` — READY (Production) |
-| Production URL | https://cheap-cross-search.vercel.app |
-| ランタイムエラー | なし（vercel logs --level error 確認済み）|
-| Production HTTP | ✅ 200 OK（ワイヤレスイヤホン・スマホケース検索）|
-| 楽天コンテンツ確認 | ✅ 楽天関連コンテンツあり |
-| live-check-runner | N/A（このプロジェクトに live-check-runner 未設置）|
-
-**楽天アダプタ動作:** `RAKUTEN_APP_ID` 設定済みにより、楽天市場は link_only フォールバックを経ず
-楽天ウェブサービス商品検索 API から実商品を取得する `real_api` モードで稼働中。
-
-**次の実商品 API:** Yahoo!ショッピング — `YAHOO_APP_ID` を Yahoo!デベロッパーセンターで取得後に有効化予定。
+| deploy | `dpl_5Nvk24wASG4NNcyqF5o7suPrnF9f` — READY (Production) |
+| 現在の UX | 楽天市場：「検索対応」バッジ + 「楽天で検索」ボタン（エラー表示なし）|
+| 次の作業 | 楽天 applicationId 正しい値を Vercel に設定 → redeploy で real_api 有効化 |
 
 ---
 
