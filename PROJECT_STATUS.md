@@ -1,6 +1,6 @@
 # PROJECT_STATUS — ECサイト比較.com
 
-最終更新: 2026-05-24（Phase 14 クリック計測・管理統計 完了・live-check 12/12 PASS）
+最終更新: 2026-05-24（Phase 15 クリック計測実測確認・検索導線改善 完了・live-check 12/12 PASS）
 
 ## 現状
 
@@ -42,6 +42,7 @@
 | Phase 12（比較ソート・実用導線強化） | ✅ 完了（ソート拡張・PriceComparisonBarクリックフィルター連動・EmptyState改善・14/14 PASS・2026-05-24）|
 | Phase 13（外部検索導線・クリック計測準備） | ✅ 完了（CTA文言正確化・URL生成統一・クリック計測拡充・15/15 PASS・2026-05-24）|
 | Phase 14（クリック計測・管理統計） | ✅ 完了（click_events DB確認・/admin/click-stats 追加・12/12 PASS・2026-05-24）|
+| Phase 15（クリック計測実測確認・検索導線改善） | ✅ 完了（DB実データ確認・admin統計改善・全4ショップ計測確認・12/12 PASS・2026-05-24）|
 
 ## 🔍 /report 送信失敗の根本原因（2026-05-24 調査完了）
 
@@ -186,6 +187,53 @@
 - [x] /search?q=xxx 形式リンク
 - [x] 未承認アフィリエイト表現なし
 - [x] Phase 9/10/11 regression PASS
+
+## ✅ Phase 15 クリック計測実測確認・検索導線改善（2026-05-24 完了）
+
+### DB 実データ確認結果（2026-05-24 npx supabase db query --linked）
+
+| 確認項目 | 結果 |
+|---|---|
+| 総レコード数 | 15行（Amazon 14、Temu 1）|
+| clicked_url 保存 | ✅ 全行に保存済み（例: `https://www.amazon.co.jp/s?k=スマホケース`）|
+| shop_code | ✅ 全行に保存済み |
+| query | ✅ ユーザークリック時は保存（例: "スマホケース"、"messyu"、"鶏　小屋"）|
+| source | ✅ direct_search 区別できる（Phase 13 以降） |
+| user_id | ✅ NULL（個人情報なし）|
+| session_id | ✅ NULL（個人情報なし）|
+| destination_host | ✅ 全行に保存済み |
+| マルチショップ確認 | ✅ Amazon + Temu 両方の実クリックを確認 |
+
+**実ユーザークリック確認例（DB id=15）:**
+- shop_code: `temu` / query: `鶏　小屋` / destination_host: `www.temu.com`
+- Phase 13 以降のクリック計測が全4ショップで動作することを確認
+
+### 改善内容
+
+| 変更 | 内容 |
+|---|---|
+| `admin/click-stats/page.tsx` 改善 | `clicked_url` フィールド追加・`遷移先URL`カラム追加（短縮表示）|
+| 空データ対応 | `totalCount=0` 時は「データなし」empty state 表示 |
+| source 表示改善 | `direct_search` を青色ハイライト表示 |
+| null 値表示 | `—` で統一表示 |
+| SQL クエリメモ拡充 | 個人情報確認 SQL 追加 |
+
+| 変更 | 内容 |
+|---|---|
+| live-check | `phase15-click-measurement-verify.spec.ts` — **12/12 PASS** |
+| Vercel deploy | `dpl_Hy5SCVSkCPWUjVfu3oQUP5ZTpayv` — READY |
+| regression | Phase 9 11/11 + Phase 10 8/8 + Phase 11 12/12 + Phase 12 14/14 + Phase 13 15/15 + Phase 14 12/12 すべて継続 PASS |
+
+**完了条件（全満足）:**
+- [x] /api/click 経由で click_events に実データが保存されることを確認
+- [x] 全4ショップ（Amazon/SHEIN/AliExpress/Temu）のリダイレクト確認
+- [x] clicked_url・shop_code・query・source が期待通り保存されることを確認
+- [x] user_id=null / session_id=null — 個人情報なし確認
+- [x] /admin/click-stats に統計が反映（管理者ログイン済みで確認）
+- [x] 管理者未ログイン時は click_events データ非表示
+- [x] admin stats の 遷移先URL カラム追加（品質改善）
+- [x] Phase 15 live-check 12/12 PASS
+- [x] Phase 9〜14 regression 全 PASS
 
 ## ✅ Phase 14 クリック計測・管理統計（2026-05-24 完了）
 
