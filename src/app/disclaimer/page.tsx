@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: '免責事項 | 安買い横断サーチ',
+  title: '免責事項 | ECサイト比較.com',
 };
 
 export default function DisclaimerPage() {

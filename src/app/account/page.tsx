@@ -33,7 +33,7 @@ export default async function AccountPage() {
       <header className="bg-white border-b border-gray-200 px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <Link href="/" className="text-lg font-black text-blue-600">
-            安買い横断サーチ
+            ECサイト比較.com
           </Link>
           <span className="text-sm text-gray-500">マイページ</span>
         </div>

@@ -1,7 +1,7 @@
 {
-  "name": "安買い横断サーチ",
-  "short_name": "安買いサーチ",
-  "description": "Amazon・SHEIN・AliExpress・Temuを横断検索・価格比較",
+  "name": "ECサイト比較.com",
+  "short_name": "EC比較.com",
+  "description": "ECサイト比較.com — Amazon・SHEIN・AliExpress・Temuを横断検索・価格比較",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

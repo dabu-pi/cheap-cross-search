@@ -107,7 +107,7 @@ function LoginForm() {
         {/* ヘッダー */}
         <div className="text-center space-y-1">
           <Link href="/" className="text-2xl font-black text-blue-600 tracking-tight">
-            安買い横断サーチ
+            ECサイト比較.com
           </Link>
           <p className="text-sm text-gray-500">
             {mode === 'signin' ? 'ログイン' : 'アカウント作成'}

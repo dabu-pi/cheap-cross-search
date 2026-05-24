@@ -3,7 +3,7 @@ import { BLOCKED_RULES, CAUTION_RULES } from '@/lib/safety/rules';
 import { BLOCKED_KEYWORD_CATEGORY_LABELS } from '@/lib/admin/blocked-keywords';
 
 export const metadata = {
-  title: '安全ポリシー | 安買い横断サーチ',
+  title: '安全ポリシー | ECサイト比較.com',
 };
 
 /** カテゴリ別に集計 */
@@ -47,7 +47,7 @@ export default function SafetyPolicyPage() {
         <section className="space-y-2">
           <h2 className="font-bold text-base text-gray-900">安全フィルターについて</h2>
           <p>
-            安買い横断サーチは、危険・不適切な商品がユーザーに表示されないよう、
+            ECサイト比較.comは、危険・不適切な商品がユーザーに表示されないよう、
             商品タイトルに対してキーワードベースの安全フィルターを適用しています。
           </p>
           <p>

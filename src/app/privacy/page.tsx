@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'プライバシーポリシー | 安買い横断サーチ',
+  title: 'プライバシーポリシー | ECサイト比較.com',
 };
 
 export default function PrivacyPage() {

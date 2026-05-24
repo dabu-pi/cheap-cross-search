@@ -8,17 +8,17 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "安買い横断サーチ",
-  description: "Amazon・SHEIN・AliExpress・Temuを1つの検索ワードで横断比較。価格・送料・到着予定を一覧表示。",
+  title: "ECサイト比較.com",
+  description: "ECサイト比較.com — Amazon・SHEIN・AliExpress・Temuを1つの検索ワードで横断比較。価格・送料・到着予定を一覧表示。",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "安買い横断サーチ",
+    title: "ECサイト比較.com",
   },
   openGraph: {
-    title: "安買い横断サーチ",
-    description: "Amazon・SHEIN・AliExpress・Temuを横断検索",
+    title: "ECサイト比較.com",
+    description: "ECサイト比較.com — Amazon・SHEIN・AliExpress・Temuを横断検索・価格比較",
     type: "website",
     locale: "ja_JP",
   },

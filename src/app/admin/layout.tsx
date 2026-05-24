@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { AdminNav } from '@/components/admin/AdminNav';
 
 export const metadata = {
-  title: '管理画面 — 安買い横断サーチ',
+  title: '管理画面 — ECサイト比較.com',
   robots: { index: false, follow: false },
 };
 

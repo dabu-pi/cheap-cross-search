@@ -10,7 +10,7 @@ import { isSupabaseConfigured } from '@/lib/supabase/config';
 import { ReportForm } from './ReportForm';
 
 export const metadata = {
-  title: '問題を報告 | 安買い横断サーチ',
+  title: '問題を報告 | ECサイト比較.com',
 };
 
 interface ReportPageProps {

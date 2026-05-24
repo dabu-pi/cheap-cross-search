@@ -22,7 +22,7 @@ export default function HomePage() {
       {/* ヘッダー */}
       <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
         <span className="text-xl font-bold text-gray-900">
-          🛒 安買い横断サーチ
+          🛒 ECサイト比較.com
         </span>
         <div className="flex items-center gap-3">
           <Link href="/account" className="text-xs text-blue-500 hover:text-blue-700 font-medium">

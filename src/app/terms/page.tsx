@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: '利用規約 | 安買い横断サーチ',
+  title: '利用規約 | ECサイト比較.com',
 };
 
 export default function TermsPage() {
@@ -25,7 +25,7 @@ export default function TermsPage() {
         <section className="space-y-2">
           <h2 className="font-bold text-base text-gray-900">第1条 サービスの目的</h2>
           <p>
-            安買い横断サーチ（以下「本サービス」）は、複数のオンラインショッピングサービスの
+            ECサイト比較.com（以下「本サービス」）は、複数のオンラインショッピングサービスの
             商品価格・送料・配送予定を比較・参照するための情報提供サービスです。
             本サービスは商品の販売を行いません。実際の購入は各ショッピングサービスにて行っていただきます。
           </p>
