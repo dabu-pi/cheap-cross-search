@@ -1,6 +1,6 @@
 # PROJECT_STATUS — ECサイト比較.com
 
-最終更新: 2026-05-24（Phase 10 実用検索・比較MVP 完了・live-check 8/8 PASS）
+最終更新: 2026-05-24（Phase 11 比較体験UI改善 完了・live-check 12/12 PASS）
 
 ## 現状
 
@@ -38,6 +38,7 @@
 | Temu Affiliate 申請準備 | ✅ 準備完了（申請情報整理済み・**未申請 HOLD**）|
 | SHEIN / A8.net 申請準備 | ✅ 準備完了（A8.net 経由手順整理済み・未申請）|
 | Phase 10（実用検索・比較MVP） | ✅ 完了（キーワード対応デモ・バナー改善・バッジ改善・8/8 PASS・2026-05-24）|
+| Phase 11（比較体験UI改善） | ✅ 完了（PriceComparisonBar・ショップフィルター・ボタン改善・直接検索改善・12/12 PASS・2026-05-24）|
 
 ## 🔍 /report 送信失敗の根本原因（2026-05-24 調査完了）
 
@@ -90,6 +91,27 @@
 
 **Phase 9 全確認完了。本番稼働中。**
 
+## ✅ Phase 11 比較体験UI改善（2026-05-24 完了）
+
+| 変更 | 内容 |
+|---|---|
+| `PriceComparisonBar.tsx`（新規） | ショップ別参考価格帯サマリを検索結果の上部に表示 |
+| `ProductCardGrid.tsx` | ショップフィルター（Amazon/SHEIN/AliExpress/Temu/すべて）追加 |
+| `ProductCard.tsx` | 「商品ページへ」→「{Shop}で見る」（Amazonで見る 等） |
+| `search/page.tsx` | PriceComparisonBar 挿入、ShopCard セクションをコンパクト直接検索に置換 |
+| live-check | `phase11-comparison-ux-verify.spec.ts` — 12/12 PASS |
+| Vercel deploy | `dpl_4ct13fdNQMxqG81VRrdMAKKgPB2D` — READY |
+| regression | Phase 9 11/11 + Phase 10 8/8 すべて継続 PASS |
+
+**完了条件（全満足）:**
+- [x] ショップ別参考価格帯サマリ表示
+- [x] ショップフィルター（Amazon/SHEIN/AliExpress/Temu）
+- [x] 「{Shop}で見る」ボタン（未承認表現なし）
+- [x] コンパクト直接検索セクション
+- [x] 参考価格注記が複数箇所
+- [x] 未承認アフィリエイト表現なし
+- [x] Phase 9/10 regression PASS
+
 ## ✅ Phase 10 実用検索・比較MVP（2026-05-24 完了）
 
 | 変更 | 内容 |
@@ -113,8 +135,8 @@
 ## ⚠️ 次に実施すること（優先順）
 
 1. ⏳ **AliExpress Portals 承認待ち** — メール通知後 affiliate_settings DB 更新 + アダプタ実装
-2. 🔜 **SHEIN / A8.net 申請** — https://www.a8.net/ → SHEIN プログラム
-3. 🔜 **Temu Affiliate 申請**（HOLD — サイト充実後）— https://www.temu.com/affiliate.html
+2. 🔜 **SHEIN / A8.net 申請** — https://www.a8.net/ → SHEIN プログラム（申請準備完了）
+3. 🔜 **Temu Affiliate 申請**（HOLD — 現状サイト十分改善済み・申請タイミングを判断）— https://www.temu.com/affiliate.html
 4. 🔜 Amazon PA-API アクセスキー取得（売上3件達成後・自動有効化）
 5. 🔜 Amazon PA-API アダプタ実装（`src/lib/search/adapters/amazon-pa-api.ts`）
 6. 🔜 AliExpress Portals アダプタ実装（承認後）

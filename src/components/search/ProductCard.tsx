@@ -182,7 +182,7 @@ export function ProductCard({ offer, query, cautionReason }: ProductCardProps) {
             ⚑
           </a>
 
-          {/* 商品ページへ（Phase 6: /api/click 経由） */}
+          {/* ショップで見る（Phase 6: /api/click 経由） */}
           <a
             href={clickUrl}
             target="_blank"
@@ -191,7 +191,7 @@ export function ProductCard({ offer, query, cautionReason }: ProductCardProps) {
             style={{ backgroundColor: logoColor }}
             aria-label={`${offer.shopName}で商品ページを開く`}
           >
-            商品ページへ
+            {offer.shopName}で見る
             <svg
               className="w-3.5 h-3.5"
               fill="none"

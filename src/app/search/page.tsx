@@ -1,8 +1,8 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { SearchBar } from '@/components/search/SearchBar';
-import { ShopCard } from '@/components/search/ShopCard';
 import { ProductCardGrid } from '@/components/search/ProductCardGrid';
+import { PriceComparisonBar } from '@/components/search/PriceComparisonBar';
 import { FavoriteQueryButton } from '@/components/search/FavoriteQueryButton';
 import { SearchStatusSummary } from '@/components/search/SearchStatusSummary';
 import { DisclaimerBanner } from '@/components/ui/DisclaimerBanner';
@@ -10,6 +10,7 @@ import { crossSearch } from '@/lib/search/engine';
 import { getDemoOffers } from '@/lib/search/demo-results';
 import { saveSearchQuery } from '@/lib/favorites/actions';
 import { filterProductOffers } from '@/lib/safety/filter-product-offers';
+import { getShopByCode } from '@/lib/shops/shops';
 
 interface SearchPageProps {
   searchParams: Promise<{ q?: string }>;
@@ -98,6 +99,9 @@ async function SearchResults({ query }: { query: string }) {
       {/* Phase 5: ショップ別取得状態サマリ */}
       <SearchStatusSummary shops={crossResult.shops} />
 
+      {/* Phase 11: ショップ別参考価格サマリ */}
+      <PriceComparisonBar offers={displayOffers} />
+
       {/* 参考価格バナー（モックデータ or レガシーデモ） */}
       {(usingMock || usingLegacyDemo) && (
         <div className="rounded-xl bg-blue-50 border border-blue-100 px-3 py-2.5 flex items-start gap-2">
@@ -149,22 +153,46 @@ async function SearchResults({ query }: { query: string }) {
       {/* ─── 商品カード比較UI（並び替え付き） ─── */}
       <ProductCardGrid offers={displayOffers} cautionMap={cautionAnnotations} query={query} />
 
-      {/* セパレータ（link_only ショップがある場合のみ） */}
+      {/* Phase 11: コンパクト直接検索セクション */}
       {linkOnlyShops.length > 0 && (
-        <>
-          <div className="flex items-center gap-3 pt-2">
-            <div className="flex-1 h-px bg-gray-200" />
-            <p className="text-xs text-gray-400 shrink-0 font-medium">ショップで直接検索</p>
-            <div className="flex-1 h-px bg-gray-200" />
+        <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 space-y-2.5">
+          <p className="text-xs font-semibold text-gray-500">
+            🔍 各ショップで「{query}」を直接検索
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {linkOnlyShops.map((shopResult) => {
+              const shopDef = getShopByCode(shopResult.shopCode);
+              const color = shopDef?.logoColor ?? '#888';
+              return (
+                <a
+                  key={shopResult.shopCode}
+                  href={shopResult.searchUrl ?? '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-white border hover:shadow-sm transition-shadow"
+                  style={{ borderLeftWidth: 3, borderLeftColor: color }}
+                >
+                  <span className="text-sm font-semibold" style={{ color }}>
+                    {shopResult.shopName}
+                  </span>
+                  <svg
+                    className="w-3.5 h-3.5 text-gray-400 shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+              );
+            })}
           </div>
-
-          {/* link_only フォールバック — ShopCard */}
-          <div className="space-y-4">
-            {linkOnlyShops.map((shopResult) => (
-              <ShopCard key={shopResult.shopCode} result={shopResult} query={query} />
-            ))}
-          </div>
-        </>
+          <p className="text-xs text-gray-400">
+            上の参考価格は目安です。実際の商品・価格・在庫は各ショップでご確認ください。
+          </p>
+        </div>
       )}
 
       {/* フッター注意文 */}
