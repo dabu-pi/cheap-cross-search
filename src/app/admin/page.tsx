@@ -39,6 +39,12 @@ export default function AdminDashboardPage() {
       title: '取得ログ',
       description: 'ショップ別の取得状態・エラーログ',
     },
+    {
+      href: '/admin/click-stats',
+      icon: '📊',
+      title: 'クリック統計',
+      description: 'ショップ遷移クリック数・クエリ分析（Supabase 必要）',
+    },
   ];
 
   return (

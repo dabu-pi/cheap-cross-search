@@ -1,6 +1,6 @@
 # PROJECT_STATUS — ECサイト比較.com
 
-最終更新: 2026-05-24（Phase 13 外部検索導線・クリック計測準備 完了・live-check 15/15 PASS）
+最終更新: 2026-05-24（Phase 14 クリック計測・管理統計 完了・live-check 12/12 PASS）
 
 ## 現状
 
@@ -41,6 +41,7 @@
 | Phase 11（比較体験UI改善） | ✅ 完了（PriceComparisonBar・ショップフィルター・ボタン改善・直接検索改善・12/12 PASS・2026-05-24）|
 | Phase 12（比較ソート・実用導線強化） | ✅ 完了（ソート拡張・PriceComparisonBarクリックフィルター連動・EmptyState改善・14/14 PASS・2026-05-24）|
 | Phase 13（外部検索導線・クリック計測準備） | ✅ 完了（CTA文言正確化・URL生成統一・クリック計測拡充・15/15 PASS・2026-05-24）|
+| Phase 14（クリック計測・管理統計） | ✅ 完了（click_events DB確認・/admin/click-stats 追加・12/12 PASS・2026-05-24）|
 
 ## 🔍 /report 送信失敗の根本原因（2026-05-24 調査完了）
 
@@ -185,6 +186,35 @@
 - [x] /search?q=xxx 形式リンク
 - [x] 未承認アフィリエイト表現なし
 - [x] Phase 9/10/11 regression PASS
+
+## ✅ Phase 14 クリック計測・管理統計（2026-05-24 完了）
+
+| 変更 | 内容 |
+|---|---|
+| DB 確認 | `click_events` テーブル: anon INSERT 権限・RLS・9行のデータを本番 DB で確認 |
+| `admin/click-stats/page.tsx`（新規） | 総クリック数・今日のクリック・ショップ別棒グラフ・source別・Top10クエリ・直近20件テーブル |
+| `AdminNav.tsx` | 「📊 クリック統計」ナビゲーションリンク追加 |
+| `admin/page.tsx` | 管理メニューに「クリック統計」カード追加 |
+| TypeScript | `icon` prop 不一致 修正（絵文字を title に統合）|
+| live-check | `phase14-click-tracking-verify.spec.ts` — **12/12 PASS** |
+| Vercel deploy | `dpl_HBDZA5cSCw4m3EPpMjATX1VjhJnu` — READY |
+| regression | Phase 9 11/11 + Phase 10 8/8 + Phase 11 12/12 + Phase 12 14/14 + Phase 13 15/15 すべて継続 PASS |
+
+**DB 確認内容（2026-05-24 npx supabase db query --linked）:**
+- `click_events` 9行存在（offer_id="phase9-smoke" 8行 + "demo-amazon-1" 1行）
+- anon: INSERT ✅ / sequence USAGE ✅
+- RLS: INSERT all / SELECT admin-only
+- source=null（Phase 13 direct_search は今後計測される）
+
+**完了条件（全満足）:**
+- [x] `click_events` テーブル設計・適用済み確認
+- [x] `/api/click` 経由でクリックイベント保存が動作（Phase 8 から実装済み・本番 DB 確認）
+- [x] 管理画面に `/admin/click-stats` 統計ページ追加
+- [x] AdminNav と Admin ダッシュボードにリンク追加
+- [x] 個人情報（IP/UA/user_id）は表示なし
+- [x] TypeScript / lint / build PASS
+- [x] Phase 14 live-check 12/12 PASS
+- [x] Phase 9〜13 regression 全 PASS
 
 ## ⚠️ 次に実施すること（優先順）
 

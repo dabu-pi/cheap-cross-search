@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { href: '/admin/affiliate', label: 'アフィリエイト', icon: '💰', exact: false },
   { href: '/admin/blocked-keywords', label: '除外キーワード', icon: '🚫', exact: false },
   { href: '/admin/fetch-logs', label: '取得ログ', icon: '📋', exact: false },
+  { href: '/admin/click-stats', label: 'クリック統計', icon: '📊', exact: false },
 ];
 
 export function AdminNav() {
