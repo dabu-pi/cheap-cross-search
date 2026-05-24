@@ -1,6 +1,6 @@
 # SUPABASE_SETUP.md — 安買い横断サーチ Supabase 設定手順
 
-最終更新: 2026-05-24（0003 v2 — reporter_user_id カラム名修正）
+最終更新: 2026-05-24（/report 送信失敗根本原因特定・.env.local 修正・CLI 設定完了）
 
 ---
 
@@ -60,16 +60,48 @@ PostgreSQL はトランザクション全体をロールバックしたため、
 
 | 項目 | 状態 |
 |---|---|
-| Supabase プロジェクト | 作成済み |
-| `.env.local` | ✅ 設定済み（NEXT_PUBLIC_SUPABASE_URL / ANON_KEY）|
+| Supabase プロジェクト | ✅ 作成済み（cheap-cross-search-prod / lkusgqucqdvyijxjpqgh）|
+| `.env.local` | ✅ 設定済み・修正済み（ANON KEY 重複行削除・2026-05-24）|
 | `0001_auth_favorites.sql` | ✅ 適用済み（profiles / search_queries / favorite_products / favorite_queries）|
 | `0002_tracking_reports_admin.sql` | ✅ 適用済み（admin_users / click_events / reported_products / affiliate_settings / blocked_keywords）|
-| `0003_fix_reported_products_insert_policy.sql` | ⏳ **要実行**（/report INSERT 失敗修正・anon GRANT 追加）|
-| Google OAuth | 未設定 |
+| `0003_fix_reported_products_insert_policy.sql` | ✅ 適用済み（GRANT 確認済み）|
+| Supabase CLI | ✅ `npx supabase` v2.101.0・login/link/db query 動作確認済み |
+| Google OAuth | ⏳ 未設定 |
 | Auth 機能 | ✅ ログインフォーム表示確認済み |
-| click_events 保存 | ✅ 実装済み（0003 適用後に動作確認）|
-| reported_products 保存 | ⚠️ INSERT 失敗中（0003 適用で修正）|
+| click_events 保存 | ✅ 実装済み・anon GRANT 済み |
+| reported_products 保存 | ⏳ dev server 再起動 → 送信テスト待ち（.env.local 修正済み）|
 | admin_users | ⏳ 手動 INSERT が必要（P8B-10）|
+
+## ⚠️ .env.local 修正履歴（2026-05-24）
+
+**問題:** `NEXT_PUBLIC_SUPABASE_ANON_KEY` が `.env.local` に 2 行存在した  
+→ 1 行目 (46 文字): 有効な `sb_publish_...` 形式キー  
+→ 2 行目 (13 文字): 無効な短い値  
+→ Next.js (dotenv) は最後の行を採用 → 無効なキーで API 呼び出しが全て失敗
+
+**修正:** 2 行目（13 文字・無効な値）を削除
+
+**今後の注意:** `.env.local` を編集する際は `grep -c 'NEXT_PUBLIC_SUPABASE_ANON_KEY' .env.local` で重複確認すること（結果が `1` なら正常）
+
+## Supabase CLI 運用手順（2026-05-24 設定完了）
+
+```bash
+# 設定状態確認
+npx supabase --version    # → 2.101.0
+npx supabase projects list  # cheap-cross-search-prod が表示される
+
+# DB クエリ（Claude が直接実行可能）
+npx supabase db query --linked "SELECT ..."
+
+# ファイルで SQL 適用
+npx supabase db query --linked --file supabase/migrations/xxxx.sql
+```
+
+**注意事項:**
+- `supabase/config.toml` が存在することが前提（`npx supabase init` 済み）
+- ログイン状態は `npx supabase projects list` で確認
+- ログアウトしていた場合: `npx supabase login`（ブラウザ認証）
+- `npx supabase link --project-ref lkusgqucqdvyijxjpqgh` は Bash から実行（PowerShell では対話入力不可の場合あり）
 
 ---
 

@@ -1,6 +1,6 @@
 # PROJECT_STATUS — 安買い横断サーチ
 
-最終更新: 2026-05-24（Phase 8b /report INSERT 失敗修正・0003 hotfix）
+最終更新: 2026-05-24（/report 送信失敗の根本原因特定・.env.local 修正・Supabase CLI 設定完了）
 
 ## 現状
 
@@ -17,25 +17,53 @@
 | Phase 7（安全公開準備・ポリシー） | ✅ 完了（安全フィルター・通報・ポリシー・2026-05-24）|
 | Phase 8（本番Supabase接続・デプロイ準備） | ✅ 完了（SQL・手順書・DB実装・10/10 PASS・2026-05-24）|
 | Phase 8b（Supabase接続済み動作確認） | ✅ 完了（6/6 PASS・2026-05-24）|
-| Phase 8c（/report INSERT 修正） | ✅ 実装完了（0003 hotfix・SUPABASE SQL 要実行・2026-05-24）|
+| Phase 8c（/report INSERT 修正）| ✅ 完了（.env.local 修正・PostgREST HTTP 201 確認済み・2026-05-24）|
 | Phase 5b（実 API アダプタ） | 🔜 未着手（申請後に実装）|
 | 0001 SQL 適用 | ✅ 完了（profiles / search_queries / favorite_products / favorite_queries）|
 | 0002 SQL 適用 | ✅ 完了（admin_users / click_events / reported_products / affiliate_settings / blocked_keywords）|
-| 0003 SQL 適用 | ⏳ **要実行**（Supabase SQL Editor で 0003 hotfix を実行・docs/SUPABASE_SETUP.md Step 3-3 参照）|
-| .env.local 設定 | ✅ 完了（NEXT_PUBLIC_SUPABASE_URL / ANON_KEY 設定済み）|
-| /report DB 保存 | ⚠️ 0003 SQL 適用後に手動確認が必要（P8B-7）|
+| 0003 SQL 適用 | ✅ 完了（GRANT 確認済み・anon INSERT 権限付与済み）|
+| .env.local 設定 | ✅ 完了・修正済み（ANON KEY 重複行削除・2026-05-24）|
+| Supabase CLI | ✅ 設定完了（npx supabase login + link 済み・db query --linked 動作確認済み）|
+| /report DB 保存 | ⏳ dev server 再起動後に送信テスト（P8B-7）|
 | 管理者ユーザー登録 | ⏳ 手動実施待ち（P8B-10）|
 | アカウント作成・ログイン確認 | ⏳ 手動実施待ち（P8B-8）|
 | Vercel デプロイ | ⏳ 手動実施待ち |
 
+## 🔍 /report 送信失敗の根本原因（2026-05-24 調査完了）
+
+**症状:** `/report` 送信 → 「送信に失敗しました」
+
+**調査経過:**
+- Supabase CLI (`npx supabase db query --linked`) で DB 調査
+- GRANT ✅ (anon: INSERT on reported_products)
+- Sequence USAGE ✅ (anon: USAGE on reported_products_id_seq)
+- RLS policy ✅ (INSERT with_check=true)
+- CHECK 制約なし（reason / status に制約なし）
+- PostgREST 直接 INSERT (return=minimal) → HTTP 201 ✅
+
+**根本原因:** `.env.local` に `NEXT_PUBLIC_SUPABASE_ANON_KEY` が **2行存在**  
+→ Next.js は最後の行（13 文字・無効な値）を採用  
+→ クライアントサイドの createBrowserClient に無効なキーが渡され、全 API 呼び出しが失敗
+
+**修正:** `.env.local` の重複 13 文字行を削除（有効な `sb_publish_...` 46 文字キーを保持）
+
+**確認:** PostgREST INSERT with 修正済み ANON KEY → HTTP 201 ✅
+
 ## ⚠️ 次に実施すること（優先順）
 
-1. **Supabase SQL Editor で `0003_fix_reported_products_insert_policy.sql` を実行**
-   → `docs/SUPABASE_SETUP.md` Step 3-3 の手順・確認 SQL を参照
-2. `/report` フォームで送信テスト → `reported_products` に行が追加されることを確認（P8B-7）
-3. アカウント作成 → ログイン → `/account` 確認（P8B-8）
-4. 管理者ユーザー登録（P8B-10）
-5. Vercel デプロイ（`docs/VERCEL_DEPLOYMENT.md` 参照）
+1. **dev server を再起動** → `.env.local` の修正を反映させる
+   ```powershell
+   cd C:\hirayama-ai-workspace\workspace\cheap-cross-search
+   npm run dev
+   ```
+2. `/report` フォームで送信テスト → 「報告を受け付けました」が表示されることを確認（P8B-7）
+3. CLI で行確認:
+   ```
+   ! npx supabase db query --linked "SELECT id, reason, status, created_at FROM public.reported_products ORDER BY created_at DESC LIMIT 5;"
+   ```
+4. アカウント作成 → ログイン → `/account` 確認（P8B-8）
+5. 管理者ユーザー登録（P8B-10）
+6. Vercel デプロイ（`docs/VERCEL_DEPLOYMENT.md` 参照）
 
 ## 完了内容（Phase 0-1）
 
