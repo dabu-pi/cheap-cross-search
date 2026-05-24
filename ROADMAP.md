@@ -19,6 +19,7 @@
 | 10 | 実用検索・比較MVP | ✅ 完了（キーワード対応デモ・バナー/バッジ改善・2026-05-24）| - |
 | 11 | 比較体験UI改善 | ✅ 完了（PriceComparisonBar・フィルター・ボタン改善・2026-05-24）| - |
 | 12 | 比較ソート・実用導線強化 | ✅ 完了（ソート拡張・クリックフィルター連動・EmptyState改善・14/14 PASS・2026-05-24）| - |
+| 13 | 外部検索導線・クリック計測準備 | ✅ 完了（CTA文言正確化・URL統一・クリック計測拡充・15/15 PASS・2026-05-24）| - |
 
 ---
 
@@ -256,6 +257,23 @@ Authentication > URL Configuration > Redirect URL に /auth/callback を追加
 - [x] live-check-runner `phase12-sort-navigation-verify.spec.ts` — **14/14 PASS**
 - [x] Phase 9/10/11 regression すべて PASS（Phase 11 spec を Phase 12 変更に合わせて更新）
 - [x] Vercel deploy `dpl_EBGf7AZrmcvcvEJHJUs9TU9beoSh` — READY
+
+---
+
+## Phase 13: 外部検索導線・クリック計測準備 ✅ 完了（2026-05-24）
+
+**完了条件:** CTA文言が実態に合っている・外部リンクが安全・クリック計測が機能している
+
+- [x] `ProductOffer` に `isSearchPage?: boolean` 追加（型定義）
+- [x] `demo-results.ts`: `buildSearchUrl()` で URL 生成を `shops.ts` に統一
+- [x] `demo-results.ts`: `isSearchPage: true` を全デモオファーに設定
+- [x] `ProductCard.tsx`: CTA テキストを `isSearchPage` で切り替え（「で検索」/ 「で見る」）
+- [x] `search/page.tsx`: 直接検索リンクを `/api/click?source=direct_search` 経由に変更
+- [x] 全外部リンクに `target="_blank"` / `rel="noopener noreferrer"` が付与
+- [x] 未承認アフィリエイト表現なし
+- [x] live-check-runner `phase13-external-search-cta-verify.spec.ts` — **15/15 PASS**
+- [x] Phase 9/10/11/12 regression すべて PASS（Phase 11 spec を Phase 13 変更に合わせて更新）
+- [x] Vercel deploy `dpl_Dwpckt21NT94g9AusUKrBGcVQ8Gc` — READY
 
 ---
 

@@ -1,18 +1,25 @@
 /**
- * Phase 2 デモ用商品オファー（Phase 10 でキーワード対応）
+ * Phase 2 デモ用商品オファー（Phase 10 キーワード対応・Phase 13 URL統一）
  *
  * 実 API 接続実装前の UI 確認用サンプルデータ。
- * source: 'demo' で識別可能。
+ * source: 'demo' / isSearchPage: true で識別可能。
  * 各種欠損パターン（送料不明・評価なし・画像なし・価格信頼度 low / unknown）を含む。
  *
  * ⚠️ 価格・商品名・評価はすべて架空のダミーデータです。
+ * ⚠️ productUrl は各ショップの検索結果ページ（商品詳細ページではない）。
+ *    isSearchPage: true を付与し CTA を「○○で検索」と表示する。
  */
 
 import { ProductOffer } from './adapters/types';
+import { SHOPS, buildSearchUrl } from '@/lib/shops/shops';
+
+/** ショップコードでショップ定義を取得（簡易版） */
+const shopOf = (code: string) => SHOPS.find((s) => s.code === code)!;
 
 /**
  * デモオファーを返す。query を渡すとキーワードを含むタイトル・検索 URL を生成する。
  * 同じクエリに対しては決定的な価格を返す（ページリロード時に価格が変わらない）。
+ * Phase 13: buildSearchUrl() で URL 生成を shops.ts に統一。
  */
 export function getDemoOffers(query?: string): ProductOffer[] {
   const kw = query?.trim() || 'スマホケース';
@@ -24,11 +31,11 @@ export function getDemoOffers(query?: string): ProductOffer[] {
   const pv = (base: number, spread: number): number =>
     Math.round((base + (h % spread)) / 10) * 10;
 
-  // 各ショップの検索 URL（検索語を含む）
-  const amzUrl  = `https://www.amazon.co.jp/s?k=${encodeURIComponent(kw)}`;
-  const sheinUrl = `https://jp.shein.com/pdsearch/${encodeURIComponent(kw)}/`;
-  const aliUrl  = `https://ja.aliexpress.com/w/wholesale-${encodeURIComponent(kw)}.html`;
-  const temuUrl = `https://www.temu.com/search_result.html?search_key=${encodeURIComponent(kw)}`;
+  // Phase 13: shops.ts の buildSearchUrl() で URL 生成を一元管理
+  const amzUrl   = buildSearchUrl(shopOf('amazon'),     kw);
+  const sheinUrl = buildSearchUrl(shopOf('shein'),      kw);
+  const aliUrl   = buildSearchUrl(shopOf('aliexpress'), kw);
+  const temuUrl  = buildSearchUrl(shopOf('temu'),       kw);
 
   return [
     // ─────────────────── Amazon ────────────────────────────
@@ -52,6 +59,7 @@ export function getDemoOffers(query?: string): ProductOffer[] {
       fetchedAt: now,
       source: 'demo',
       isSponsored: false,
+      isSearchPage: true,  // Phase 13: 検索結果ページへのリンクであることを明示
     },
     {
       id: 'demo-amazon-2',
@@ -73,6 +81,7 @@ export function getDemoOffers(query?: string): ProductOffer[] {
       fetchedAt: now,
       source: 'demo',
       isSponsored: false,
+      isSearchPage: true,  // Phase 13: 検索結果ページへのリンクであることを明示
     },
     {
       id: 'demo-amazon-3',
@@ -94,6 +103,7 @@ export function getDemoOffers(query?: string): ProductOffer[] {
       fetchedAt: now,
       source: 'demo',
       isSponsored: false,
+      isSearchPage: true,  // Phase 13: 検索結果ページへのリンクであることを明示
     },
 
     // ─────────────────── SHEIN ─────────────────────────────
@@ -117,6 +127,7 @@ export function getDemoOffers(query?: string): ProductOffer[] {
       fetchedAt: now,
       source: 'demo',
       isSponsored: false,
+      isSearchPage: true,  // Phase 13: 検索結果ページへのリンクであることを明示
     },
     {
       id: 'demo-shein-2',
@@ -138,6 +149,7 @@ export function getDemoOffers(query?: string): ProductOffer[] {
       fetchedAt: now,
       source: 'demo',
       isSponsored: false,
+      isSearchPage: true,  // Phase 13: 検索結果ページへのリンクであることを明示
     },
 
     // ─────────────────── AliExpress ────────────────────────
@@ -161,6 +173,7 @@ export function getDemoOffers(query?: string): ProductOffer[] {
       fetchedAt: now,
       source: 'demo',
       isSponsored: false,
+      isSearchPage: true,  // Phase 13: 検索結果ページへのリンクであることを明示
     },
     {
       id: 'demo-aliexpress-2',
@@ -182,6 +195,7 @@ export function getDemoOffers(query?: string): ProductOffer[] {
       fetchedAt: now,
       source: 'demo',
       isSponsored: false,
+      isSearchPage: true,  // Phase 13: 検索結果ページへのリンクであることを明示
     },
 
     // ─────────────────── Temu ──────────────────────────────
@@ -205,6 +219,7 @@ export function getDemoOffers(query?: string): ProductOffer[] {
       fetchedAt: now,
       source: 'demo',
       isSponsored: false,
+      isSearchPage: true,  // Phase 13: 検索結果ページへのリンクであることを明示
     },
     {
       id: 'demo-temu-2',
@@ -226,6 +241,7 @@ export function getDemoOffers(query?: string): ProductOffer[] {
       fetchedAt: now,
       source: 'demo',
       isSponsored: false,
+      isSearchPage: true,  // Phase 13: 検索結果ページへのリンクであることを明示
     },
 
     // ─── 安全フィルターUI確認用 caution デモ商品 ──────────────────────
@@ -250,6 +266,7 @@ export function getDemoOffers(query?: string): ProductOffer[] {
       fetchedAt: now,
       source: 'demo',
       isSponsored: false,
+      isSearchPage: true,  // Phase 13: 検索結果ページへのリンクであることを明示
     },
   ];
 }

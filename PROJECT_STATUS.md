@@ -1,6 +1,6 @@
 # PROJECT_STATUS — ECサイト比較.com
 
-最終更新: 2026-05-24（Phase 12 比較ソート・実用導線強化 完了・live-check 14/14 PASS）
+最終更新: 2026-05-24（Phase 13 外部検索導線・クリック計測準備 完了・live-check 15/15 PASS）
 
 ## 現状
 
@@ -40,6 +40,7 @@
 | Phase 10（実用検索・比較MVP） | ✅ 完了（キーワード対応デモ・バナー改善・バッジ改善・8/8 PASS・2026-05-24）|
 | Phase 11（比較体験UI改善） | ✅ 完了（PriceComparisonBar・ショップフィルター・ボタン改善・直接検索改善・12/12 PASS・2026-05-24）|
 | Phase 12（比較ソート・実用導線強化） | ✅ 完了（ソート拡張・PriceComparisonBarクリックフィルター連動・EmptyState改善・14/14 PASS・2026-05-24）|
+| Phase 13（外部検索導線・クリック計測準備） | ✅ 完了（CTA文言正確化・URL生成統一・クリック計測拡充・15/15 PASS・2026-05-24）|
 
 ## 🔍 /report 送信失敗の根本原因（2026-05-24 調査完了）
 
@@ -132,6 +133,34 @@
 - [x] 4ショップすべて表示
 - [x] 外部リンクボタンあり
 - [x] PR/アフィリエイト開示あり
+
+## ✅ Phase 13 外部検索導線・クリック計測準備（2026-05-24 完了）
+
+| 変更 | 内容 |
+|---|---|
+| `types.ts` | `ProductOffer` に `isSearchPage?: boolean` 追加（検索ページ vs 商品詳細ページを区別）|
+| `demo-results.ts` | `buildSearchUrl()` で URL 生成を `shops.ts` に統一・`isSearchPage: true` 設定 |
+| `ProductCard.tsx` | CTA: `isSearchPage` が `true` なら「○○で検索」、`false/undefined` なら「○○で見る」に切り替え |
+| `search/page.tsx` | 直接検索リンクを `/api/click?...&source=direct_search` 経由に変更（クリック計測追加）|
+| `search/page.tsx` | 直接検索セクションヘッダーを「各ショップで「query」を検索」に変更 |
+| live-check | `phase13-external-search-cta-verify.spec.ts` — **15/15 PASS** |
+| Vercel deploy | `dpl_Dwpckt21NT94g9AusUKrBGcVQ8Gc` — READY |
+| regression | Phase 9 11/11 + Phase 10 8/8 + Phase 11 12/12 + Phase 12 14/14 すべて継続 PASS |
+
+**クリック計測の現状（Phase 13 時点）:**
+- `/api/click` route: Phase 6 から実装済み（`click_events` テーブルへ INSERT）
+- 全商品カード CTA: `/api/click?shop=...&to=...&offerId=...&q=...` 経由 ✅
+- 直接検索ボタン: `/api/click?shop=...&to=...&q=...&source=direct_search` 経由 ✅（Phase 13 新規）
+- Supabase 設定済み本番: `click_events` テーブルに shop_code / query / clicked_url / source を記録
+
+**完了条件（全満足）:**
+- [x] CTA文言が実態に合っている（検索ページ = 「○○で検索」）
+- [x] 外部検索 URL が `shops.ts` の `buildSearchUrl()` で統一
+- [x] 商品カード・直接検索ともに `/api/click` 経由でクリック計測
+- [x] `source=direct_search` で直接検索クリックを識別可能
+- [x] `target="_blank"` / `rel="noopener noreferrer"` が全外部リンクに付与
+- [x] 未承認アフィリエイト表現なし
+- [x] Phase 9/10/11/12 regression PASS
 
 ## ✅ Phase 12 比較ソート・実用導線強化（2026-05-24 完了）
 

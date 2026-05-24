@@ -10,6 +10,7 @@ import { getDemoOffers } from '@/lib/search/demo-results';
 import { saveSearchQuery } from '@/lib/favorites/actions';
 import { filterProductOffers } from '@/lib/safety/filter-product-offers';
 import { getShopByCode } from '@/lib/shops/shops';
+import { buildClickTrackingUrl } from '@/lib/affiliate/link-builder';
 
 interface SearchPageProps {
   searchParams: Promise<{ q?: string }>;
@@ -154,27 +155,37 @@ async function SearchResults({ query }: { query: string }) {
         query={query}
       />
 
-      {/* Phase 11: コンパクト直接検索セクション */}
+      {/* Phase 11: コンパクト直接検索セクション（Phase 13: /api/click 経由でクリック計測追加） */}
       {linkOnlyShops.length > 0 && (
         <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 space-y-2.5">
           <p className="text-xs font-semibold text-gray-500">
-            🔍 各ショップで「{query}」を直接検索
+            🔍 各ショップで「{query}」を検索
           </p>
           <div className="grid grid-cols-2 gap-2">
             {linkOnlyShops.map((shopResult) => {
               const shopDef = getShopByCode(shopResult.shopCode);
               const color = shopDef?.logoColor ?? '#888';
+              // Phase 13: /api/click 経由でクリック計測（source=direct_search で識別）
+              const trackingUrl = shopResult.searchUrl
+                ? buildClickTrackingUrl(
+                    shopResult.searchUrl,
+                    shopResult.shopCode,
+                    undefined,
+                    query
+                  ) + '&source=direct_search'
+                : '#';
               return (
                 <a
                   key={shopResult.shopCode}
-                  href={shopResult.searchUrl ?? '#'}
+                  href={trackingUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-white border hover:shadow-sm transition-shadow"
                   style={{ borderLeftWidth: 3, borderLeftColor: color }}
+                  aria-label={`${shopResult.shopName}で「${query}」を検索する`}
                 >
                   <span className="text-sm font-semibold" style={{ color }}>
-                    {shopResult.shopName}
+                    {shopResult.shopName}で検索
                   </span>
                   <svg
                     className="w-3.5 h-3.5 text-gray-400 shrink-0"
@@ -191,7 +202,7 @@ async function SearchResults({ query }: { query: string }) {
             })}
           </div>
           <p className="text-xs text-gray-400">
-            上の参考価格は目安です。実際の商品・価格・在庫は各ショップでご確認ください。
+            実際の商品・価格・在庫は各ショップの購入画面でご確認ください。
           </p>
         </div>
       )}

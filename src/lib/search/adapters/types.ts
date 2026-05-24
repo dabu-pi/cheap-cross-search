@@ -58,6 +58,12 @@ export interface ProductOffer {
   source?: string;
   /** スポンサー商品かどうか */
   isSponsored?: boolean;
+  /**
+   * productUrl が商品詳細ページではなく検索結果ページを指しているか。
+   * true の場合、CTA テキストを「○○で見る」ではなく「○○で検索」に変更する。
+   * 実 API 連携後の商品詳細 URL では false にする（省略時 = false として扱う）。
+   */
+  isSearchPage?: boolean;
   rawData?: Record<string, unknown>;
 }
 

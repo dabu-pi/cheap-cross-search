@@ -182,31 +182,43 @@ export function ProductCard({ offer, query, cautionReason }: ProductCardProps) {
             ⚑
           </a>
 
-          {/* ショップで見る（Phase 6: /api/click 経由） */}
-          <a
-            href={clickUrl}
-            target="_blank"
-            rel={`noopener noreferrer${isAffiliate ? ' sponsored' : ''}`}
-            className="flex items-center gap-1 text-sm font-semibold text-white px-4 py-1.5 rounded-xl transition-opacity hover:opacity-85 active:opacity-70"
-            style={{ backgroundColor: logoColor }}
-            aria-label={`${offer.shopName}で商品ページを開く`}
-          >
-            {offer.shopName}で見る
-            <svg
-              className="w-3.5 h-3.5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-              />
-            </svg>
-          </a>
+          {/* ショップへのリンク（Phase 6: /api/click 経由・Phase 13: CTA文言を実態に合わせて切り替え） */}
+          {(() => {
+            // isSearchPage=true: 検索結果ページへのリンク（参考価格段階）
+            // isSearchPage=false/undefined: 商品詳細ページへのリンク（実 API 連携後）
+            const ctaLabel = offer.isSearchPage
+              ? `${offer.shopName}で検索`
+              : `${offer.shopName}で見る`;
+            const ariaLabel = offer.isSearchPage
+              ? `${offer.shopName}で「${offer.title}」を検索する`
+              : `${offer.shopName}で商品ページを開く`;
+            return (
+              <a
+                href={clickUrl}
+                target="_blank"
+                rel={`noopener noreferrer${isAffiliate ? ' sponsored' : ''}`}
+                className="flex items-center gap-1 text-sm font-semibold text-white px-4 py-1.5 rounded-xl transition-opacity hover:opacity-85 active:opacity-70"
+                style={{ backgroundColor: logoColor }}
+                aria-label={ariaLabel}
+              >
+                {ctaLabel}
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
+                </svg>
+              </a>
+            );
+          })()}
         </div>
       </div>
 
