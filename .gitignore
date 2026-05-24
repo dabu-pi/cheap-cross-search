@@ -43,8 +43,9 @@ credentials.json
 token.json
 
 # vercel
-.vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel

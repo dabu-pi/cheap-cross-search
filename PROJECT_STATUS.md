@@ -1,6 +1,6 @@
 # PROJECT_STATUS — 安買い横断サーチ
 
-最終更新: 2026-05-24（/report 送信失敗の根本原因特定・.env.local 修正・Supabase CLI 設定完了）
+最終更新: 2026-05-24（Phase 9 Vercel本番デプロイ確認完了・11/11 PASS）
 
 ## 現状
 
@@ -27,7 +27,8 @@
 | /report DB 保存 | ✅ 完了（P8B-7・フォーム送信 → reported_products id=4 確認済み・2026-05-24）|
 | 管理者ユーザー登録 | ✅ 完了（P8B-10・admin_users INSERT 済み・2026-05-24）|
 | アカウント作成・ログイン確認 | ✅ 完了（P8B-8・ログイン済み・UUID取得済み）|
-| Vercel デプロイ | ⏳ 手動実施待ち |
+| Vercel デプロイ | ✅ 完了（https://cheap-cross-search.vercel.app・2026-05-24）|
+| Phase 9 本番確認 | ✅ 完了（P9-1〜P9-11 全 PASS・live-check-runner 11/11・2026-05-24）|
 
 ## 🔍 /report 送信失敗の根本原因（2026-05-24 調査完了）
 
@@ -49,14 +50,40 @@
 
 **確認:** PostgREST INSERT with 修正済み ANON KEY → HTTP 201 ✅
 
+## ✅ Phase 9 本番デプロイ確認（2026-05-24 完了）
+
+本番 URL: **https://cheap-cross-search.vercel.app**
+
+| テスト | 結果 |
+|---|---|
+| P9-1: / トップページ | ✅ PASS |
+| P9-2: /search?q=スマホケース | ✅ PASS |
+| P9-3: /report live モード（デモバナーなし） | ✅ PASS |
+| P9-4: /report reason 選択後 submit enabled | ✅ PASS |
+| P9-5: /login 本番フォーム表示 | ✅ PASS |
+| P9-6: /account → /login リダイレクト | ✅ PASS |
+| P9-7: /favorites/products → /login リダイレクト | ✅ PASS |
+| P9-8: /api/click Amazon URL 3xx リダイレクト | ✅ PASS |
+| P9-9: /api/click 不正 URL ブロック | ✅ PASS |
+| P9-10: /terms /privacy /safety-policy /disclaimer | ✅ PASS |
+| P9-11: /admin 管理画面表示 | ✅ PASS |
+| P9-12: MANUAL — 本番ログイン | ⏭ SKIP（手動確認）|
+| P9-13: MANUAL — 本番 /report DB 保存 | ⏭ SKIP（手動確認）|
+
+自動 11/11 PASS。Supabase Auth Redirect URL 追加は別途 Dashboard から実施。
+
 ## ⚠️ 次に実施すること（優先順）
 
 1. ✅ dev server 再起動済み
 2. ✅ `/report` 送信テスト → reported_products id=4 確認済み（P8B-7）
 3. ✅ アカウント作成・ログイン確認（P8B-8）
 4. ✅ 管理者ユーザー登録（admin_users INSERT済み・P8B-10）
-5. ⏳ `/admin` でログイン状態で管理画面が表示されることを確認
-6. ⏳ Vercel デプロイ（`docs/VERCEL_DEPLOYMENT.md` 参照）
+5. ✅ Vercel 本番デプロイ完了（P9-1〜P9-11 PASS）
+6. ⏳ Supabase Dashboard → Auth → URL Configuration に `https://cheap-cross-search.vercel.app/auth/callback` 追加（未確認）
+7. ⏳ P9-12: 本番ログイン確認（手動）
+8. ⏳ P9-13: 本番 /report DB 保存確認（手動）
+9. 🔜 Phase 5b: 実 API アダプタ実装（各ショップ申請後）
+10. 🔜 アフィリエイト ID 本番設定（申請・審査後）
 
 ## 完了内容（Phase 0-1）
 

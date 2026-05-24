@@ -1,6 +1,6 @@
 # Vercel デプロイ手順 — 安買い横断サーチ
 
-最終更新: 2026-05-24（Phase 8）
+最終更新: 2026-05-24（Phase 9 本番確認完了）
 
 ---
 
@@ -171,4 +171,30 @@ where shop_code = 'amazon';
 |---|---|---|
 | ローカル開発 | `http://localhost:3000` | `.env.local` の設定値 |
 | Vercel プレビュー | `https://cheap-cross-search-git-branch.vercel.app` | 本番と同じ（または別途設定）|
-| 本番 | `https://<your-domain>.vercel.app` | 本番 Supabase プロジェクト |
+| 本番 | **https://cheap-cross-search.vercel.app** | 本番 Supabase（lkusgqucqdvyijxjpqgh）|
+
+---
+
+## Phase 9 本番確認結果（2026-05-24 完了）
+
+live-check-runner で自動確認。`npm run test:cheap-cross-search:phase9`
+
+| テスト | 結果 |
+|---|---|
+| P9-1: / トップページ | ✅ PASS |
+| P9-2: /search?q=スマホケース | ✅ PASS |
+| P9-3: /report live モード | ✅ PASS |
+| P9-4: /report submit enabled | ✅ PASS |
+| P9-5: /login 本番フォーム | ✅ PASS |
+| P9-6: /account → /login | ✅ PASS |
+| P9-7: /favorites/products → /login | ✅ PASS |
+| P9-8: /api/click Amazon | ✅ PASS |
+| P9-9: /api/click 不正 URL ブロック | ✅ PASS |
+| P9-10: ポリシーページ4点 | ✅ PASS |
+| P9-11: /admin 管理画面 | ✅ PASS |
+| P9-12: MANUAL ログイン確認 | ⏭ SKIP |
+| P9-13: MANUAL /report DB 保存 | ⏭ SKIP |
+
+残タスク:
+- Supabase Auth Redirect URL に `https://cheap-cross-search.vercel.app/auth/callback` を追加（Dashboard から手動）
+- Vercel Preview 環境変数の設定（Dashboard から手動）
