@@ -13,18 +13,37 @@ interface ProductCardGridProps {
   cautionMap?: Map<string, string>;
   /** 検索クエリ（クリック計測に使用）*/
   query?: string;
+  /**
+   * Phase 12: 外部制御モード（ComparisonSection から渡す）
+   * 省略時は内部 state で自己管理。
+   */
+  shopFilter?: string;
+  onShopFilterChange?: (shopCode: string) => void;
 }
 
 /**
  * 商品カード一覧 + 並び替え + ショップフィルター UI（Client Component）
  *
- * - ショップフィルター: クライアントサイドでショップ絞り込み（Phase 11）
- * - 並び替え: クライアントサイドで即時反映（ページリロードなし）
- * - Phase 7: cautionMap で要注意ラベルを表示
+ * - Phase 11: ショップフィルター（内部 state）
+ * - Phase 12: 外部制御モード対応（ComparisonSection 経由で PriceComparisonBar と連動）
+ * - Phase 12: 並び替えに「参考価格が高い順」「ショップ順」追加、デフォルト「参考価格が安い順」
  */
-export function ProductCardGrid({ offers, cautionMap, query }: ProductCardGridProps) {
-  const [sortOrder, setSortOrder] = useState<SortOrder>('recommended');
-  const [shopFilter, setShopFilter] = useState<string>('all');
+export function ProductCardGrid({
+  offers,
+  cautionMap,
+  query,
+  shopFilter: externalShopFilter,
+  onShopFilterChange,
+}: ProductCardGridProps) {
+  const [sortOrder, setSortOrder] = useState<SortOrder>('price_asc');
+  // 外部制御 or 内部 state
+  const [internalShopFilter, setInternalShopFilter] = useState<string>('all');
+  const activeShopFilter = externalShopFilter !== undefined ? externalShopFilter : internalShopFilter;
+
+  const handleShopFilterChange = (code: string) => {
+    if (onShopFilterChange) onShopFilterChange(code);
+    else setInternalShopFilter(code);
+  };
 
   /** ショップ別件数（フィルター前） */
   const shopCounts = useMemo(() => {
@@ -45,11 +64,11 @@ export function ProductCardGrid({ offers, cautionMap, query }: ProductCardGridPr
     return counts;
   }, [offers]);
 
-  // ソート → ショップフィルター の順で適用
+  // ソート → ショップフィルターの順で適用
   const sorted   = sortOffers(offers, sortOrder);
-  const filtered = shopFilter === 'all'
+  const filtered = activeShopFilter === 'all'
     ? sorted
-    : sorted.filter((o) => o.shopCode === shopFilter);
+    : sorted.filter((o) => o.shopCode === activeShopFilter);
 
   return (
     <div className="space-y-3">
@@ -64,10 +83,10 @@ export function ProductCardGrid({ offers, cautionMap, query }: ProductCardGridPr
 
         {/* 「すべて」 */}
         <button
-          onClick={() => setShopFilter('all')}
-          aria-pressed={shopFilter === 'all'}
+          onClick={() => handleShopFilterChange('all')}
+          aria-pressed={activeShopFilter === 'all'}
           className={`shrink-0 text-xs px-3 py-1.5 rounded-full border transition-colors whitespace-nowrap ${
-            shopFilter === 'all'
+            activeShopFilter === 'all'
               ? 'bg-gray-800 text-white border-gray-800 font-semibold'
               : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400 hover:text-gray-800'
           }`}
@@ -77,22 +96,18 @@ export function ProductCardGrid({ offers, cautionMap, query }: ProductCardGridPr
 
         {/* 各ショップ */}
         {Array.from(shopCounts.entries()).map(([code, { name, color, count }]) => {
-          const isActive = shopFilter === code;
+          const isActive = activeShopFilter === code;
           return (
             <button
               key={code}
-              onClick={() => setShopFilter(code)}
+              onClick={() => handleShopFilterChange(isActive ? 'all' : code)}
               aria-pressed={isActive}
               className={`shrink-0 text-xs px-3 py-1.5 rounded-full border transition-colors whitespace-nowrap ${
                 isActive
                   ? 'text-white font-semibold'
                   : 'bg-white text-gray-600 border-gray-200'
               }`}
-              style={
-                isActive
-                  ? { backgroundColor: color, borderColor: color }
-                  : { '--hover-color': color } as React.CSSProperties
-              }
+              style={isActive ? { backgroundColor: color, borderColor: color } : {}}
               onMouseEnter={(e) => {
                 if (!isActive) {
                   (e.currentTarget as HTMLButtonElement).style.borderColor = color;
@@ -138,9 +153,9 @@ export function ProductCardGrid({ offers, cautionMap, query }: ProductCardGridPr
       {/* 件数 */}
       <p className="text-xs text-gray-400">
         {filtered.length} 件
-        {shopFilter !== 'all' && (
+        {activeShopFilter !== 'all' && (
           <button
-            onClick={() => setShopFilter('all')}
+            onClick={() => handleShopFilterChange('all')}
             className="ml-2 text-blue-400 hover:underline"
           >
             絞り込み解除
@@ -163,7 +178,7 @@ export function ProductCardGrid({ offers, cautionMap, query }: ProductCardGridPr
           <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-8 text-center space-y-1">
             <p className="text-sm text-gray-500">このショップの商品は表示できません</p>
             <button
-              onClick={() => setShopFilter('all')}
+              onClick={() => handleShopFilterChange('all')}
               className="text-xs text-blue-500 hover:underline"
             >
               すべてのショップを表示

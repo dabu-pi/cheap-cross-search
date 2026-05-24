@@ -1,6 +1,6 @@
 # PROJECT_STATUS — ECサイト比較.com
 
-最終更新: 2026-05-24（Phase 11 比較体験UI改善 完了・live-check 12/12 PASS）
+最終更新: 2026-05-24（Phase 12 比較ソート・実用導線強化 完了・live-check 14/14 PASS）
 
 ## 現状
 
@@ -39,6 +39,7 @@
 | SHEIN / A8.net 申請準備 | ✅ 準備完了（A8.net 経由手順整理済み・未申請）|
 | Phase 10（実用検索・比較MVP） | ✅ 完了（キーワード対応デモ・バナー改善・バッジ改善・8/8 PASS・2026-05-24）|
 | Phase 11（比較体験UI改善） | ✅ 完了（PriceComparisonBar・ショップフィルター・ボタン改善・直接検索改善・12/12 PASS・2026-05-24）|
+| Phase 12（比較ソート・実用導線強化） | ✅ 完了（ソート拡張・PriceComparisonBarクリックフィルター連動・EmptyState改善・14/14 PASS・2026-05-24）|
 
 ## 🔍 /report 送信失敗の根本原因（2026-05-24 調査完了）
 
@@ -131,6 +132,30 @@
 - [x] 4ショップすべて表示
 - [x] 外部リンクボタンあり
 - [x] PR/アフィリエイト開示あり
+
+## ✅ Phase 12 比較ソート・実用導線強化（2026-05-24 完了）
+
+| 変更 | 内容 |
+|---|---|
+| `sort.ts` | `price_desc`（参考価格が高い順）・`shop_order`（ショップ順）追加。デフォルト `price_asc` に変更 |
+| `PriceComparisonBar.tsx` | `'use client'` 追加・`selectedShop` / `onShopSelect` props 追加・クリック可能ボタン化 |
+| `ComparisonSection.tsx`（新規） | PriceComparisonBar + ProductCardGrid 間で `shopFilter` 状態を共有するクライアントラッパー |
+| `ProductCardGrid.tsx` | 外部制御モード（`shopFilter` / `onShopFilterChange` props）追加・デフォルトソート `price_asc` に変更 |
+| `search/page.tsx` | EmptyState に人気キーワード候補・「何を比較しますか」案内追加。`ComparisonSection` 利用に変更 |
+| live-check | `phase12-sort-navigation-verify.spec.ts` — **14/14 PASS** |
+| Vercel deploy | `dpl_EBGf7AZrmcvcvEJHJUs9TU9beoSh` — READY |
+| regression | Phase 9 11/11 + Phase 10 8/8 + Phase 11 12/12 すべて継続 PASS |
+
+**完了条件（全満足）:**
+- [x] 「参考価格が安い順」デフォルト表示
+- [x] 「参考価格が高い順」追加
+- [x] 「ショップ順」追加
+- [x] PriceComparisonBar タップで対応ショップフィルター連動
+- [x] EmptyState: 人気キーワード候補（スマホケース/ワイヤレスイヤホン等）
+- [x] EmptyState: 「何を比較しますか」案内
+- [x] /search?q=xxx 形式リンク
+- [x] 未承認アフィリエイト表現なし
+- [x] Phase 9/10/11 regression PASS
 
 ## ⚠️ 次に実施すること（優先順）
 

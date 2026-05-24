@@ -18,6 +18,7 @@
 | 5b | 実API/アフィリエイト調査・申請準備 | 🔄 進行中（Amazon✅ AliExpress⏳ Temu/SHEIN準備完了）| ★★★ |
 | 10 | 実用検索・比較MVP | ✅ 完了（キーワード対応デモ・バナー/バッジ改善・2026-05-24）| - |
 | 11 | 比較体験UI改善 | ✅ 完了（PriceComparisonBar・フィルター・ボタン改善・2026-05-24）| - |
+| 12 | 比較ソート・実用導線強化 | ✅ 完了（ソート拡張・クリックフィルター連動・EmptyState改善・14/14 PASS・2026-05-24）| - |
 
 ---
 
@@ -237,6 +238,24 @@ Authentication > URL Configuration > Redirect URL に /auth/callback を追加
 - [ ] SEO（title / description / OGP）
 - [ ] PWA アイコン作成（192x192 / 512x512）
 - [ ] カスタムドメイン設定
+
+---
+
+---
+
+## Phase 12: 比較ソート・実用導線強化 ✅ 完了（2026-05-24）
+
+**完了条件:** ソート機能拡充・PriceComparisonBar とショップフィルターが連動・EmptyState が実用的な案内を表示
+
+- [x] `sort.ts`: `price_desc`（参考価格が高い順）・`shop_order`（ショップ順）追加
+- [x] `sort.ts`: デフォルトソート → `price_asc`
+- [x] `PriceComparisonBar.tsx`: `'use client'`・クリック可能・`selectedShop`/`onShopSelect` props
+- [x] `ComparisonSection.tsx`（新規）: PriceComparisonBar ↔ ProductCardGrid 間の shopFilter 共有ラッパー
+- [x] `ProductCardGrid.tsx`: 外部制御モード対応（`shopFilter`/`onShopFilterChange` props）
+- [x] `search/page.tsx`: EmptyState 人気キーワード候補・「何を比較しますか」案内
+- [x] live-check-runner `phase12-sort-navigation-verify.spec.ts` — **14/14 PASS**
+- [x] Phase 9/10/11 regression すべて PASS（Phase 11 spec を Phase 12 変更に合わせて更新）
+- [x] Vercel deploy `dpl_EBGf7AZrmcvcvEJHJUs9TU9beoSh` — READY
 
 ---
 

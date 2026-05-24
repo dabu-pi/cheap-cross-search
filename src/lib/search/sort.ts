@@ -2,8 +2,10 @@ import { ProductOffer } from './adapters/types';
 import { getShopByCode } from '@/lib/shops/shops';
 
 export type SortOrder =
-  | 'recommended'
   | 'price_asc'
+  | 'price_desc'
+  | 'recommended'
+  | 'shop_order'
   | 'delivery_fast'
   | 'rating_desc'
   | 'review_count_desc';
@@ -14,11 +16,13 @@ export interface SortOption {
 }
 
 export const SORT_OPTIONS: SortOption[] = [
-  { value: 'recommended',      label: 'おすすめ順' },
-  { value: 'price_asc',        label: '安い順' },
-  { value: 'delivery_fast',    label: '到着が早い順' },
-  { value: 'rating_desc',      label: '評価が高い順' },
-  { value: 'review_count_desc', label: 'レビュー多い順' },
+  { value: 'price_asc',          label: '参考価格が安い順' },
+  { value: 'price_desc',         label: '参考価格が高い順' },
+  { value: 'recommended',        label: 'おすすめ順' },
+  { value: 'shop_order',         label: 'ショップ順' },
+  { value: 'delivery_fast',      label: '到着が早い順' },
+  { value: 'rating_desc',        label: '評価が高い順' },
+  { value: 'review_count_desc',  label: 'レビュー多い順' },
 ];
 
 /** ソート末尾へ追いやるための大きな数 */
@@ -65,9 +69,6 @@ export function sortOffers(offers: ProductOffer[], order: SortOrder): ProductOff
   const arr = [...offers];
 
   switch (order) {
-    case 'recommended':
-      return arr.sort((a, b) => recommendedScore(a) - recommendedScore(b));
-
     case 'price_asc':
       return arr.sort((a, b) => {
         const pa = a.estimatedTotalPrice ?? a.itemPrice ?? LARGE;
@@ -75,8 +76,29 @@ export function sortOffers(offers: ProductOffer[], order: SortOrder): ProductOff
         return pa - pb;
       });
 
+    case 'price_desc':
+      return arr.sort((a, b) => {
+        const pa = a.estimatedTotalPrice ?? a.itemPrice ?? 0;
+        const pb = b.estimatedTotalPrice ?? b.itemPrice ?? 0;
+        return pb - pa;
+      });
+
+    case 'recommended':
+      return arr.sort((a, b) => recommendedScore(a) - recommendedScore(b));
+
+    case 'shop_order':
+      // Amazon(1) → SHEIN(2) → AliExpress(3) → Temu(4) → 各ショップ内は参考価格安い順
+      return arr.sort((a, b) => {
+        const orderA = getShopByCode(a.shopCode)?.displayOrder ?? 99;
+        const orderB = getShopByCode(b.shopCode)?.displayOrder ?? 99;
+        if (orderA !== orderB) return orderA - orderB;
+        const pa = a.estimatedTotalPrice ?? a.itemPrice ?? LARGE;
+        const pb = b.estimatedTotalPrice ?? b.itemPrice ?? LARGE;
+        return pa - pb;
+      });
+
     case 'delivery_fast':
-      // deliveryEstimateText あり → なし の順。同条件は itemPrice 安い順
+      // deliveryEstimateText あり → なし の順。同条件は参考価格安い順
       return arr.sort((a, b) => {
         const hasA = a.deliveryEstimateText ? 0 : 1;
         const hasB = b.deliveryEstimateText ? 0 : 1;

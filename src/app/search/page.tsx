@@ -1,8 +1,7 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { SearchBar } from '@/components/search/SearchBar';
-import { ProductCardGrid } from '@/components/search/ProductCardGrid';
-import { PriceComparisonBar } from '@/components/search/PriceComparisonBar';
+import { ComparisonSection } from '@/components/search/ComparisonSection';
 import { FavoriteQueryButton } from '@/components/search/FavoriteQueryButton';
 import { SearchStatusSummary } from '@/components/search/SearchStatusSummary';
 import { DisclaimerBanner } from '@/components/ui/DisclaimerBanner';
@@ -53,17 +52,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 async function SearchResults({ query }: { query: string }) {
   const normalizedQuery = query.trim().replace(/\s+/g, ' ');
 
-  // Phase 5: crossSearch がアダプタ registry 経由で各ショップを取得
-  // ログイン中なら検索履歴を同時保存（エラーは無視）
   const [crossResult] = await Promise.all([
     crossSearch(query),
     saveSearchQuery(query, normalizedQuery).catch(() => {}),
   ]);
 
-  // Phase 5: registry から取得したオファー（現時点は全ショップ link_only のため空）
   const apiOffers = crossResult.offers;
 
-  // link_only ショップのリンク表示用（offers がないショップ）
+  // link_only ショップ（コンパクト直接検索セクション用）
   const linkOnlyShops = crossResult.shops.filter(
     (s) => s.status === 'link_only' || s.status === 'error'
   );
@@ -75,13 +71,17 @@ async function SearchResults({ query }: { query: string }) {
   // Phase 7: 安全フィルター適用
   const safetyResult = filterProductOffers(rawOffers);
   const displayOffers = safetyResult.annotated.map((a) => a.offer);
-  const cautionAnnotations = new Map(
+
+  // Phase 12: Record 形式（Server→Client シリアライズ用）
+  const cautionRecord: Record<string, string> = Object.fromEntries(
     safetyResult.annotated
       .filter((a) => a.safetyLevel === 'caution')
-      .map((a) => [a.offer.id, a.cautionReason ?? '要注意商品です。購入前に各ショップで内容をご確認ください。'])
+      .map((a) => [
+        a.offer.id,
+        a.cautionReason ?? '要注意商品です。購入前に各ショップで内容をご確認ください。',
+      ])
   );
 
-  // デモデータを使っているか
   const usingMock = apiOffers.some((o) => o.source === 'external_api_mock');
   const usingLegacyDemo = apiOffers.length === 0;
 
@@ -96,11 +96,8 @@ async function SearchResults({ query }: { query: string }) {
         <FavoriteQueryButton query={query} />
       </div>
 
-      {/* Phase 5: ショップ別取得状態サマリ */}
+      {/* ショップ別取得状態サマリ */}
       <SearchStatusSummary shops={crossResult.shops} />
-
-      {/* Phase 11: ショップ別参考価格サマリ */}
-      <PriceComparisonBar offers={displayOffers} />
 
       {/* 参考価格バナー（モックデータ or レガシーデモ） */}
       {(usingMock || usingLegacyDemo) && (
@@ -142,7 +139,7 @@ async function SearchResults({ query }: { query: string }) {
         </div>
       )}
 
-      {/* Phase 6: PR・アフィリエイト開示ノート */}
+      {/* PR・アフィリエイト開示 */}
       <p className="text-xs text-gray-400 leading-relaxed px-1">
         ※ 一部リンクは<strong className="font-medium">アフィリエイトリンク（PR）</strong>です。
         リンク経由で購入されると当サービスに報酬が発生する場合があります。
@@ -150,8 +147,12 @@ async function SearchResults({ query }: { query: string }) {
         <Link href="/disclaimer" className="text-blue-400 hover:underline ml-1 inline-block">詳細 →</Link>
       </p>
 
-      {/* ─── 商品カード比較UI（並び替え付き） ─── */}
-      <ProductCardGrid offers={displayOffers} cautionMap={cautionAnnotations} query={query} />
+      {/* Phase 12: ComparisonSection — PriceComparisonBar + ProductCardGrid を shopFilter 共有で連動 */}
+      <ComparisonSection
+        offers={displayOffers}
+        cautionRecord={cautionRecord}
+        query={query}
+      />
 
       {/* Phase 11: コンパクト直接検索セクション */}
       {linkOnlyShops.length > 0 && (
@@ -210,13 +211,60 @@ async function SearchResults({ query }: { query: string }) {
   );
 }
 
-/** クエリなし状態 */
+/** クエリなし状態（Phase 12: 人気キーワード候補付き） */
+const POPULAR_QUERIES = [
+  'スマホケース',
+  'ワイヤレスイヤホン',
+  '財布',
+  'リュック',
+  'プロテイン',
+  'マウス',
+  '充電器',
+  'ヘアアイロン',
+  'ゲームコントローラー',
+  '水筒',
+];
+
 function EmptyState() {
   return (
-    <div className="text-center py-16 space-y-3">
-      <p className="text-4xl">🔍</p>
-      <p className="text-gray-600 font-semibold">検索ワードを入力してください</p>
-      <p className="text-sm text-gray-400">上の検索バーにキーワードを入力してEnterを押してください</p>
+    <div className="py-10 space-y-6">
+      {/* メインメッセージ */}
+      <div className="text-center space-y-2">
+        <p className="text-4xl">🛒</p>
+        <p className="text-gray-800 font-bold text-lg">何を比較しますか？</p>
+        <p className="text-sm text-gray-400">
+          Amazon・SHEIN・AliExpress・Temu の参考価格を一度に確認
+        </p>
+      </div>
+
+      {/* 人気キーワード */}
+      <div className="space-y-2">
+        <p className="text-xs font-semibold text-gray-500">人気のキーワード</p>
+        <div className="flex flex-wrap gap-2">
+          {POPULAR_QUERIES.map((q) => (
+            <a
+              key={q}
+              href={`/search?q=${encodeURIComponent(q)}`}
+              className="text-sm px-3 py-1.5 rounded-full border border-gray-200 bg-white text-gray-700 hover:border-orange-300 hover:text-orange-600 transition-colors"
+            >
+              {q}
+            </a>
+          ))}
+        </div>
+      </div>
+
+      {/* 使い方ガイド */}
+      <div className="rounded-xl border border-gray-100 bg-white px-4 py-3 space-y-2">
+        <p className="text-xs font-semibold text-gray-500">使い方</p>
+        <ol className="text-xs text-gray-500 space-y-1 list-decimal list-inside leading-relaxed">
+          <li>上の検索バーにキーワードを入力して Enter</li>
+          <li>4ショップの参考価格帯を一覧比較</li>
+          <li>気になるショップのリンクから実際の商品ページへ</li>
+        </ol>
+        <p className="text-xs text-gray-400 pt-1">
+          ※ 表示価格は参考価格です。実際の金額は各ショップでご確認ください。
+        </p>
+      </div>
     </div>
   );
 }
