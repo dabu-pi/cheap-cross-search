@@ -1,6 +1,6 @@
 # PROJECT_STATUS — ECサイト比較.com
 
-最終更新: 2026-05-24（Phase 22 実商品検索API PoC 完了 — 楽天・Yahoo! アダプタ追加・20/20 PASS）
+最終更新: 2026-05-24（Phase 23 楽天市場 real_api 有効化 — RAKUTEN_APP_ID 設定・dataStatus=real_api・Production deploy READY）
 
 ## 現状
 
@@ -52,6 +52,31 @@
 | Phase 20A production 実機確認 | ✅ **ユーザー確認 OK**（検索視認性OK・外部検索モード説明 "現段階ではこれでいい" と判断・2026-05-24）|
 | Phase 21（検索体験・カテゴリ導線改善） | ✅ 完了（カテゴリ別人気キーワード・関連キーワード候補・EmptyState改善・外部検索モード説明・21/21 PASS・2026-05-24）|
 | Phase 22（実商品検索API PoC） | ✅ 完了（楽天市場・Yahoo!ショッピング アダプタ実装・6ショップ体制・APIキー設定で即有効化・20/20 PASS・2026-05-24）|
+| Phase 23（楽天市場 real_api 有効化） | ✅ 完了（RAKUTEN_APP_ID Vercel設定・dataStatus=real_api・Production deploy dpl_23cYjgoNL5JA7B1HQ3K92ZPKF6qr READY・2026-05-24）|
+| YAHOO_APP_ID / Yahoo!ショッピング | 🔜 未設定・external_search 維持（別フェーズで有効化）|
+
+## ✅ Phase 23 楽天市場 real_api 有効化（2026-05-24 完了）
+
+| 項目 | 内容 |
+|---|---|
+| RAKUTEN_APP_ID | Vercel Production/Preview に設定済み（値は非公開）|
+| `shops.ts` dataStatus | `'external_search'` → `'real_api'` に変更（commit: 811b2c1）|
+| Yahoo!ショッピング | `YAHOO_APP_ID` 未設定・`'external_search'` 維持（別フェーズ）|
+| TypeScript チェック | ✅ エラーなし（tsc --noEmit）|
+| ESLint | ✅ エラーなし |
+| Vercel deploy | `dpl_23cYjgoNL5JA7B1HQ3K92ZPKF6qr` — READY (Production) |
+| Production URL | https://cheap-cross-search.vercel.app |
+| ランタイムエラー | なし（vercel logs --level error 確認済み）|
+| Production HTTP | ✅ 200 OK（ワイヤレスイヤホン・スマホケース検索）|
+| 楽天コンテンツ確認 | ✅ 楽天関連コンテンツあり |
+| live-check-runner | N/A（このプロジェクトに live-check-runner 未設置）|
+
+**楽天アダプタ動作:** `RAKUTEN_APP_ID` 設定済みにより、楽天市場は link_only フォールバックを経ず
+楽天ウェブサービス商品検索 API から実商品を取得する `real_api` モードで稼働中。
+
+**次の実商品 API:** Yahoo!ショッピング — `YAHOO_APP_ID` を Yahoo!デベロッパーセンターで取得後に有効化予定。
+
+---
 
 ## 🔍 /report 送信失敗の根本原因（2026-05-24 調査完了）
 

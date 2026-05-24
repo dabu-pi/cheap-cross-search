@@ -475,6 +475,33 @@ Vercel: Project Settings > Environment Variables に設定後 `vercel --prod` �
 
 ---
 
+## Phase 23: 楽天市場 real_api 有効化 ✅ 完了（2026-05-24）
+
+**背景:** Phase 22 で実装済みのアダプタに `RAKUTEN_APP_ID` を Vercel に設定し、
+楽天市場を `dataStatus: 'external_search'` → `'real_api'` へ移行。
+
+**実施内容:**
+
+- [x] `RAKUTEN_APP_ID` を Vercel Production/Preview に設定（値は非公開）
+- [x] `src/lib/shops/shops.ts` — 楽天 `dataStatus: 'external_search'` → `'real_api'`
+  - Yahoo!ショッピングは `YAHOO_APP_ID` 未取得のため `external_search` 維持
+- [x] TypeScript チェック (`tsc --noEmit`) — エラーなし
+- [x] ESLint (`npm run lint`) — エラーなし
+- [x] commit `811b2c1` — push 済み
+- [x] Vercel Production deploy `dpl_23cYjgoNL5JA7B1HQ3K92ZPKF6qr` — READY
+- [x] ランタイムエラー確認 — なし
+- [x] Production HTTP 200 OK 確認（ワイヤレスイヤホン・スマホケース検索）
+- [x] 楽天コンテンツ表示確認 ✅
+
+**次の実商品 API 有効化候補:**
+
+| ショップ | 状態 |
+|---|---|
+| 楽天市場 | ✅ `real_api` 稼働中 |
+| Yahoo!ショッピング | 🔜 `YAHOO_APP_ID` 取得後に有効化 |
+
+---
+
 ## 将来の拡張候補
 
 | アイデア | 優先度 |
