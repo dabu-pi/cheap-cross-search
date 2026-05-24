@@ -79,7 +79,7 @@ export const INTEGRATION_MODE_LABELS: Record<IntegrationMode, string> = {
   official_api: '公式API',
   affiliate_api: 'アフィリエイトAPI',
   external_api: '外部API',
-  link_only: 'リンクのみ',
+  link_only: '検索対応',
   disabled: '無効',
 };
 

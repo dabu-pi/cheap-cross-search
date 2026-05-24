@@ -1,5 +1,5 @@
 /**
- * Phase 2 デモ用商品オファー
+ * Phase 2 デモ用商品オファー（Phase 10 でキーワード対応）
  *
  * 実 API 接続実装前の UI 確認用サンプルデータ。
  * source: 'demo' で識別可能。
@@ -10,8 +10,25 @@
 
 import { ProductOffer } from './adapters/types';
 
-export function getDemoOffers(): ProductOffer[] {
+/**
+ * デモオファーを返す。query を渡すとキーワードを含むタイトル・検索 URL を生成する。
+ * 同じクエリに対しては決定的な価格を返す（ページリロード時に価格が変わらない）。
+ */
+export function getDemoOffers(query?: string): ProductOffer[] {
+  const kw = query?.trim() || 'スマホケース';
   const now = new Date().toISOString();
+
+  // クエリのシードで価格を微妙に変化させる（同じクエリ → 同じ価格）
+  const h = kw.split('').reduce((a, c) => (a * 31 + c.charCodeAt(0)) & 0xffff, 0);
+  /** base を起点に seed % spread 分ずらし、10円単位で丸める */
+  const pv = (base: number, spread: number): number =>
+    Math.round((base + (h % spread)) / 10) * 10;
+
+  // 各ショップの検索 URL（検索語を含む）
+  const amzUrl  = `https://www.amazon.co.jp/s?k=${encodeURIComponent(kw)}`;
+  const sheinUrl = `https://jp.shein.com/pdsearch/${encodeURIComponent(kw)}/`;
+  const aliUrl  = `https://ja.aliexpress.com/w/wholesale-${encodeURIComponent(kw)}.html`;
+  const temuUrl = `https://www.temu.com/search_result.html?search_key=${encodeURIComponent(kw)}`;
 
   return [
     // ─────────────────── Amazon ────────────────────────────
@@ -19,13 +36,13 @@ export function getDemoOffers(): ProductOffer[] {
       id: 'demo-amazon-1',
       shopCode: 'amazon',
       shopName: 'Amazon',
-      title: '耐衝撃 スマホケース クリア 透明 TPU 薄型 四隅補強 [国内メーカー]',
+      title: `耐衝撃 ${kw} クリア 透明 TPU 薄型 四隅補強 [国内メーカー保証付き]`,
       imageUrl: undefined,
-      productUrl: 'https://www.amazon.co.jp',
+      productUrl: amzUrl,
       affiliateUrl: undefined,
-      itemPrice: 1280,
+      itemPrice: pv(1280, 400),
       shippingPrice: 0,
-      estimatedTotalPrice: 1280,
+      estimatedTotalPrice: pv(1280, 400),
       currency: 'JPY',
       taxIncludedStatus: 'included',
       deliveryEstimateText: '翌日配送',
@@ -40,13 +57,13 @@ export function getDemoOffers(): ProductOffer[] {
       id: 'demo-amazon-2',
       shopCode: 'amazon',
       shopName: 'Amazon',
-      title: '手帳型 スマホケース PUレザー カード収納 3枚 マグネット付き',
+      title: `[Amazon's Choice] ${kw} 日本正規品 高品質 人気モデル`,
       imageUrl: undefined,
-      productUrl: 'https://www.amazon.co.jp',
+      productUrl: amzUrl,
       affiliateUrl: undefined,
-      itemPrice: 2480,
+      itemPrice: pv(2480, 600),
       shippingPrice: 0,
-      estimatedTotalPrice: 2480,
+      estimatedTotalPrice: pv(2480, 600),
       currency: 'JPY',
       taxIncludedStatus: 'included',
       deliveryEstimateText: '翌日〜2日',
@@ -61,13 +78,13 @@ export function getDemoOffers(): ProductOffer[] {
       id: 'demo-amazon-3',
       shopCode: 'amazon',
       shopName: 'Amazon',
-      title: 'Android 多機種対応 衝撃吸収 スマホカバー 落下防止',
+      title: `コスパ重視 ${kw} スタンダードモデル 返品保証`,
       imageUrl: undefined,
-      productUrl: 'https://www.amazon.co.jp',
+      productUrl: amzUrl,
       affiliateUrl: undefined,
-      itemPrice: 890,
+      itemPrice: pv(890, 300),
       shippingPrice: 0,
-      estimatedTotalPrice: 890,
+      estimatedTotalPrice: pv(890, 300),
       currency: 'JPY',
       taxIncludedStatus: 'included',
       deliveryEstimateText: '翌日配送',
@@ -84,11 +101,11 @@ export function getDemoOffers(): ProductOffer[] {
       id: 'demo-shein-1',
       shopCode: 'shein',
       shopName: 'SHEIN',
-      title: 'ファッション スマホケース フラワー柄 シリコン おしゃれ',
+      title: `トレンド ${kw} おしゃれデザイン 韓国スタイル ソフト素材`,
       imageUrl: undefined,
-      productUrl: 'https://jp.shein.com',
+      productUrl: sheinUrl,
       affiliateUrl: undefined,
-      itemPrice: 450,
+      itemPrice: pv(450, 200),
       shippingPrice: undefined, // 条件付き無料のため不明
       estimatedTotalPrice: undefined,
       currency: 'JPY',
@@ -105,11 +122,11 @@ export function getDemoOffers(): ProductOffer[] {
       id: 'demo-shein-2',
       shopCode: 'shein',
       shopName: 'SHEIN',
-      title: 'シリコン スマホカバー 韓国風 ソフトケース',
+      title: `シンプル ${kw} ユニセックス ファッション フラワー柄`,
       imageUrl: undefined,
-      productUrl: 'https://jp.shein.com',
+      productUrl: sheinUrl,
       affiliateUrl: undefined,
-      itemPrice: 380,
+      itemPrice: pv(380, 150),
       shippingPrice: undefined,
       estimatedTotalPrice: undefined,
       currency: 'JPY',
@@ -128,13 +145,13 @@ export function getDemoOffers(): ProductOffer[] {
       id: 'demo-aliexpress-1',
       shopCode: 'aliexpress',
       shopName: 'AliExpress',
-      title: '格安 スマホケース 衝撃吸収 クリア TPU 4色展開 多機種対応',
+      title: `格安 ${kw} 直輸入 4色展開 耐衝撃 多機種対応`,
       imageUrl: undefined,
-      productUrl: 'https://ja.aliexpress.com',
+      productUrl: aliUrl,
       affiliateUrl: undefined,
-      itemPrice: 380,
+      itemPrice: pv(380, 150),
       shippingPrice: 200,
-      estimatedTotalPrice: 580,
+      estimatedTotalPrice: pv(380, 150) + 200,
       currency: 'JPY',
       taxIncludedStatus: 'excluded', // 関税別途の可能性あり
       deliveryEstimateText: '2〜4週間',
@@ -149,13 +166,13 @@ export function getDemoOffers(): ProductOffer[] {
       id: 'demo-aliexpress-2',
       shopCode: 'aliexpress',
       shopName: 'AliExpress',
-      title: 'スマホカバー 耐久性 薄型 マット仕上げ 多機種対応 送料無料',
+      title: `${kw} コスパ抜群 薄型 耐久性 マット仕上げ 送料無料`,
       imageUrl: undefined,
-      productUrl: 'https://ja.aliexpress.com',
+      productUrl: aliUrl,
       affiliateUrl: undefined,
-      itemPrice: 520,
+      itemPrice: pv(520, 200),
       shippingPrice: 0,
-      estimatedTotalPrice: 520,
+      estimatedTotalPrice: pv(520, 200),
       currency: 'JPY',
       taxIncludedStatus: 'excluded',
       deliveryEstimateText: undefined, // 到着予定不明
@@ -172,11 +189,11 @@ export function getDemoOffers(): ProductOffer[] {
       id: 'demo-temu-1',
       shopCode: 'temu',
       shopName: 'Temu',
-      title: '超格安 スマホケース 保護フィルム付き セット ソフトシリコン',
+      title: `激安 ${kw} お買い得セット 送料無料 ソフトタイプ`,
       imageUrl: undefined,
-      productUrl: 'https://www.temu.com',
+      productUrl: temuUrl,
       affiliateUrl: undefined,
-      itemPrice: 280,
+      itemPrice: pv(280, 120),
       shippingPrice: undefined,
       estimatedTotalPrice: undefined,
       currency: 'JPY',
@@ -193,11 +210,11 @@ export function getDemoOffers(): ProductOffer[] {
       id: 'demo-temu-2',
       shopCode: 'temu',
       shopName: 'Temu',
-      title: 'スマホカバー お買い得 3個セット まとめ買い',
+      title: `${kw} まとめ買いセット 超格安 コスパ最高 3個入り`,
       imageUrl: undefined,
-      productUrl: 'https://www.temu.com',
+      productUrl: temuUrl,
       affiliateUrl: undefined,
-      itemPrice: 650,
+      itemPrice: pv(650, 200),
       shippingPrice: undefined,
       estimatedTotalPrice: undefined,
       currency: 'JPY',
@@ -217,13 +234,13 @@ export function getDemoOffers(): ProductOffer[] {
       id: 'demo-aliexpress-3',
       shopCode: 'aliexpress',
       shopName: 'AliExpress',
-      title: '大容量モバイルバッテリー 20000mAh 急速充電対応 Type-C',
+      title: `大容量 モバイルバッテリー 内蔵 ${kw} 充電ケース 急速充電 Type-C`,
       imageUrl: undefined,
-      productUrl: 'https://ja.aliexpress.com',
+      productUrl: aliUrl,
       affiliateUrl: undefined,
-      itemPrice: 1580,
+      itemPrice: pv(1580, 400),
       shippingPrice: 0,
-      estimatedTotalPrice: 1580,
+      estimatedTotalPrice: pv(1580, 400),
       currency: 'JPY',
       taxIncludedStatus: 'excluded',
       deliveryEstimateText: '2〜3週間',

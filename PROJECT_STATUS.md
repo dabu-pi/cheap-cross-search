@@ -1,6 +1,6 @@
-# PROJECT_STATUS — 安買い横断サーチ
+# PROJECT_STATUS — ECサイト比較.com
 
-最終更新: 2026-05-24（サービス名 → ECサイト比較.com・Vercel本番デプロイ・live-check 11/11 PASS）
+最終更新: 2026-05-24（Phase 10 実用検索・比較MVP 完了・live-check 8/8 PASS）
 
 ## 現状
 
@@ -35,8 +35,9 @@
 | サービス名変更 | ✅ 完了（「安買い横断サーチ」→「ECサイト比較.com」・2026-05-24）|
 | ECサイト比較.com 本番反映 | ✅ 完了（Vercel deploy 757bf98・live-check 11/11 PASS・2026-05-24）|
 | AliExpress Portals 申請 | ⏳ 審査中（Submitted 2026-05-23 22:16 PST・実機確認済み・メール通知待ち）|
-| Temu Affiliate 申請準備 | ✅ 準備完了（申請情報整理済み・未申請）|
+| Temu Affiliate 申請準備 | ✅ 準備完了（申請情報整理済み・**未申請 HOLD**）|
 | SHEIN / A8.net 申請準備 | ✅ 準備完了（A8.net 経由手順整理済み・未申請）|
+| Phase 10（実用検索・比較MVP） | ✅ 完了（キーワード対応デモ・バナー改善・バッジ改善・8/8 PASS・2026-05-24）|
 
 ## 🔍 /report 送信失敗の根本原因（2026-05-24 調査完了）
 
@@ -89,26 +90,35 @@
 
 **Phase 9 全確認完了。本番稼働中。**
 
+## ✅ Phase 10 実用検索・比較MVP（2026-05-24 完了）
+
+| 変更 | 内容 |
+|---|---|
+| `getDemoOffers(query?)` | `query` 対応 — キーワードをタイトルに含むデモ商品を生成 |
+| 価格変動 | クエリハッシュで決定的に変化（同クエリ = 同価格・別クエリ = 別価格） |
+| 検索 URL | 各ショップの商品タイトル・URL にキーワードを含む |
+| 参考価格バナー | 「⚠️ サンプル表示中」→「📊 参考価格を表示中」（控えめな小バナー） |
+| ショップバッジ | 「🔗 リンクのみ」（黄）→「🛒 検索対応」（青）— SearchStatusSummary / ShopCard / registry |
+| live-check | `phase10-search-mvp-verify.spec.ts` — 8/8 PASS |
+| Vercel deploy | `dpl_6DzR97Dr8cPwfgVaFEgHwJ9gpsta` — READY |
+
+**完了条件（全満足）:**
+- [x] `/search?q=ワイヤレスイヤホン` → タイトルに「ワイヤレスイヤホン」が含まれる
+- [x] 「参考価格を表示中」バナー表示（⚠️サンプル表示中なし）
+- [x] 「検索対応」バッジ（リンクのみなし）
+- [x] 4ショップすべて表示
+- [x] 外部リンクボタンあり
+- [x] PR/アフィリエイト開示あり
+
 ## ⚠️ 次に実施すること（優先順）
 
-1. ✅ dev server 再起動済み
-2. ✅ `/report` 送信テスト → reported_products id=4 確認済み（P8B-7）
-3. ✅ アカウント作成・ログイン確認（P8B-8）
-4. ✅ 管理者ユーザー登録（admin_users INSERT済み・P8B-10）
-5. ✅ Vercel 本番デプロイ完了（P9-1〜P9-11 PASS）
-6. ✅ P9-12: 本番ログイン確認（ユーザー実機）
-7. ✅ P9-13: 本番 /report DB 保存確認（ユーザー実機）
-8. 🔜 Supabase Dashboard → Auth → URL Configuration に `https://cheap-cross-search.vercel.app/auth/callback` 追加（メール認証用・任意）
-9. ✅ Phase 5b 調査完了（docs/API_AFFILIATE_RESEARCH.md 作成）
-10. ✅ Amazonアソシエイト登録完了・affiliate_settings DB更新済み
-11. ⏳ AliExpress Portals → **審査中**（実機確認済み・メール待ち）
-12. ✅ サービス名 → ECサイト比較.com（本番反映済み）
-13. 🔜 **Temu Affiliate 申請**（次タスク — https://www.temu.com/affiliate.html）
-14. 🔜 **SHEIN / A8.net 申請**（次タスク — https://www.a8.net/ → SHEIN プログラム）
-12. 🔜 Amazon PA-API アクセスキー取得（アソシエイト承認後・売上3件達成後）
-13. 🔜 Amazon PA-API アダプタ実装（`src/lib/search/adapters/amazon-pa-api.ts`）
-14. 🔜 Temu Affiliate 申請
-15. 🔜 SHEIN / バリューコマース登録
+1. ⏳ **AliExpress Portals 承認待ち** — メール通知後 affiliate_settings DB 更新 + アダプタ実装
+2. 🔜 **SHEIN / A8.net 申請** — https://www.a8.net/ → SHEIN プログラム
+3. 🔜 **Temu Affiliate 申請**（HOLD — サイト充実後）— https://www.temu.com/affiliate.html
+4. 🔜 Amazon PA-API アクセスキー取得（売上3件達成後・自動有効化）
+5. 🔜 Amazon PA-API アダプタ実装（`src/lib/search/adapters/amazon-pa-api.ts`）
+6. 🔜 AliExpress Portals アダプタ実装（承認後）
+7. 🔜 Supabase Auth URL Configuration 追加（任意・メール認証用）
 
 ## 完了内容（Phase 0-1）
 

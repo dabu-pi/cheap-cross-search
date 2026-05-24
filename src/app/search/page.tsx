@@ -67,8 +67,8 @@ async function SearchResults({ query }: { query: string }) {
     (s) => s.status === 'link_only' || s.status === 'error'
   );
 
-  // 表示するオファー: API取得 → なければ legacy デモデータ
-  const demoOffers = getDemoOffers();
+  // 表示するオファー: API取得 → なければキーワード対応デモデータ
+  const demoOffers = getDemoOffers(query);
   const rawOffers = apiOffers.length > 0 ? apiOffers : demoOffers;
 
   // Phase 7: 安全フィルター適用
@@ -98,27 +98,26 @@ async function SearchResults({ query }: { query: string }) {
       {/* Phase 5: ショップ別取得状態サマリ */}
       <SearchStatusSummary shops={crossResult.shops} />
 
-      {/* デモ注意バナー（モックデータ or レガシーデモ） */}
+      {/* 参考価格バナー（モックデータ or レガシーデモ） */}
       {(usingMock || usingLegacyDemo) && (
-        <div className="rounded-xl bg-blue-50 border border-blue-200 px-4 py-3 space-y-1">
-          <p className="text-sm font-semibold text-blue-700">⚠️ サンプル表示中</p>
-          <p className="text-xs text-blue-600 leading-relaxed">
-            現在表示している商品・価格はサンプルデータです。<br />
-            {usingMock
-              ? '本格 API 接続前のモックデータ（外部 API アダプタ）を使用しています。'
-              : '実際の商品データ取得前のデモデータを使用しています。'}
-            実際の検索結果は下部「ショップで直接検索」からご確認ください。
-          </p>
-          {crossResult.globalWarnings && crossResult.globalWarnings.length > 0 && (
-            <details className="mt-1">
-              <summary className="text-xs text-blue-500 cursor-pointer">技術情報 ▼</summary>
-              <ul className="mt-1 space-y-0.5">
-                {crossResult.globalWarnings.map((w, i) => (
-                  <li key={i} className="text-xs text-blue-500 pl-2">• {w}</li>
-                ))}
-              </ul>
-            </details>
-          )}
+        <div className="rounded-xl bg-blue-50 border border-blue-100 px-3 py-2.5 flex items-start gap-2">
+          <span className="text-blue-400 text-sm mt-0.5 shrink-0">📊</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-blue-700 leading-relaxed">
+              <strong className="font-semibold">参考価格を表示中</strong> —
+              各ショップの価格帯イメージです。実際の価格・在庫は各ショップでご確認ください。
+            </p>
+            {crossResult.globalWarnings && crossResult.globalWarnings.length > 0 && (
+              <details className="mt-1">
+                <summary className="text-xs text-blue-400 cursor-pointer">技術情報 ▼</summary>
+                <ul className="mt-1 space-y-0.5">
+                  {crossResult.globalWarnings.map((w, i) => (
+                    <li key={i} className="text-xs text-blue-400 pl-2">• {w}</li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </div>
         </div>
       )}
 

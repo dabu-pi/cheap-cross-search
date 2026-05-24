@@ -17,21 +17,21 @@ interface SearchStatusSummaryProps {
 
 const STATUS_BADGE: Record<string, string> = {
   success: 'bg-green-100 text-green-700 border-green-200',
-  link_only: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+  link_only: 'bg-blue-50 text-blue-600 border-blue-200',
   disabled: 'bg-gray-100 text-gray-400 border-gray-200',
   error: 'bg-red-100 text-red-600 border-red-200',
 };
 
 const STATUS_ICON: Record<string, string> = {
   success: '✓',
-  link_only: '🔗',
+  link_only: '🛒',
   disabled: '—',
   error: '!',
 };
 
 const STATUS_LABEL: Record<string, string> = {
   success: '取得済み',
-  link_only: 'リンクのみ',
+  link_only: '検索対応',
   disabled: '無効',
   error: 'エラー',
 };
