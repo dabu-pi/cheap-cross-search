@@ -1,6 +1,7 @@
 # 実API/アフィリエイト調査レポート — 安買い横断サーチ Phase 5b
 
 作成: 2026-05-24  
+最終更新: 2026-05-24（Amazonアソシエイト登録完了・affiliate_settings DB更新済み）  
 対象ブランチ: `feature/phase8-supabase-vercel`  
 本番URL: https://cheap-cross-search.vercel.app
 
@@ -10,7 +11,7 @@
 
 | ショップ | 商品検索API | アフィリエイト | 優先分類 | 推奨アクション |
 |---|---|---|---|---|
-| Amazon | ✅ PA-API v5（要アソシエイト）| ✅ Amazonアソシエイト | `ready_to_apply` | アソシエイト申請 → PA-API有効化 |
+| Amazon | ✅ PA-API v5（要アソシエイト）| ✅ **登録完了** | `ready_to_apply` | ✅ 申請完了・DB登録済み / 次: PA-API有効化 |
 | AliExpress | ✅ Portals Affiliate API（要登録）| ✅ AliExpress Portals | `ready_to_apply` | Portals登録 → API申請 |
 | SHEIN | ❌ 公式なし | ✅ 提携ネットワーク経由 | `needs_review` | バリューコマース/A8経由で申請 |
 | Temu | ❌ 公式なし | ✅ Temu Affiliate（公式）| `needs_review` | Temu Affiliate登録・API確認 |
@@ -60,7 +61,17 @@
 - 商標・ロゴ: Amazonのロゴ使用は制限あり（アソシエイト規約参照）
 - 既存の免責バナー（`/disclaimer`・`/safety-policy`）でほぼ対応可能
 
-### 1-4. 実装方針
+### 1-4. 登録状況（2026-05-24）
+
+| 項目 | 状態 |
+|---|---|
+| アソシエイト申請 | ✅ 完了 |
+| affiliate_id | ✅ DB登録済み（`cheapc***-22`・Gitコミットなし）|
+| `affiliate_settings.enabled` | ✅ `true` |
+| PA-API アクセス | ⏳ 売上3件達成後に自動有効化 |
+| Access Key / Secret Key | 🔜 PA-API 有効化後に取得・Vercel env に設定 |
+
+### 1-5. 実装方針
 
 ```typescript
 // src/lib/search/adapters/amazon-pa-api.ts（将来実装）
@@ -262,7 +273,7 @@ Temu Affiliate 登録後、アフィリエイトリンクを affiliate_settings 
 | # | ショップ | 申請先 | URL | 必要なもの |
 |---|---|---|---|---|
 | 1 | AliExpress | Portals Affiliate | https://portals.aliexpress.com/signup | サイトURL・月間PV目安・コンテンツ説明 |
-| 2 | Amazon | Amazonアソシエイト | https://affiliate.amazon.co.jp/ | サイトURL・コンテンツ説明・振込先口座 |
+| 2 | ~~Amazon~~ | ~~Amazonアソシエイト~~ | ~~https://affiliate.amazon.co.jp/~~ | **✅ 登録完了（2026-05-24）**。次: PA-API有効化（売上3件後）|
 
 ### 優先度中（申請開始後、並行で）
 

@@ -1,6 +1,6 @@
 # PROJECT_STATUS — 安買い横断サーチ
 
-最終更新: 2026-05-24（Phase 9 全確認完了・P9-12/P9-13 ユーザー実機確認済み）
+最終更新: 2026-05-24（Amazonアソシエイト登録完了・affiliate_settings DB更新済み）
 
 ## 現状
 
@@ -29,6 +29,9 @@
 | アカウント作成・ログイン確認 | ✅ 完了（P8B-8・ログイン済み・UUID取得済み）|
 | Vercel デプロイ | ✅ 完了（https://cheap-cross-search.vercel.app・2026-05-24）|
 | Phase 9 本番確認 | ✅ 完了（P9-1〜P9-13 全確認済み・2026-05-24）|
+| Amazonアソシエイト登録 | ✅ 完了（ID: DB登録済み `cheapc***-22`・2026-05-24）|
+| Amazon affiliate_settings | ✅ 更新済み（enabled=true・DB保存・Gitコミットなし）|
+| Phase 5b（API調査・申請準備） | ✅ 調査完了（docs/API_AFFILIATE_RESEARCH.md 作成済み・2026-05-24）|
 
 ## 🔍 /report 送信失敗の根本原因（2026-05-24 調査完了）
 
@@ -91,8 +94,13 @@
 6. ✅ P9-12: 本番ログイン確認（ユーザー実機）
 7. ✅ P9-13: 本番 /report DB 保存確認（ユーザー実機）
 8. 🔜 Supabase Dashboard → Auth → URL Configuration に `https://cheap-cross-search.vercel.app/auth/callback` 追加（メール認証用・任意）
-9. 🔜 **Phase 5b: 実 API / アフィリエイト調査・申請準備**（次フェーズ）
-10. 🔜 アフィリエイト ID 本番設定（各ショップ申請・審査後）
+9. ✅ Phase 5b 調査完了（docs/API_AFFILIATE_RESEARCH.md 作成）
+10. ✅ Amazonアソシエイト登録完了・affiliate_settings DB更新済み
+11. 🔜 **AliExpress Portals 申請**（次の申請優先タスク）
+12. 🔜 Amazon PA-API アクセスキー取得（アソシエイト承認後・売上3件達成後）
+13. 🔜 Amazon PA-API アダプタ実装（`src/lib/search/adapters/amazon-pa-api.ts`）
+14. 🔜 Temu Affiliate 申請
+15. 🔜 SHEIN / バリューコマース登録
 
 ## 完了内容（Phase 0-1）
 
