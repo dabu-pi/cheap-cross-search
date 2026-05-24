@@ -1,6 +1,6 @@
 # SUPABASE_SETUP.md — 安買い横断サーチ Supabase 設定手順
 
-最終更新: 2026-05-24（Phase 8b /report INSERT 失敗修正・0003 hotfix）
+最終更新: 2026-05-24（0003 v2 — reporter_user_id カラム名修正）
 
 ---
 
@@ -12,8 +12,28 @@
 Supabase SQL Editor 経由で作成したテーブルには `ALTER DEFAULT PRIVILEGES` が自動適用されない場合がある。
 `anon` ロールが `INSERT` 権限を持たないため Supabase が 403/RLS エラーを返す。
 
-**修正:** `supabase/migrations/0003_fix_reported_products_insert_policy.sql` を SQL Editor で実行  
+**修正:** `supabase/migrations/0003_fix_reported_products_insert_policy.sql`（v2）を SQL Editor で実行  
 → `anon` / `authenticated` に対して明示的 GRANT を付与（Step 3-3 参照）
+
+**v2 追加修正（2026-05-24）:** 実スキーマ確認で `reporter_user_id` が正しいカラム名と判明。
+`"reported_products: owner select"` policy の `user_id` → `reporter_user_id` に修正済み。
+
+**実スキーマ（確認済み）:**
+
+| カラム | NULL | 備考 |
+|---|---|---|
+| `id` | NOT NULL | bigint, auto increment |
+| `offer_id` | NULL可 | |
+| `shop_code` | NULL可 | |
+| `title_snapshot` | NULL可 | |
+| `reason` | NOT NULL | |
+| `comment` | NULL可 | |
+| `reporter_user_id` | NULL可 | uuid — `user_id` ではない |
+| `reporter_ip_hash` | NULL可 | |
+| `status` | NOT NULL | default `'pending'` |
+| `admin_notes` | NULL可 | |
+| `created_at` | NOT NULL | default `now()` |
+| `reviewed_at` | NULL可 | |
 
 ---
 

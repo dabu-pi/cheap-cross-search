@@ -1,7 +1,12 @@
 -- ============================================================
--- 0003_fix_reported_products_insert_policy.sql
+-- 0003_fix_reported_products_insert_policy.sql  (v2 — 2026-05-24)
 -- /report 送信失敗修正: reported_products / click_events の
 -- anon / authenticated ロールへの明示的 GRANT 追加
+--
+-- v2 修正点:
+--   reported_products の owner select policy で
+--   存在しない `user_id` カラムを参照していた → 実カラム `reporter_user_id` に修正
+--   実スキーマ確認: reporter_user_id (uuid, nullable) が正しいカラム名
 --
 -- 背景:
 --   0002 migration で RLS policy ("with check (true)") は設定済みだが、
@@ -57,18 +62,19 @@ grant select on public.blocked_keywords to authenticated;
 grant select on public.admin_users to authenticated;
 
 -- ── STEP 7: reported_products RLS policy 再作成（idempotent） ────
--- 既存 policy を DROP して再作成（内容は同じだが GRANT とセットで適用）
+-- 既存 policy を DROP して再作成（GRANT とセットで適用）
 drop policy if exists "reported_products: anyone insert" on public.reported_products;
 create policy "reported_products: anyone insert"
   on public.reported_products
   for insert
   with check (true);
 
+-- 実スキーマ確認済み: user_id カラムは存在しない → reporter_user_id が正しいカラム名
 drop policy if exists "reported_products: owner select" on public.reported_products;
 create policy "reported_products: owner select"
   on public.reported_products
   for select
-  using (auth.uid() = user_id);
+  using (auth.uid() = reporter_user_id);
 
 -- ── STEP 8: click_events RLS policy 再作成（idempotent） ─────────
 drop policy if exists "click_events: anyone insert" on public.click_events;
