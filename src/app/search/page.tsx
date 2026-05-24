@@ -11,6 +11,8 @@ import { saveSearchQuery } from '@/lib/favorites/actions';
 import { filterProductOffers } from '@/lib/safety/filter-product-offers';
 import { getShopByCode } from '@/lib/shops/shops';
 import { buildClickTrackingUrl } from '@/lib/affiliate/link-builder';
+import { createClient } from '@/lib/supabase/server';
+import type { ProductOffer } from '@/lib/search/adapters/types';
 
 interface SearchPageProps {
   searchParams: Promise<{ q?: string }>;
@@ -53,10 +55,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 async function SearchResults({ query }: { query: string }) {
   const normalizedQuery = query.trim().replace(/\s+/g, ' ');
 
-  const [crossResult] = await Promise.all([
+  // Phase 18: Amazon アフィリエイトタグ取得を crossSearch と並列実行
+  const [crossResult, amazonTag] = await Promise.all([
     crossSearch(query),
-    saveSearchQuery(query, normalizedQuery).catch(() => {}),
+    getAmazonAffiliateTag(),
   ]);
+  // 検索クエリ保存はバックグラウンド（失敗しても無視）
+  saveSearchQuery(query, normalizedQuery).catch(() => {});
 
   const apiOffers = crossResult.offers;
 
@@ -69,8 +74,23 @@ async function SearchResults({ query }: { query: string }) {
   const demoOffers = getDemoOffers(query);
   const rawOffers = apiOffers.length > 0 ? apiOffers : demoOffers;
 
-  // Phase 7: 安全フィルター適用
-  const safetyResult = filterProductOffers(rawOffers);
+  // Phase 18: Amazon アフィリエイトタグをサーバーサイドで付与
+  // affiliateUrl に tag 付き URL をセット。productUrl は変更しない。
+  // affiliate_id 自体はクライアントに渡さず、生成済み URL のみをシリアライズする。
+  const offersWithTags: ProductOffer[] = amazonTag
+    ? rawOffers.map((offer) => {
+        if (offer.shopCode === 'amazon' && !offer.affiliateUrl) {
+          const taggedUrl = applyAmazonTag(offer.productUrl, amazonTag);
+          if (taggedUrl !== offer.productUrl) {
+            return { ...offer, affiliateUrl: taggedUrl };
+          }
+        }
+        return offer;
+      })
+    : rawOffers;
+
+  // Phase 7: 安全フィルター適用（Phase 18: tag 付きオファーを使用）
+  const safetyResult = filterProductOffers(offersWithTags);
   const displayOffers = safetyResult.annotated.map((a) => a.offer);
 
   // Phase 12: Record 形式（Server→Client シリアライズ用）
@@ -220,6 +240,49 @@ async function SearchResults({ query }: { query: string }) {
       </div>
     </>
   );
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Phase 18: Amazon アフィリエイトタグ付与ヘルパー（サーバーサイド専用）
+// ─────────────────────────────────────────────────────────────────
+
+/**
+ * Supabase DB から Amazon アフィリエイト設定を取得し、affiliate_id を返す。
+ * DB 未接続・行なし・enabled=false の場合は null を返す（フォールバック）。
+ *
+ * ⚠️ この関数の戻り値は Server Component 内でのみ使用すること。
+ *    affiliate_id をそのままクライアントコンポーネントの props に渡さないこと。
+ */
+async function getAmazonAffiliateTag(): Promise<string | null> {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return null;
+    const { data, error } = await supabase
+      .from('affiliate_settings')
+      .select('affiliate_id, enabled')
+      .eq('shop_code', 'amazon')
+      .eq('enabled', true)
+      .single();
+    if (error || !data) return null;
+    return (data.affiliate_id as string) || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Amazon 検索 URL に `tag` パラメータを付与する。
+ * URL パースに失敗した場合は元の URL をそのまま返す（安全フォールバック）。
+ */
+function applyAmazonTag(productUrl: string, affiliateTag: string): string {
+  if (!affiliateTag) return productUrl;
+  try {
+    const url = new URL(productUrl);
+    url.searchParams.set('tag', affiliateTag);
+    return url.toString();
+  } catch {
+    return productUrl;
+  }
 }
 
 /** クエリなし状態（Phase 12: 人気キーワード候補付き） */
