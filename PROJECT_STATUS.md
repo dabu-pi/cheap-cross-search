@@ -1,6 +1,6 @@
 # PROJECT_STATUS — 安買い横断サーチ
 
-最終更新: 2026-05-24（Phase 9 Vercel本番デプロイ確認完了・11/11 PASS）
+最終更新: 2026-05-24（Phase 9 全確認完了・P9-12/P9-13 ユーザー実機確認済み）
 
 ## 現状
 
@@ -28,7 +28,7 @@
 | 管理者ユーザー登録 | ✅ 完了（P8B-10・admin_users INSERT 済み・2026-05-24）|
 | アカウント作成・ログイン確認 | ✅ 完了（P8B-8・ログイン済み・UUID取得済み）|
 | Vercel デプロイ | ✅ 完了（https://cheap-cross-search.vercel.app・2026-05-24）|
-| Phase 9 本番確認 | ✅ 完了（P9-1〜P9-11 全 PASS・live-check-runner 11/11・2026-05-24）|
+| Phase 9 本番確認 | ✅ 完了（P9-1〜P9-13 全確認済み・2026-05-24）|
 
 ## 🔍 /report 送信失敗の根本原因（2026-05-24 調査完了）
 
@@ -67,10 +67,19 @@
 | P9-9: /api/click 不正 URL ブロック | ✅ PASS |
 | P9-10: /terms /privacy /safety-policy /disclaimer | ✅ PASS |
 | P9-11: /admin 管理画面表示 | ✅ PASS |
-| P9-12: MANUAL — 本番ログイン | ⏭ SKIP（手動確認）|
-| P9-13: MANUAL — 本番 /report DB 保存 | ⏭ SKIP（手動確認）|
+| P9-12: MANUAL — 本番ログイン | ✅ ユーザー実機確認済み |
+| P9-13: MANUAL — 本番 /report DB 保存 | ✅ ユーザー実機確認済み |
 
-自動 11/11 PASS。Supabase Auth Redirect URL 追加は別途 Dashboard から実施。
+自動 11/11 PASS + 手動 P9-12/P9-13 ユーザー実機確認完了（2026-05-24）。
+
+### ユーザー実機確認内容（2026-05-24）
+
+- `https://cheap-cross-search.vercel.app` — 4ショップ横断比較表示 ✅
+- `/login` — 本番ログイン確認 ✅
+- `/report` — 「偽物疑い」送信 → 「報告を受け付けました」表示 ✅
+- Supabase `reported_products` への行追加（送信導線確認）✅
+
+**Phase 9 全確認完了。本番稼働中。**
 
 ## ⚠️ 次に実施すること（優先順）
 
@@ -79,11 +88,11 @@
 3. ✅ アカウント作成・ログイン確認（P8B-8）
 4. ✅ 管理者ユーザー登録（admin_users INSERT済み・P8B-10）
 5. ✅ Vercel 本番デプロイ完了（P9-1〜P9-11 PASS）
-6. ⏳ Supabase Dashboard → Auth → URL Configuration に `https://cheap-cross-search.vercel.app/auth/callback` 追加（未確認）
-7. ⏳ P9-12: 本番ログイン確認（手動）
-8. ⏳ P9-13: 本番 /report DB 保存確認（手動）
-9. 🔜 Phase 5b: 実 API アダプタ実装（各ショップ申請後）
-10. 🔜 アフィリエイト ID 本番設定（申請・審査後）
+6. ✅ P9-12: 本番ログイン確認（ユーザー実機）
+7. ✅ P9-13: 本番 /report DB 保存確認（ユーザー実機）
+8. 🔜 Supabase Dashboard → Auth → URL Configuration に `https://cheap-cross-search.vercel.app/auth/callback` 追加（メール認証用・任意）
+9. 🔜 **Phase 5b: 実 API / アフィリエイト調査・申請準備**（次フェーズ）
+10. 🔜 アフィリエイト ID 本番設定（各ショップ申請・審査後）
 
 ## 完了内容（Phase 0-1）
 

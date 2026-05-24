@@ -192,9 +192,16 @@ live-check-runner で自動確認。`npm run test:cheap-cross-search:phase9`
 | P9-9: /api/click 不正 URL ブロック | ✅ PASS |
 | P9-10: ポリシーページ4点 | ✅ PASS |
 | P9-11: /admin 管理画面 | ✅ PASS |
-| P9-12: MANUAL ログイン確認 | ⏭ SKIP |
-| P9-13: MANUAL /report DB 保存 | ⏭ SKIP |
+| P9-12: MANUAL ログイン確認 | ✅ ユーザー実機確認済み |
+| P9-13: MANUAL /report DB 保存 | ✅ ユーザー実機確認済み |
 
-残タスク:
-- Supabase Auth Redirect URL に `https://cheap-cross-search.vercel.app/auth/callback` を追加（Dashboard から手動）
-- Vercel Preview 環境変数の設定（Dashboard から手動）
+**Phase 9 全確認完了（2026-05-24）。本番稼働中。**
+
+ユーザー実機確認内容:
+- 4ショップ横断比較表示 ✅
+- 本番ログイン ✅
+- /report 「偽物疑い」送信 → 「報告を受け付けました」 ✅
+
+任意残タスク:
+- Supabase Auth Redirect URL に `https://cheap-cross-search.vercel.app/auth/callback` を追加（メール認証フロー用）
+- Vercel Preview 環境変数の設定
