@@ -1,6 +1,6 @@
 # PROJECT_STATUS — 安買い横断サーチ
 
-最終更新: 2026-05-24（Phase 8 migration 0002 順序修正・再実行安全化）
+最終更新: 2026-05-24（Phase 8b Supabase接続確認・live-check 6/6 PASS）
 
 ## 現状
 
@@ -16,9 +16,13 @@
 | Phase 6（収益化・アフィリエイト土台） | ✅ 完了（土台・デモID・click計測・2026-05-24）|
 | Phase 7（安全公開準備・ポリシー） | ✅ 完了（安全フィルター・通報・ポリシー・2026-05-24）|
 | Phase 8（本番Supabase接続・デプロイ準備） | ✅ 完了（SQL・手順書・DB実装・10/10 PASS・2026-05-24）|
+| Phase 8b（Supabase接続済み動作確認） | ✅ 完了（6/6 PASS・2026-05-24）|
 | Phase 5b（実 API アダプタ） | 🔜 未着手（申請後に実装）|
 | 0001 SQL 適用 | ✅ 完了（profiles / search_queries / favorite_products / favorite_queries）|
-| 0002 SQL 適用 | ⏳ 要再実行（初版で 42P01 エラー → 順序修正済み）|
+| 0002 SQL 適用 | ✅ 完了（admin_users / click_events / reported_products / affiliate_settings / blocked_keywords）|
+| .env.local 設定 | ✅ 完了（NEXT_PUBLIC_SUPABASE_URL / ANON_KEY 設定済み）|
+| 管理者ユーザー登録 | ⏳ 手動実施待ち（P8B-10）|
+| アカウント作成・ログイン確認 | ⏳ 手動実施待ち（P8B-8）|
 | Vercel デプロイ | ⏳ 手動実施待ち |
 
 ## 完了内容（Phase 0-1）
