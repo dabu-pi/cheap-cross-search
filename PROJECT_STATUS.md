@@ -1,6 +1,6 @@
 # PROJECT_STATUS — ECサイト比較.com
 
-最終更新: 2026-05-24（Phase 15 クリック計測実測確認・検索導線改善 完了・live-check 12/12 PASS）
+最終更新: 2026-05-24（Phase 16 クリック分析UI改善・JST時刻・ソースラベル 完了・live-check 12/12 PASS）
 
 ## 現状
 
@@ -43,6 +43,7 @@
 | Phase 13（外部検索導線・クリック計測準備） | ✅ 完了（CTA文言正確化・URL生成統一・クリック計測拡充・15/15 PASS・2026-05-24）|
 | Phase 14（クリック計測・管理統計） | ✅ 完了（click_events DB確認・/admin/click-stats 追加・12/12 PASS・2026-05-24）|
 | Phase 15（クリック計測実測確認・検索導線改善） | ✅ 完了（DB実データ確認・admin統計改善・全4ショップ計測確認・12/12 PASS・2026-05-24）|
+| Phase 16（クリック分析UI改善・JST時刻・ソースラベル） | ✅ 完了（JST時刻表示・7日間集計・カードCTAラベル・クエリリンク・12/12 PASS・2026-05-24）|
 
 ## 🔍 /report 送信失敗の根本原因（2026-05-24 調査完了）
 
@@ -188,6 +189,44 @@
 - [x] 未承認アフィリエイト表現なし
 - [x] Phase 9/10/11 regression PASS
 
+## ✅ Phase 16 クリック分析UI改善・JST時刻・ソースラベル（2026-05-24 完了）
+
+### DB 実データ状況（Phase 16 時点）
+
+| 確認項目 | 結果 |
+|---|---|
+| 総レコード数 | 24行（Amazon 多数、Temu 1、その他）|
+| user_id | ✅ NULL（全行 — 個人情報なし）|
+| session_id | ✅ NULL（全行 — 個人情報なし）|
+| source 区分 | direct_search / NULL（カードCTA）の2種類 |
+
+### 改善内容
+
+| 変更 | 内容 |
+|---|---|
+| `admin/click-stats/page.tsx` 全面改善 | JST 時刻表示・7日間集計・ソースラベル日本語化・クエリリンク |
+| JST 時刻変換 | `getTime() + 9h offset` で UTC→JST 変換。テーブル時刻カラムを「時刻 JST」に |
+| 今日のクリック | JST基準の日付文字列で `todayJST` 比較（UTC比較バグ修正）|
+| 7日間集計 | 集計カード4列: 総クリック数 / 今日(JST) / 7日間 / 計測ショップ数 |
+| ソースラベル | `direct_search` → 「直接検索」/ `null` / `(none)` → 「カードCTA」（「—」廃止）|
+| ショップカラー | `SHOP_COLORS` マップで amazon=橙 / shein=黒 / aliexpress=赤 / temu=橙赤 |
+| 上位クエリリンク | クエリ名が `/search?q=...` の `<a>` リンクに（管理者が直接確認可能）|
+| 空データ対応 | キーワード未蓄積時は「まだキーワードデータがありません」empty state |
+| live-check | `phase16-search-click-analysis-verify.spec.ts` — **12/12 PASS** |
+| Vercel deploy | `dpl_89r6GpmFyns9aNe1exBEwuvmTJ2s` — READY |
+| regression | Phase 9〜15 全スペック継続 PASS |
+
+**完了条件（全満足）:**
+- [x] 時刻を JST で表示（「時刻 JST」カラム）
+- [x] 今日のクリック数が JST 基準で正確
+- [x] 7日間集計カード追加
+- [x] source=null 表示が「カードCTA」（「—」なし）
+- [x] 上位クエリが /search?q=... リンク
+- [x] ショップ別カラー表示
+- [x] TypeScript / lint / build PASS
+- [x] Phase 16 live-check 12/12 PASS
+- [x] Phase 9〜15 regression 全 PASS
+
 ## ✅ Phase 15 クリック計測実測確認・検索導線改善（2026-05-24 完了）
 
 ### DB 実データ確認結果（2026-05-24 npx supabase db query --linked）
@@ -273,6 +312,7 @@
 5. 🔜 Amazon PA-API アダプタ実装（`src/lib/search/adapters/amazon-pa-api.ts`）
 6. 🔜 AliExpress Portals アダプタ実装（承認後）
 7. 🔜 Supabase Auth URL Configuration 追加（任意・メール認証用）
+8. 🔜 **Phase 17候補**: 人気クエリ候補をリアル click_events から自動生成（EmptyState / SearchBar）
 
 ## 完了内容（Phase 0-1）
 
