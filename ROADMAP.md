@@ -29,6 +29,7 @@
 | 20 | SEO・信頼性・審査向け整備 | ✅ 完了（sitemap/robots/OGP/Twitter card・Amazon承認済み表記・15/15 PASS・2026-05-24）| - |
 | 20A | 検索UI視認性・外部検索モード説明改善 | ✅ 完了（text-gray-900・外部検索モード説明・外部サイト誘導明記・15/15 PASS・production確認OK・2026-05-24）| - |
 | 21 | 検索体験・カテゴリ導線改善 | ✅ 完了（カテゴリ別人気KW・関連KW候補・EmptyState改善・21/21 PASS・2026-05-24）| - |
+| 22 | 実商品検索API PoC — 楽天・Yahoo! アダプタ | ✅ 完了（rakuten-ichiba.ts・yahoo-shopping.ts・6ショップ体制・20/20 PASS・2026-05-24）| - |
 
 ---
 
@@ -436,6 +437,41 @@ Authentication > URL Configuration > Redirect URL に /auth/callback を追加
 - [x] live-check-runner `phase21-search-experience-verify.spec.ts` — **21/21 PASS**
 - [x] Phase 9–20A regression: 全 PASS（P21-13〜P21-21 で確認）
 - [x] Vercel deploy `dpl_A5sRhYAXxJhhhtmjK6FSWVXPNwvv` — READY (production)
+
+---
+
+## Phase 22: 実商品検索API PoC — 楽天市場 / Yahoo!ショッピング ✅ 完了（2026-05-24）
+
+**背景:** Amazon PA-API / AliExpress Portals は利用待ちのため、即日APIキー取得可能な楽天市場・Yahoo!ショッピングで実商品検索 PoC を先行実装。
+
+**完了条件:** アダプタが実装され、APIキーを設定するだけで実商品が表示できる状態になっていること。APIキー未設定時は link_only に安全フォールバック。
+
+- [x] `src/lib/search/adapters/rakuten-ichiba.ts` — 楽天ウェブサービス商品検索API アダプタ
+  - `RAKUTEN_APP_ID` 設定済み → 実商品・実価格取得、`isSearchPage: false`、`priceConfidence: 'high'`
+  - 未設定 → link_only フォールバック（警告付き）
+- [x] `src/lib/search/adapters/yahoo-shopping.ts` — Yahoo!ショッピング WebAPI V3 アダプタ
+  - `YAHOO_APP_ID` 設定済み → 実商品・実価格取得、`isSearchPage: false`、`priceConfidence: 'high'`
+  - 未設定 → link_only フォールバック（警告付き）
+- [x] `src/lib/shops/shops.ts` — 楽天・Yahoo! を6番目・7番目のショップとして追加
+  - `integrationMode: 'official_api'`、`dataStatus: 'external_search'`（APIキー設定後に `real_api` へ）
+- [x] `src/lib/search/adapters/registry.ts` — `official_api` ケースに楽天・Yahoo! を登録
+- [x] `next.config.ts` — 楽天・Yahoo! 画像ドメインを `remotePatterns` に追加
+- [x] `.env.local.example` — `RAKUTEN_APP_ID` / `YAHOO_APP_ID` 追記
+- [x] `src/app/page.tsx` — ヒーロー文言を「6ショップをまとめて比較」に更新
+- [x] `src/app/search/page.tsx` — 実API データ取得時の通知バナーを追加（`hasRealApiOffers`）
+- [x] `docs/API_AFFILIATE_RESEARCH.md` — Phase 22 PoC 実装詳細を記録
+- [x] live-check-runner `phase22-real-api-poc-verify.spec.ts` — **20/20 PASS**
+- [x] Phase 9–21 regression: 全 PASS（P22-9〜P22-20 で確認）
+- [x] Vercel deploy `dpl_H4dF14JMoN8CBvwAWGuZSSdhgchG` — READY (production)
+
+**APIキー有効化手順（人が実施）:**
+
+| ショップ | 取得先 | 環境変数 | 料金 |
+|---|---|---|---|
+| 楽天市場 | https://webservice.rakuten.co.jp/ | `RAKUTEN_APP_ID` | 無料・即日 |
+| Yahoo!ショッピング | https://developer.yahoo.co.jp/ | `YAHOO_APP_ID` | 無料・即日 |
+
+Vercel: Project Settings > Environment Variables に設定後 `vercel --prod` で即有効化。
 
 ---
 

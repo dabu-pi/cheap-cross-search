@@ -16,6 +16,13 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '**.alicdn.com' },
       // Temu
       { protocol: 'https', hostname: '**.temu.com' },
+      // 楽天市場（Phase 22）
+      { protocol: 'https', hostname: 'thumbnail.image.rakuten.co.jp' },
+      { protocol: 'https', hostname: '**.r10s.jp' },
+      { protocol: 'https', hostname: '**.rakuten.co.jp' },
+      // Yahoo!ショッピング（Phase 22）
+      { protocol: 'https', hostname: 'item-shopping.c.yimg.jp' },
+      { protocol: 'https', hostname: '**.yimg.jp' },
     ],
   },
 };

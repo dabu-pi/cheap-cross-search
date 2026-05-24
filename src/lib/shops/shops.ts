@@ -120,6 +120,49 @@ export const SHOPS: ShopDefinition[] = [
     affiliateNote:
       'Temu アフィリエイト申請は現在 HOLD。サイト改善後に申請タイミングを判断する。',
   },
+
+  // ─── Phase 22: 実商品検索API PoC ─────────────────────────────────────
+
+  {
+    code: 'rakuten',
+    name: '楽天市場',
+    nameEn: 'Rakuten Ichiba',
+    baseUrl: 'https://www.rakuten.co.jp',
+    searchUrlTemplate:
+      'https://search.rakuten.co.jp/search/mall/{query}/',
+    enabled: true,
+    displayOrder: 5,
+    integrationMode: 'official_api',
+    trustScore: 88,
+    logoColor: '#BF0000',
+    description: '国内最大手モール型EC。ポイント還元・送料無料対応多数。',
+    // Phase 22: 実商品API（RAKUTEN_APP_ID 設定後に real_api へ）
+    dataStatus: 'external_search',
+    affiliateApprovalStatus: 'not_applied',
+    affiliateNote:
+      '楽天アフィリエイト（https://affiliate.rakuten.co.jp/）申請準備中。' +
+      'API: 楽天ウェブサービス（RAKUTEN_APP_ID）設定後に real_api モードへ移行。',
+  },
+  {
+    code: 'yahoo',
+    name: 'Yahoo!ショッピング',
+    nameEn: 'Yahoo! Shopping',
+    baseUrl: 'https://shopping.yahoo.co.jp',
+    searchUrlTemplate:
+      'https://shopping.yahoo.co.jp/search?p={query}',
+    enabled: true,
+    displayOrder: 6,
+    integrationMode: 'official_api',
+    trustScore: 85,
+    logoColor: '#FF0027',
+    description: '国内大手ショッピングモール。PayPayポイント還元あり。',
+    // Phase 22: 実商品API（YAHOO_APP_ID 設定後に real_api へ）
+    dataStatus: 'external_search',
+    affiliateApprovalStatus: 'not_applied',
+    affiliateNote:
+      'Yahoo!アフィリエイト（ValueCommerce経由）申請準備中。' +
+      'API: Yahoo!デベロッパーセンター（YAHOO_APP_ID）設定後に real_api モードへ移行。',
+  },
 ];
 
 /**

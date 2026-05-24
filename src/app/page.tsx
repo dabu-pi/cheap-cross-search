@@ -50,10 +50,10 @@ export default function HomePage() {
         {/* ヒーロー */}
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold text-gray-900">
-            4ショップをまとめて比較
+            6ショップをまとめて比較
           </h1>
           <p className="text-gray-500 text-base">
-            Amazon・SHEIN・AliExpress・Temu を
+            Amazon・楽天市場・Yahoo!・SHEIN・AliExpress・Temu を
             1つの検索ワードで一気に調べる
           </p>
         </div>

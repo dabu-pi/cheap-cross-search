@@ -104,6 +104,10 @@ async function SearchResults({ query }: { query: string }) {
 
   const usingMock = apiOffers.some((o) => o.source === 'external_api_mock');
   const usingLegacyDemo = apiOffers.length === 0;
+  // Phase 22: 実APIデータ（楽天・Yahoo!）が含まれているか
+  const hasRealApiOffers = apiOffers.some(
+    (o) => o.source === 'rakuten_api' || o.source === 'yahoo_api'
+  );
 
   return (
     <>
@@ -118,6 +122,18 @@ async function SearchResults({ query }: { query: string }) {
 
       {/* ショップ別取得状態サマリ */}
       <SearchStatusSummary shops={crossResult.shops} />
+
+      {/* Phase 22: 実APIデータ取得中の通知（楽天・Yahoo! API キー設定済み時） */}
+      {hasRealApiOffers && (
+        <div className="rounded-xl bg-green-50 border border-green-200 px-3 py-2.5 flex items-start gap-2">
+          <span className="text-green-500 text-sm mt-0.5 shrink-0">✅</span>
+          <p className="text-xs text-green-700 leading-relaxed">
+            <strong className="font-semibold">実商品データを表示中</strong> —
+            楽天市場・Yahoo!ショッピングから実際の商品・価格を取得しています。
+            Amazon 等は各サイトの検索結果ページへご案内します。
+          </p>
+        </div>
+      )}
 
       {/* 参考価格バナー + 外部検索モード説明（モックデータ or レガシーデモ） */}
       {(usingMock || usingLegacyDemo) && (

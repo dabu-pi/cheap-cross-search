@@ -1,7 +1,7 @@
 # 実API/アフィリエイト調査レポート — 安買い横断サーチ Phase 5b
 
 作成: 2026-05-24  
-最終更新: 2026-05-24（Temu / SHEIN 申請準備調査完了）  
+最終更新: 2026-05-24（Phase 22: 楽天・Yahoo! 実APIアダプタ実装完了）  
 対象ブランチ: `feature/phase8-supabase-vercel`  
 本番URL: https://cheap-cross-search.vercel.app
 
@@ -339,27 +339,59 @@ SNS:              （なければ「Website only」）
 
 ---
 
-## 5. 将来候補（楽天・Yahoo!）
+## 5. 楽天市場・Yahoo!ショッピング（Phase 22 PoC 実装済み）
 
 ### 楽天市場
 
 | 項目 | 内容 |
 |---|---|
-| 商品検索API | ✅ 楽天商品検索API（無料・即日利用可）|
+| 商品検索API | ✅ 楽天ウェブサービス 商品検索API（無料・即日利用可）|
+| APIエンドポイント | `https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601` |
 | 申請URL | https://webservice.rakuten.co.jp/ |
 | アフィリエイト | ✅ 楽天アフィリエイト（https://affiliate.rakuten.co.jp/）|
-| 優先分類 | `ready_to_apply` |
-| 備考 | APIキー即日取得可。日本語商品データが充実。Phase 5b後半の候補 |
+| 実装状態 | ✅ `src/lib/search/adapters/rakuten-ichiba.ts` 実装済み（Phase 22）|
+| 必要な環境変数 | `RAKUTEN_APP_ID`（`.env.local` / Vercel env に設定）|
+| APIキー取得方法 | 楽天IDで登録 → アプリ登録 → `applicationId` 即日発行（無料）|
+| 動作モード | RAKUTEN_APP_ID 設定済み → 実商品取得。未設定 → link_only フォールバック |
+| `isSearchPage` | `false`（商品詳細ページへの直接リンク）|
+| `priceConfidence` | `high`（公式API取得）|
+| source | `'rakuten_api'` |
+| 画像ドメイン | `thumbnail.image.rakuten.co.jp` / `*.r10s.jp`（next.config.ts に追加済み）|
 
 ### Yahoo!ショッピング
 
 | 項目 | 内容 |
 |---|---|
-| 商品検索API | ✅ Yahoo!ショッピング商品検索API（無料）|
+| 商品検索API | ✅ Yahoo!ショッピング商品検索 WebAPI V3（無料）|
+| APIエンドポイント | `https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch` |
 | 申請URL | https://developer.yahoo.co.jp/webapi/shopping/ |
 | アフィリエイト | ✅ ValueCommerce / Yahoo!アフィリエイト |
-| 優先分類 | `ready_to_apply` |
-| 備考 | APIキー即日取得可。将来的に日本市場強化候補 |
+| 実装状態 | ✅ `src/lib/search/adapters/yahoo-shopping.ts` 実装済み（Phase 22）|
+| 必要な環境変数 | `YAHOO_APP_ID`（`.env.local` / Vercel env に設定）|
+| APIキー取得方法 | Yahoo! JAPAN ID でアプリ登録 → `appid` 即日発行（無料）|
+| 動作モード | YAHOO_APP_ID 設定済み → 実商品取得。未設定 → link_only フォールバック |
+| `isSearchPage` | `false`（商品詳細ページへの直接リンク）|
+| `priceConfidence` | `high`（公式API取得）|
+| source | `'yahoo_api'` |
+| 画像ドメイン | `item-shopping.c.yimg.jp` / `*.yimg.jp`（next.config.ts に追加済み）|
+
+### Phase 22 実装サマリー
+
+```
+# 楽天市場 API キー取得後の有効化手順
+1. https://webservice.rakuten.co.jp/ でアプリ登録
+2. applicationId を取得
+3. .env.local に設定: RAKUTEN_APP_ID=<applicationId>
+4. Vercel: Settings > Environment Variables > RAKUTEN_APP_ID=<applicationId>
+5. vercel --prod でデプロイ → 楽天商品が実API で表示される
+
+# Yahoo!ショッピング API キー取得後の有効化手順
+1. https://developer.yahoo.co.jp/ でアプリ登録
+2. appid を取得
+3. .env.local に設定: YAHOO_APP_ID=<appid>
+4. Vercel: Settings > Environment Variables > YAHOO_APP_ID=<appid>
+5. vercel --prod でデプロイ → Yahoo! 商品が実API で表示される
+```
 
 ---
 

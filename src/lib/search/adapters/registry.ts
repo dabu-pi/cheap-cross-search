@@ -10,13 +10,15 @@
  * - link_only:     LinkOnlyAdapter
  * - disabled:      DisabledAdapter（検索対象外）
  *
- * ─── Phase 17 時点の各ショップ状態 ────────────────────────────────────────
- * | Shop       | integrationMode | 状態                          | 将来アダプタ          |
- * |------------|-----------------|-------------------------------|----------------------|
- * | Amazon     | link_only       | アソシエイト承認済み / PA-API待ち | amazon-pa-api.ts     |
- * | SHEIN      | link_only       | 未申請                        | (未定)               |
- * | AliExpress | link_only       | Portals 審査中（2026-05-23申請）| aliexpress-portals.ts|
- * | Temu       | link_only       | HOLD                          | (HOLD)               |
+ * ─── Phase 22 時点の各ショップ状態 ────────────────────────────────────────
+ * | Shop             | integrationMode | 状態                              | アダプタ                  |
+ * |------------------|-----------------|-----------------------------------|--------------------------|
+ * | Amazon           | link_only       | アソシエイト承認済み / PA-API待ち   | amazon-pa-api.ts (stub)  |
+ * | SHEIN            | link_only       | 未申請                            | (未定)                   |
+ * | AliExpress       | link_only       | Portals 審査中（2026-05-23申請）   | aliexpress-portals.ts    |
+ * | Temu             | link_only       | HOLD                              | (HOLD)                   |
+ * | 楽天市場          | official_api    | API即日取得可・RAKUTEN_APP_ID待ち  | rakuten-ichiba.ts ✅     |
+ * | Yahoo!ショッピング | official_api   | API即日取得可・YAHOO_APP_ID待ち   | yahoo-shopping.ts ✅     |
  *
  * ─── 実 API 有効化時の手順 ────────────────────────────────────────────────
  * 1. shops.ts で対象ショップの integrationMode を変更
@@ -40,6 +42,9 @@ import { ExternalMockAdapter } from './external-mock';
 // Phase 17 スタブ（アクティブ化時に使用 — 現在は import のみ）
 // import { AmazonPaApiAdapter } from './amazon-pa-api';
 // import { AliExpressPortalsAdapter } from './aliexpress-portals';
+// Phase 22: 楽天・Yahoo! 実商品APIアダプタ
+import { RakutenIchibaAdapter } from './rakuten-ichiba';
+import { YahooShoppingAdapter } from './yahoo-shopping';
 
 /**
  * ショップ + モードに対応するアダプタを返す。
@@ -64,6 +69,12 @@ export function getAdapter(
       // ── Phase 17: Amazon PA-API スタブ ───────────────────────────────
       // PA-API 有効化後は下記のコメントを外して有効化する:
       // if (shopCode === 'amazon') return new AmazonPaApiAdapter();
+      // ─────────────────────────────────────────────────────────────────
+      // ── Phase 22: 楽天・Yahoo! 実商品APIアダプタ ─────────────────────
+      // RAKUTEN_APP_ID / YAHOO_APP_ID が設定されている場合は実APIを使用。
+      // 未設定の場合はアダプタ内部で link_only にフォールバック（警告付き）。
+      if (shopCode === 'rakuten') return new RakutenIchibaAdapter();
+      if (shopCode === 'yahoo') return new YahooShoppingAdapter();
       // ─────────────────────────────────────────────────────────────────
       fallbackWarnings?.push(
         `[${shopCode}] official_api は準備中です。link_only にフォールバックします。`
