@@ -1,6 +1,25 @@
 # SUPABASE_SETUP.md — 安買い横断サーチ Supabase 設定手順
 
-最終更新: 2026-05-24（Phase 8 更新）
+最終更新: 2026-05-24（Phase 8 migration 0002 修正）
+
+---
+
+## ⚠️ migration 0002 修正履歴（2026-05-24）
+
+**初回実行時のエラー:** `42P01: relation "public.admin_users" does not exist`
+
+**原因:** `0002_tracking_reports_admin.sql` の初版で `click_events` の RLS policy が
+`public.admin_users` を参照していたが、`admin_users` の CREATE TABLE がその後（section C）にあった。
+PostgreSQL はトランザクション全体をロールバックしたため、5テーブル全て未作成となった。
+
+**修正内容:** テーブル作成順を以下に変更し、全 policy を `drop policy if exists` + `create policy` に変更（再実行安全化）:
+
+```
+(旧) click_events → reported_products → admin_users → affiliate_settings → blocked_keywords
+(新) admin_users → set_updated_at() → click_events → reported_products → affiliate_settings → blocked_keywords
+```
+
+修正済みファイル: `supabase/migrations/0002_tracking_reports_admin.sql`（再実行してください）
 
 ---
 
@@ -8,14 +27,15 @@
 
 | 項目 | 状態 |
 |---|---|
-| Supabase プロジェクト | 未作成 |
+| Supabase プロジェクト | 作成済み |
 | `.env.local` | 未作成 |
-| SQL 適用 | 未実施 |
+| `0001_auth_favorites.sql` | ✅ 適用済み（profiles / search_queries / favorite_products / favorite_queries）|
+| `0002_tracking_reports_admin.sql` | ⏳ 要再実行（順序修正済み）|
 | Google OAuth | 未設定 |
 | Auth 機能 | graceful degradation（未設定案内を表示）|
 | click_events 保存 | Supabase 設定後に自動有効化 |
 | reported_products 保存 | Supabase 設定後に自動有効化 |
-| admin_users | 手動 INSERT が必要 |
+| admin_users | 手動 INSERT が必要（0002 適用後）|
 
 ---
 
@@ -65,27 +85,55 @@ Supabase ダッシュボード > **SQL Editor** を開き、以下のファイ�
 
 ファイル: `supabase/migrations/0002_tracking_reports_admin.sql`
 
-⚠️ 0001 の実行後に実行すること（admin_users が click_events の RLS で参照されるため）。
+⚠️ 0001 の実行後に実行すること。  
+⚠️ 初版でエラーが出た場合は修正済みのファイルを再実行してください（再実行安全化済み）。
 
-作成されるテーブル:
+作成されるテーブル（内部実行順: admin_users → click_events → reported_products → affiliate_settings → blocked_keywords）:
 
 | テーブル | 用途 |
 |---|---|
+| `admin_users` | 管理者ユーザーリスト（手動管理）|
 | `click_events` | アフィリエイトクリックログ |
 | `reported_products` | 商品問題報告 |
-| `admin_users` | 管理者ユーザーリスト（手動管理）|
 | `affiliate_settings` | アフィリエイト設定（初期データ込み・affiliate_id は空）|
 | `blocked_keywords` | DB 管理の動的キーワードルール（初期データなし）|
 
-実行後の確認 SQL:
+**実行後の確認 SQL（SQL Editor に貼り付けて実行）:**
 
 ```sql
+-- [確認1] 5テーブルの存在確認（全て NOT NULL なら成功）
+select
+  to_regclass('public.admin_users')        as admin_users,
+  to_regclass('public.click_events')       as click_events,
+  to_regclass('public.reported_products')  as reported_products,
+  to_regclass('public.affiliate_settings') as affiliate_settings,
+  to_regclass('public.blocked_keywords')   as blocked_keywords;
+```
+
+期待: 全列に `admin_users`、`click_events`、... と表示される（`null` が出たら失敗）
+
+```sql
+-- [確認2] RLS 有効確認（rowsecurity = true が 5行）
+select schemaname, tablename, rowsecurity
+from pg_tables
+where schemaname = 'public'
+  and tablename in (
+    'admin_users', 'click_events', 'reported_products',
+    'affiliate_settings', 'blocked_keywords'
+  )
+order by tablename;
+```
+
+期待: 5行すべて `rowsecurity = true`
+
+```sql
+-- [確認3] 全テーブル一覧（0001 + 0002 合計 9テーブル）
 select table_name from information_schema.tables
 where table_schema = 'public'
 order by table_name;
 ```
 
-期待される結果（計 9 テーブル）:
+期待される結果:
 ```
 admin_users
 affiliate_settings

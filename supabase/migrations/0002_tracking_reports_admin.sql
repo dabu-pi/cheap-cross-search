@@ -1,5 +1,5 @@
 -- ============================================================
--- Phase 8 — click_events / reported_products / admin_users /
+-- Phase 8 — admin_users / click_events / reported_products /
 --            affiliate_settings / blocked_keywords
 -- ============================================================
 -- 適用方法:
@@ -9,15 +9,66 @@
 -- ⚠️ 本番 DB には手動で適用すること。自動適用しない。
 -- ⚠️ affiliate_settings の affiliate_id は Git に入れない。
 --    適用後 Supabase ダッシュボードの SQL Editor で手動 UPDATE すること。
+--
+-- 再実行安全化:
+--   CREATE TABLE IF NOT EXISTS / CREATE INDEX IF NOT EXISTS
+--   DROP POLICY IF EXISTS → CREATE POLICY
+--   DROP TRIGGER IF EXISTS → CREATE TRIGGER
+--   CREATE OR REPLACE FUNCTION
+--   INSERT ... ON CONFLICT DO NOTHING
 -- ============================================================
 
 
 -- ──────────────────────────────────────────────────────────
--- A. click_events（クリックログ）
+-- STEP 1: admin_users（管理者）
+-- ──────────────────────────────────────────────────────────
+-- ⚠️ 他テーブルの RLS policy が admin_users を参照するため、
+--    必ず最初に作成する。
+-- ⚠️ 手動で INSERT するか、Supabase ダッシュボードから追加すること。
+-- ⚠️ 自動登録ロジックを実装しない（セキュリティ上の理由）。
+
+create table if not exists public.admin_users (
+  user_id    uuid primary key references auth.users(id) on delete cascade,
+  role       text        not null default 'admin',  -- 'admin' | 'viewer'
+  notes      text,
+  created_at timestamptz not null default now()
+);
+
+comment on table public.admin_users is '管理者ユーザーリスト（手動管理）';
+
+-- RLS: 自分の行のみ読み取り可（管理者確認用）
+alter table public.admin_users enable row level security;
+
+drop policy if exists "admin_users: self read" on public.admin_users;
+create policy "admin_users: self read"
+  on public.admin_users for select
+  using (auth.uid() = user_id);
+
+-- INSERT/UPDATE/DELETE は Supabase ダッシュボードで手動管理
+-- （service role key を持つ操作のみ許可）
+
+
+-- ──────────────────────────────────────────────────────────
+-- STEP 2: shared helper function（更新日時自動セット）
+-- ──────────────────────────────────────────────────────────
+-- affiliate_settings / blocked_keywords の updated_at トリガーが使う。
+-- CREATE OR REPLACE で冪等（再実行安全）。
+
+create or replace function public.set_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+
+-- ──────────────────────────────────────────────────────────
+-- STEP 3: click_events（クリックログ）
 -- ──────────────────────────────────────────────────────────
 -- /api/click 経由のクリックを記録するアフィリエイト計測テーブル。
 -- 未ログインユーザーも記録する（user_id は nullable）。
--- セキュリティ: INSERT は誰でも可・SELECT は管理者のみ。
+-- セキュリティ: INSERT は誰でも可・SELECT/DELETE は管理者のみ。
 
 create table if not exists public.click_events (
   id               bigserial primary key,
@@ -38,13 +89,15 @@ create index if not exists click_events_shop_code_idx  on public.click_events(sh
 create index if not exists click_events_clicked_at_idx on public.click_events(clicked_at desc);
 create index if not exists click_events_user_id_idx    on public.click_events(user_id) where user_id is not null;
 
--- RLS: INSERT は全員可、SELECT/UPDATE/DELETE は管理者のみ
+-- RLS: INSERT は全員可、SELECT/DELETE は管理者のみ
 alter table public.click_events enable row level security;
 
+drop policy if exists "click_events: anyone insert" on public.click_events;
 create policy "click_events: anyone insert"
   on public.click_events for insert
   with check (true);
 
+drop policy if exists "click_events: admin read" on public.click_events;
 create policy "click_events: admin read"
   on public.click_events for select
   using (
@@ -54,6 +107,7 @@ create policy "click_events: admin read"
     )
   );
 
+drop policy if exists "click_events: admin delete" on public.click_events;
 create policy "click_events: admin delete"
   on public.click_events for delete
   using (
@@ -65,7 +119,7 @@ create policy "click_events: admin delete"
 
 
 -- ──────────────────────────────────────────────────────────
--- B. reported_products（問題報告）
+-- STEP 4: reported_products（問題報告）
 -- ──────────────────────────────────────────────────────────
 -- /report ページからの商品問題報告を保存する。
 -- 未ログインでも報告可能（reporter_user_id は nullable）。
@@ -95,10 +149,12 @@ create index if not exists reported_products_shop_code_idx  on public.reported_p
 -- RLS: INSERT は全員可、SELECT/UPDATE は管理者のみ
 alter table public.reported_products enable row level security;
 
+drop policy if exists "reported_products: anyone insert" on public.reported_products;
 create policy "reported_products: anyone insert"
   on public.reported_products for insert
   with check (true);
 
+drop policy if exists "reported_products: admin read" on public.reported_products;
 create policy "reported_products: admin read"
   on public.reported_products for select
   using (
@@ -108,6 +164,7 @@ create policy "reported_products: admin read"
     )
   );
 
+drop policy if exists "reported_products: admin update" on public.reported_products;
 create policy "reported_products: admin update"
   on public.reported_products for update
   using (
@@ -119,34 +176,7 @@ create policy "reported_products: admin update"
 
 
 -- ──────────────────────────────────────────────────────────
--- C. admin_users（管理者）
--- ──────────────────────────────────────────────────────────
--- 管理者ユーザーを管理する。
--- ⚠️ 手動で INSERT するか、Supabase ダッシュボードから追加すること。
--- ⚠️ 自動登録ロジックを実装しない（セキュリティ上の理由）。
-
-create table if not exists public.admin_users (
-  user_id    uuid primary key references auth.users(id) on delete cascade,
-  role       text        not null default 'admin',  -- 'admin' | 'viewer'
-  notes      text,
-  created_at timestamptz not null default now()
-);
-
-comment on table public.admin_users is '管理者ユーザーリスト（手動管理）';
-
--- RLS: 自分の行のみ読み取り可（管理者確認用）
-alter table public.admin_users enable row level security;
-
-create policy "admin_users: self read"
-  on public.admin_users for select
-  using (auth.uid() = user_id);
-
--- INSERT/UPDATE/DELETE は Supabase ダッシュボードで手動管理
--- （service role key を持つ操作のみ許可）
-
-
--- ──────────────────────────────────────────────────────────
--- D. affiliate_settings（アフィリエイト設定）
+-- STEP 5: affiliate_settings（アフィリエイト設定）
 -- ──────────────────────────────────────────────────────────
 -- ショップ別のアフィリエイト設定を管理する。
 -- ⚠️ affiliate_id は絶対に Git に入れない。DB のみで管理。
@@ -170,16 +200,7 @@ create table if not exists public.affiliate_settings (
 
 comment on table public.affiliate_settings is 'アフィリエイト設定（Phase 6+）— affiliate_id はGit禁止';
 
--- 更新日時を自動セットするトリガー（moddatetime extension が必要）
--- ※ moddatetime が使えない場合は以下のトリガー関数で代替
-create or replace function public.set_updated_at()
-returns trigger as $$
-begin
-  new.updated_at = now();
-  return new;
-end;
-$$ language plpgsql;
-
+drop trigger if exists affiliate_settings_updated_at on public.affiliate_settings;
 create trigger affiliate_settings_updated_at
   before update on public.affiliate_settings
   for each row execute function public.set_updated_at();
@@ -187,10 +208,12 @@ create trigger affiliate_settings_updated_at
 -- RLS: 一般ユーザーは enabled=true のみ読み取り、管理者は全操作
 alter table public.affiliate_settings enable row level security;
 
+drop policy if exists "affiliate_settings: public read enabled" on public.affiliate_settings;
 create policy "affiliate_settings: public read enabled"
   on public.affiliate_settings for select
   using (enabled = true);
 
+drop policy if exists "affiliate_settings: admin all" on public.affiliate_settings;
 create policy "affiliate_settings: admin all"
   on public.affiliate_settings for all
   using (
@@ -236,7 +259,7 @@ on conflict (shop_code) do nothing;
 
 
 -- ──────────────────────────────────────────────────────────
--- E. blocked_keywords（除外・注意キーワードルール）
+-- STEP 6: blocked_keywords（除外・注意キーワードルール）
 -- ──────────────────────────────────────────────────────────
 -- rules.ts（ハードコード）の補完として DB に動的ルールを追加できる構造。
 -- Phase 8 では初期データなし（rules.ts のルールが正本）。
@@ -261,6 +284,7 @@ create unique index if not exists blocked_keywords_keyword_level_idx
 create index if not exists blocked_keywords_enabled_idx
   on public.blocked_keywords(enabled) where enabled = true;
 
+drop trigger if exists blocked_keywords_updated_at on public.blocked_keywords;
 create trigger blocked_keywords_updated_at
   before update on public.blocked_keywords
   for each row execute function public.set_updated_at();
@@ -268,10 +292,12 @@ create trigger blocked_keywords_updated_at
 -- RLS: 一般ユーザーは enabled のみ読み取り、管理者は全操作
 alter table public.blocked_keywords enable row level security;
 
+drop policy if exists "blocked_keywords: public read enabled" on public.blocked_keywords;
 create policy "blocked_keywords: public read enabled"
   on public.blocked_keywords for select
   using (enabled = true);
 
+drop policy if exists "blocked_keywords: admin all" on public.blocked_keywords;
 create policy "blocked_keywords: admin all"
   on public.blocked_keywords for all
   using (
@@ -283,13 +309,37 @@ create policy "blocked_keywords: admin all"
 
 
 -- ============================================================
--- 完了後の確認 SQL（実行後にこれで確認する）
+-- 実行後の確認 SQL — SQL Editor でこれを実行してテーブルを確認する
 -- ============================================================
+
+-- [確認1] 5テーブルの存在確認（全て NOT NULL なら成功）
+-- select
+--   to_regclass('public.admin_users')       as admin_users,
+--   to_regclass('public.click_events')      as click_events,
+--   to_regclass('public.reported_products') as reported_products,
+--   to_regclass('public.affiliate_settings') as affiliate_settings,
+--   to_regclass('public.blocked_keywords')  as blocked_keywords;
+--
+-- 期待: 全列に 'admin_users', 'click_events', ... と表示される（null でない）
+
+-- [確認2] RLS 有効確認（rowsecurity = true が5行）
+-- select schemaname, tablename, rowsecurity
+-- from pg_tables
+-- where schemaname = 'public'
+--   and tablename in (
+--     'admin_users', 'click_events', 'reported_products',
+--     'affiliate_settings', 'blocked_keywords'
+--   )
+-- order by tablename;
+--
+-- 期待: 5行すべて rowsecurity = true
+
+-- [確認3] 全テーブル一覧（0001 + 0002 合計 9テーブル）
 -- select table_name from information_schema.tables
 -- where table_schema = 'public'
 -- order by table_name;
 --
--- 期待される結果（0001 + 0002 合計）:
+-- 期待:
 --   admin_users
 --   affiliate_settings
 --   blocked_keywords
