@@ -25,6 +25,7 @@
 | 16 | クリック分析UI改善・JST時刻・ソースラベル | ✅ 完了（JST時刻・7日間集計・カードCTAラベル・クエリリンク・12/12 PASS・2026-05-24）| - |
 | 17 | 実APIアダプタ準備・デモ/実データ切替基盤 | ✅ 完了（型追加・ショップ状態明確化・スタブアダプタ・切替ガイド・12/12 PASS・2026-05-24）| - |
 | 18 | Amazon アソシエイトタグ付与 | ✅ 完了（サーバーサイドタグ付与・RPC fix・10/10 PASS・2026-05-24）| - |
+| 19 | Amazonタグ付きクリック分析・収益導線確認 | ✅ 完了（💰カード・🏷バッジ・SQL追加・5/5 PASS+5 skip・Phase9–18 全 PASS・2026-05-24）| - |
 
 ---
 
@@ -303,6 +304,43 @@ Authentication > URL Configuration > Redirect URL に /auth/callback を追加
   anon ロールが `GRANT SELECT ON admin_users` を持たないため 401 エラーが発生
 - PostgreSQL はパース時に権限チェックするため短絡評価（`auth.uid() IS NOT NULL AND`）では回避不可
 - `SECURITY DEFINER` 関数でラップすることで anon が直接 affiliate_settings を読まずに値を取得
+
+---
+
+## Phase 19: Amazonタグ付きクリック分析・収益導線確認 ✅ 完了（2026-05-24）
+
+**完了条件:** Amazon アフィリエイトタグ付きリンクが実クリック計測に正しく反映され、管理画面で収益導線を確認できる。affiliate_id 実値は管理者にも非表示。
+
+- [x] `admin/click-stats/page.tsx`: Phase 19 Amazon アフィリエイトタグ付きクリック集計変数追加
+  - `amazonTotalCount` / `amazonTaggedCount` / `amazonTagRatio`
+- [x] `admin/click-stats/page.tsx`: 💰 Amazonアフィリエイト導線 サマリカード追加
+  - タグ付き件数 / Amazon 合計件数 / タグ付き率 % のプログレスバー
+  - データなし時のエンプティステート対応
+  - affiliate_id 実値は表示しない（フラグのみ）
+- [x] `admin/click-stats/page.tsx`: 直近クリックテーブルに 🏷 バッジ追加
+  - Amazon 行で `clicked_url` に `tag=` が含まれる場合のみ表示
+  - SHEIN / AliExpress / Temu には表示しない
+- [x] `admin/click-stats/page.tsx`: SQL メモに Amazon タグ付きクリック集計クエリ追加
+- [x] live-check-runner `phase19-amazon-affiliate-analysis-verify.spec.ts` — **5/5 PASS + 5 skip（認証なし環境）**
+- [x] Phase 9–18 全 regression PASS:
+  - Phase 9: 11 passed / 2 skipped
+  - Phase 10: 8 passed
+  - Phase 11: 12 passed
+  - Phase 12: 14 passed
+  - Phase 13: 15 passed
+  - Phase 14: 12 passed
+  - Phase 15: 12 passed
+  - Phase 16: 12 passed
+  - Phase 17: 12 passed
+  - Phase 18: 10 passed
+- [x] TypeScript check: エラー 0
+- [x] Vercel deploy `dpl_8DH621MKBP3S3D12Qzs6kDt13qBe` — READY
+- [x] https://cheap-cross-search.vercel.app にて確認可能
+
+**セキュリティ確認:**
+- affiliate_id 実値はコード・ログ・テスト出力に含まない
+- 管理画面の表示は「タグ付き/いいえ」フラグのみ（実値非表示）
+- P19-6: `/admin/click-stats` の可視テキストに `-22` 形式の Associates tag が露出しないことを確認済み
 
 ---
 

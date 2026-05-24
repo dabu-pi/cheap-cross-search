@@ -1,5 +1,5 @@
 /**
- * クリック統計ページ (Phase 16改善)
+ * クリック統計ページ (Phase 16改善 / Phase 19: Amazonタグ付きクリック表示追加)
  *
  * /api/click 経由のクリックイベントを集計・表示する。
  * - Supabase 未設定時: 設定案内を表示
@@ -7,6 +7,7 @@
  * - 管理者ログイン済み: 統計を表示（JST 時刻で表示）
  *
  * ⚠️ 個人情報は表示しない（user_id は表示せず、IP・UA は保存していない）。
+ * ⚠️ affiliate_id の実値は表示しない。タグ付きかどうかのフラグのみ表示。
  *
  * @see supabase/migrations/0002_tracking_reports_admin.sql (click_events テーブル定義)
  * @see src/lib/analytics/click-events.ts (INSERT ロジック)
@@ -188,6 +189,9 @@ export default async function ClickStatsPage() {
   const byQuery: Record<string, number> = {};
   let todayCount = 0;
   let weekCount  = 0;
+  // Phase 19: Amazon アフィリエイトタグ付きクリック集計
+  let amazonTotalCount = 0;
+  let amazonTaggedCount = 0;
 
   for (const r of clicks) {
     // ショップ別
@@ -203,6 +207,11 @@ export default async function ClickStatsPage() {
     if (getJSTDateStr(r.clicked_at) === todayJST) todayCount++;
     // 7日間
     if (new Date(r.clicked_at).getTime() >= weekAgoMs) weekCount++;
+    // Phase 19: Amazon タグ付き集計
+    if (r.shop_code === 'amazon') {
+      amazonTotalCount++;
+      if (r.clicked_url && r.clicked_url.includes('tag=')) amazonTaggedCount++;
+    }
   }
 
   const shopRanking  = Object.entries(byShop).sort((a, b) => b[1] - a[1]);
@@ -210,6 +219,10 @@ export default async function ClickStatsPage() {
   const queryRanking  = Object.entries(byQuery).sort((a, b) => b[1] - a[1]).slice(0, 10);
   const recent20     = clicks.slice(0, 20);
   const totalNum     = totalCount as number;
+  // Phase 19: タグ付き割合
+  const amazonTagRatio = amazonTotalCount > 0
+    ? Math.round((amazonTaggedCount / amazonTotalCount) * 100)
+    : 0;
 
   return (
     <div className="max-w-3xl mx-auto p-4 space-y-5">
@@ -266,6 +279,49 @@ export default async function ClickStatsPage() {
               <p className="text-2xl font-bold text-orange-500">{shopRanking.length}</p>
               <p className="text-xs text-gray-500 mt-0.5">計測ショップ数</p>
             </div>
+          </div>
+
+          {/* ─── Phase 19: Amazonアフィリエイト導線 ─── */}
+          <div className="rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-3">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-bold text-yellow-800">💰 Amazonアフィリエイト導線</p>
+              <span className="text-xs text-yellow-600 bg-yellow-100 px-2 py-0.5 rounded-full border border-yellow-200">
+                直近 {clicks.length} 件中
+              </span>
+            </div>
+            {amazonTotalCount === 0 ? (
+              <p className="text-xs text-yellow-600">Amazon クリックがまだありません。</p>
+            ) : (
+              <>
+                <div className="flex items-center gap-5 mb-2">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-yellow-900">{amazonTaggedCount}</p>
+                    <p className="text-xs text-yellow-700 mt-0.5">🏷 タグ付き</p>
+                  </div>
+                  <div className="text-gray-300 text-xl select-none">／</div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-gray-600">{amazonTotalCount}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Amazon 合計</p>
+                  </div>
+                  <div className="flex-1">
+                    <div className="bg-yellow-100 rounded-full h-2.5">
+                      <div
+                        className="bg-yellow-500 h-2.5 rounded-full transition-all"
+                        style={{ width: `${amazonTagRatio}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-yellow-800 mt-1 text-right font-bold">
+                      {amazonTagRatio}% タグ付き
+                    </p>
+                  </div>
+                </div>
+                <p className="text-xs text-yellow-600 leading-relaxed">
+                  🏷 タグ付き = アフィリエイトリンク経由クリック（Phase 18〜）
+                  <span className="mx-1">·</span>
+                  affiliate_id 実値は管理者にも非表示
+                </p>
+              </>
+            )}
           </div>
 
           {/* ─── ショップ別 ─── */}
@@ -388,12 +444,17 @@ export default async function ClickStatsPage() {
                       <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50">
                         <td className="py-1.5 pr-2 text-gray-300 text-xs">{r.id}</td>
                         <td className="py-1.5 pr-2">
-                          <span
-                            className="text-xs font-bold px-1.5 py-0.5 rounded text-white"
-                            style={{ backgroundColor: color }}
-                          >
-                            {SHOP_NAMES[r.shop_code] ?? r.shop_code}
-                          </span>
+                          <div className="flex items-center gap-1">
+                            <span
+                              className="text-xs font-bold px-1.5 py-0.5 rounded text-white"
+                              style={{ backgroundColor: color }}
+                            >
+                              {SHOP_NAMES[r.shop_code] ?? r.shop_code}
+                            </span>
+                            {r.shop_code === 'amazon' && r.clicked_url && r.clicked_url.includes('tag=') && (
+                              <span className="text-xs" title="アフィリエイトタグ付きクリック">🏷</span>
+                            )}
+                          </div>
                         </td>
                         <td className="py-1.5 pr-2 text-gray-600 max-w-[100px]">
                           {r.query
@@ -465,7 +526,17 @@ SELECT id, shop_code, query, source, destination_host,
 -- 個人情報が保存されていないことを確認
 SELECT COUNT(*) FILTER (WHERE user_id IS NOT NULL) AS has_user_id,
        COUNT(*) FILTER (WHERE session_id IS NOT NULL) AS has_session_id
-  FROM click_events;`}
+  FROM click_events;
+
+-- Phase 19: Amazon アフィリエイトタグ付きクリック集計
+SELECT
+  COUNT(*) AS amazon_total,
+  COUNT(*) FILTER (WHERE clicked_url LIKE '%tag=%') AS tagged_clicks,
+  ROUND(
+    COUNT(*) FILTER (WHERE clicked_url LIKE '%tag=%') * 100.0
+    / NULLIF(COUNT(*), 0)
+  ) AS tag_ratio_pct
+FROM click_events WHERE shop_code = 'amazon';`}
         </pre>
       </AdminSectionCard>
 
