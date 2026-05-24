@@ -1,7 +1,7 @@
 # 実API/アフィリエイト調査レポート — 安買い横断サーチ Phase 5b
 
 作成: 2026-05-24  
-最終更新: 2026-05-24（Amazonアソシエイト登録完了・affiliate_settings DB更新済み）  
+最終更新: 2026-05-24（AliExpress Portals 申請完了・審査中）  
 対象ブランチ: `feature/phase8-supabase-vercel`  
 本番URL: https://cheap-cross-search.vercel.app
 
@@ -12,7 +12,7 @@
 | ショップ | 商品検索API | アフィリエイト | 優先分類 | 推奨アクション |
 |---|---|---|---|---|
 | Amazon | ✅ PA-API v5（要アソシエイト）| ✅ **登録完了** | `ready_to_apply` | ✅ 申請完了・DB登録済み / 次: PA-API有効化 |
-| AliExpress | ✅ Portals Affiliate API（要登録）| ✅ AliExpress Portals | `ready_to_apply` | Portals登録 → API申請 |
+| AliExpress | ✅ Portals Affiliate API（要登録）| ✅ AliExpress Portals | `submitted_under_review` | ⏳ 申請済み・審査中（2026-05-23）|
 | SHEIN | ❌ 公式なし | ✅ 提携ネットワーク経由 | `needs_review` | バリューコマース/A8経由で申請 |
 | Temu | ❌ 公式なし | ✅ Temu Affiliate（公式）| `needs_review` | Temu Affiliate登録・API確認 |
 | 楽天 | ✅ 楽天商品検索API（無料）| ✅ 楽天アフィリエイト | `ready_to_apply` | 楽天デベロッパー登録（将来候補）|
@@ -108,12 +108,26 @@
 | 項目 | 内容 |
 |---|---|
 | プログラム名 | AliExpress Portals Affiliate |
-| 申請URL | https://portals.aliexpress.com/signup |
+| 申請URL | https://portals.aliexpress.com/affiportals/web/portals.htm#/home |
+| ~~旧URL（404）~~ | ~~https://portals.aliexpress.com/signup~~ |
 | 必要情報 | サイト/アプリ情報・月間PV・コンテンツ種別・プロモーション方法 |
 | サイト審査 | ✅ あり（軽審査。比較サイトは通りやすい傾向）|
 | 本番URLで申請可否 | ✅ 可 |
 | 報酬対象 | クリック後30日以内の購入（カテゴリ別コミッション率あり）|
 | リンク生成 | API経由で商品ごとのアフィリエイトリンクを動的生成可能 |
+
+### 2-2b. 申請状況（2026-05-24）
+
+| 項目 | 内容 |
+|---|---|
+| 申請日時 | 2026-05-23 22:16:08 PST |
+| サイト名 | Cheap Cross Search |
+| サイトURL | https://cheap-cross-search.vercel.app |
+| チャンネル | Shopping platforms / Price comparison |
+| 状態 | **Under review** |
+| 審査目安 | 1時間〜2営業日以上 |
+| 結果通知 | メールで通知予定 |
+| 承認後の作業 | affiliate_settings.aliexpress をDB更新 → aliexpress-portals.ts アダプタ実装 |
 
 ### 2-3. 規約上の注意点
 
@@ -272,7 +286,7 @@ Temu Affiliate 登録後、アフィリエイトリンクを affiliate_settings 
 
 | # | ショップ | 申請先 | URL | 必要なもの |
 |---|---|---|---|---|
-| 1 | AliExpress | Portals Affiliate | https://portals.aliexpress.com/signup | サイトURL・月間PV目安・コンテンツ説明 |
+| 1 | ~~AliExpress~~ | ~~Portals Affiliate~~ | ~~https://portals.aliexpress.com/signup~~ | **⏳ 申請済み・審査中**（2026-05-23 22:16 PST）|
 | 2 | ~~Amazon~~ | ~~Amazonアソシエイト~~ | ~~https://affiliate.amazon.co.jp/~~ | **✅ 登録完了（2026-05-24）**。次: PA-API有効化（売上3件後）|
 
 ### 優先度中（申請開始後、並行で）
