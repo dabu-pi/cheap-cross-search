@@ -202,7 +202,7 @@
 ASP（A8.net）の申請フォームへの入力に備えて以下を準備する:
 
 ```
-サイト名:       安買い横断サーチ / Cheap Cross Search
+サイト名:       ECサイト比較.com
 サイトURL:      https://cheap-cross-search.vercel.app
 カテゴリ:       ショッピング・価格比較
 コンテンツ説明:
@@ -295,8 +295,8 @@ ASP（A8.net）の申請フォームへの入力に備えて以下を準備す�
 申請フォームへの入力に備えて以下を準備する:
 
 ```
-サイト名（英語）: Cheap Cross Search
-サイト名（日本語）: 安買い横断サーチ
+サイト名（英語）: ECサイト比較.com
+サイト名（日本語）: ECサイト比較.com
 サイトURL:        https://cheap-cross-search.vercel.app
 カテゴリ:         Shopping / Price Comparison
 コンテンツ説明:
