@@ -246,11 +246,12 @@ async function SearchResults({ query }: { query: string }) {
 // ─────────────────────────────────────────────────────────────────
 
 /**
- * Supabase REST API から Amazon アフィリエイト設定を取得し、affiliate_id を返す。
+ * Supabase RPC 経由で Amazon アフィリエイトタグを取得する。
  * DB 未接続・行なし・enabled=false の場合は null を返す（フォールバック）。
  *
- * cookie-based SSR クライアントを避け、直接 REST API を呼ぶ。
- * RLS "public read enabled" ポリシーにより anon キーで enabled=true 行が読める。
+ * SECURITY DEFINER 関数 get_amazon_affiliate_tag() を使う。
+ * これにより anon ロールから admin_users テーブルへの権限なしに
+ * affiliate_settings を安全に読み取れる。
  *
  * ⚠️ この関数の戻り値は Server Component 内でのみ使用すること。
  *    affiliate_id をそのままクライアントコンポーネントの props に渡さないこと。
@@ -262,20 +263,23 @@ async function getAmazonAffiliateTag(): Promise<string | null> {
     if (!supabaseUrl || !supabaseKey) return null;
 
     const res = await fetch(
-      `${supabaseUrl}/rest/v1/affiliate_settings?shop_code=eq.amazon&enabled=eq.true&select=affiliate_id`,
+      `${supabaseUrl}/rest/v1/rpc/get_amazon_affiliate_tag`,
       {
+        method: 'POST',
         headers: {
           apikey: supabaseKey,
           Authorization: `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
         },
+        body: '{}',
         // 毎リクエストごとに最新値を取得（キャッシュしない）
         cache: 'no-store',
       }
     );
 
     if (!res.ok) return null;
-    const rows = (await res.json()) as Array<{ affiliate_id: string | null }>;
-    return rows[0]?.affiliate_id || null;
+    const tag = (await res.json()) as string | null;
+    return tag || null;
   } catch {
     return null;
   }
