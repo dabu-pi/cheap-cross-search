@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/config/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -8,19 +9,34 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "ECサイト比較.com",
-  description: "ECサイト比較.com — Amazon・SHEIN・AliExpress・Temuを1つの検索ワードで横断比較。価格・送料・到着予定を一覧表示。",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "ECサイト比較.com",
+    title: SITE_NAME,
   },
   openGraph: {
-    title: "ECサイト比較.com",
-    description: "ECサイト比較.com — Amazon・SHEIN・AliExpress・Temuを横断検索・価格比較",
+    title: SITE_NAME,
+    description: "Amazon・SHEIN・AliExpress・Temuを横断検索・価格比較。最安値を無料で一覧表示。",
     type: "website",
     locale: "ja_JP",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+  },
+  twitter: {
+    card: "summary",
+    title: SITE_NAME,
+    description: "Amazon・SHEIN・AliExpress・Temuを横断検索・価格比較。",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 

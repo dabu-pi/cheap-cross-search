@@ -26,6 +26,7 @@
 | 17 | 実APIアダプタ準備・デモ/実データ切替基盤 | ✅ 完了（型追加・ショップ状態明確化・スタブアダプタ・切替ガイド・12/12 PASS・2026-05-24）| - |
 | 18 | Amazon アソシエイトタグ付与 | ✅ 完了（サーバーサイドタグ付与・RPC fix・10/10 PASS・2026-05-24）| - |
 | 19 | Amazonタグ付きクリック分析・収益導線確認 | ✅ 完了（💰カード・🏷バッジ・SQL追加・5/5 PASS+5 skip・Phase9–18 全 PASS・2026-05-24）| - |
+| 20 | SEO・信頼性・審査向け整備 | ✅ 完了（sitemap/robots/OGP/Twitter card・Amazon承認済み表記・15/15 PASS・2026-05-24）| - |
 
 ---
 
@@ -341,6 +342,40 @@ Authentication > URL Configuration > Redirect URL に /auth/callback を追加
 - affiliate_id 実値はコード・ログ・テスト出力に含まない
 - 管理画面の表示は「タグ付き/いいえ」フラグのみ（実値非表示）
 - P19-6: `/admin/click-stats` の可視テキストに `-22` 形式の Associates tag が露出しないことを確認済み
+
+---
+
+## Phase 20: SEO・信頼性・審査向け整備 ✅ 完了（2026-05-24）
+
+**完了条件:** ECサイト比較.com としての SEO 基礎、sitemap/robots、policy ページ表記の整合。
+
+- [x] `src/lib/config/site.ts` 追加: SITE_URL 定数（カスタムドメイン移行時はここだけ変更でよい）
+- [x] `src/app/layout.tsx` 更新:
+  - `metadataBase: new URL(SITE_URL)` 追加（絶対 URL OGP 生成に必要）
+  - `title.template` 追加（ページ固有 title + サービス名）
+  - `openGraph.url` / `openGraph.siteName` 追加
+  - Twitter card (`summary`) 追加
+  - `robots: { index: true, follow: true }` 追加
+- [x] `src/app/sitemap.ts` 新規作成: `/sitemap.xml` 自動配信
+  - トップ / /search / /disclaimer / /terms / /privacy / /safety-policy
+  - /admin / /api / /account / /favorites は除外
+- [x] `src/app/robots.ts` 新規作成: `/robots.txt` 自動配信
+  - /admin / /api / /account / /favorites / /auth/ を Disallow
+  - sitemap URL を記載
+- [x] `src/app/disclaimer/page.tsx` アフィリエイト表記を現状に合わせて更新:
+  - Amazon アソシエイト: 「参加を予定」→「参加中・適格販売から収入を得ることがあります」
+  - AliExpress: 「申請中・審査結果待ち」
+  - Temu / SHEIN: 「参加を検討中・未申請」
+  - affiliate_id 実値は表示しない
+- [x] live-check-runner `phase20-seo-trust-verify.spec.ts` — **15/15 PASS**
+- [x] TypeScript check: エラー 0 / build 成功
+- [x] Vercel deploy `dpl_HrzgwH4RjCWfXUfYuA9zHKNU2QNK` — READY
+
+**メモ: カスタムドメイン移行時の手順**
+
+1. `src/lib/config/site.ts` の SITE_URL を新ドメインに変更
+2. (または) Vercel 環境変数 `NEXT_PUBLIC_SITE_URL` に新ドメインを設定
+3. sitemap.xml / robots.txt は自動的に新ドメインで再生成される
 
 ---
 

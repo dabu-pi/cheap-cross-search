@@ -1,6 +1,6 @@
 # PROJECT_STATUS — ECサイト比較.com
 
-最終更新: 2026-05-24（Phase 19 Amazonタグ付きクリック分析・収益導線確認 完了・live-check 5/5 PASS+5 skip・Phase 9-18 全 PASS）
+最終更新: 2026-05-24（Phase 20 SEO・信頼性・審査向け整備 完了・live-check 15/15 PASS）
 
 ## 現状
 
@@ -47,6 +47,7 @@
 | Phase 17（実APIアダプタ準備・デモ/実データ切替基盤） | ✅ 完了（型追加・ショップ状態明確化・スタブアダプタ・切替ガイド・12/12 PASS・2026-05-24）|
 | Phase 18（Amazon アソシエイトタグ付与） | ✅ 完了（サーバーサイドタグ付与・SECURITY DEFINER RPC・10/10 PASS・2026-05-24）|
 | Phase 19（Amazonタグ付きクリック分析・収益導線確認） | ✅ 完了（管理画面💰カード・🏷バッジ・SQL追加・5/5 PASS+5 skip・Phase 9–18 全 PASS・2026-05-24）|
+| Phase 20（SEO・信頼性・審査向け整備） | ✅ 完了（sitemap/robots/OGP/Twitter card・Amazon承認済み表記・15/15 PASS・2026-05-24）|
 
 ## 🔍 /report 送信失敗の根本原因（2026-05-24 調査完了）
 

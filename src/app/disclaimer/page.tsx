@@ -62,15 +62,11 @@ export default function DisclaimerPage() {
           </p>
         </section>
 
-        {/* ─── アフィリエイト・PR 表記（Phase 6 強化）─── */}
+        {/* ─── アフィリエイト・PR 表記（Phase 6 強化 / Phase 20 更新）─── */}
         <section className="space-y-3 rounded-xl bg-orange-50 border border-orange-200 px-4 py-4">
           <h2 className="font-bold text-base text-gray-900">広告・アフィリエイトリンクについて（PR）</h2>
           <p>
-            当サービスは、Amazon アソシエイト、SHEIN アフィリエイトプログラム、
-            AliExpress Affiliate Program、Temu アフィリエイトプログラム等の
-            <strong>アフィリエイトプログラム</strong>への参加を予定しています。
-          </p>
-          <p>
+            当サービスは<strong>アフィリエイトプログラム</strong>を利用しています。
             アフィリエイトプログラムが有効なショップの商品リンクには
             <strong>「PR」</strong>バッジが表示されます。
             当該リンクをクリックして商品を購入された場合、当サービスに報酬（コミッション）が
@@ -89,13 +85,24 @@ export default function DisclaimerPage() {
               個人を特定する情報と紐づけることはありません（ログイン時のユーザーIDを除く）。
             </p>
           </div>
-          <div className="space-y-1">
-            <p className="text-xs text-gray-600 font-semibold">各アフィリエイトプログラムについて:</p>
+          <div className="space-y-1.5">
+            <p className="text-xs text-gray-600 font-semibold">参加中のアフィリエイトプログラム:</p>
             <ul className="text-xs text-gray-600 list-disc list-inside space-y-0.5">
-              <li>Amazon アソシエイト・プログラムの参加者として、適格販売から収入を得ることがあります。</li>
-              <li>当サービスはAmazon.co.jpとアフィリエイト提携しています（予定）。</li>
-              <li>SHEIN / AliExpress / Temu アフィリエイトプログラムへの参加を予定しています。</li>
+              <li>
+                <strong>Amazon アソシエイト・プログラム（参加中）</strong>
+                ：適格販売を通じて収入を得ることがあります。
+              </li>
             </ul>
+          </div>
+          <div className="space-y-1.5">
+            <p className="text-xs text-gray-600 font-semibold">申請中・検討中のプログラム:</p>
+            <ul className="text-xs text-gray-600 list-disc list-inside space-y-0.5">
+              <li>AliExpress Portals アフィリエイト（申請中・審査結果待ち）</li>
+              <li>SHEIN / Temu アフィリエイトプログラム（参加を検討中・未申請）</li>
+            </ul>
+            <p className="text-xs text-gray-500">
+              ※ 申請中・未申請のショップについては、現時点でアフィリエイト報酬は発生しません。
+            </p>
           </div>
         </section>
 
@@ -119,7 +126,7 @@ export default function DisclaimerPage() {
           <Link href="/" className="text-blue-600 hover:underline text-sm">
             ← トップに戻る
           </Link>
-          <p className="text-xs text-gray-400">最終更新: 2026-05-24</p>
+          <p className="text-xs text-gray-400">最終更新: 2026-05-24（Amazon アソシエイト表記を承認済みに更新）</p>
         </div>
       </div>
     </main>
