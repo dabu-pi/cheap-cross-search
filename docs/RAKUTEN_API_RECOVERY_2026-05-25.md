@@ -354,3 +354,58 @@ Production deployment の **Source（commit）が `7150d3a`** になっている
 
 > **Phase 23B/23C とも、production の Source が `7150d3a` になり再確認できるまで OPEN。**
 > env（`RAKUTEN_APP_ID` + `RAKUTEN_ACCESS_KEY`）は設定済みなので、7150d3a が Production に載れば復旧する見込み。
+
+## 15. Vercel CLI で最新コードを Production へデプロイ → 残る blocker は楽天アプリの「リファラー登録」（2026-05-25）
+
+ユーザーが Vercel CLI 認証済みとのことで、Claude 側で `vercel link` → `vercel --prod` を実施した。
+
+### 実施内容（Vercel CLI）
+
+- `vercel whoami` = `pinshanka24-8431` / scope `katsushis-projects`（`cheap-cross-search` 在籍）を確認。
+- `vercel link --yes --project cheap-cross-search` で repo を project に link（`.vercel/` は gitignore 済み・未コミット）。
+- `vercel --prod --yes` で**ローカル HEAD を Production へデプロイ**（READY・production alias 反映）。
+  - 真因確認: 直前まで Production は古い `6cbef8e` を配信していた（§14）。CLI デプロイで最新コードが本番化された。
+
+### デプロイ後の段階的な原因切り分け（Runtime Logs を `vercel logs --json` で確認）
+
+| 段階 | デプロイ commit | 楽天 runtime ログ（masked） | 解釈 |
+|---|---|---|---|
+| 新仕様アダプタ初投入 | 7150d3a/41af4b4 | `HTTP 403 errors.errorMessage=REQUEST_CONTEXT_BODY_HTTP_REFERRER_MISSING` | applicationId+accessKey は**有効**（key チェックを通過し referrer チェックに到達）。Referer 未到達 |
+| Referer を fetch header で送信 | 082b59e | 同上 `REFERRER_MISSING` | `Referer` は Fetch 仕様の forbidden header。Vercel の undici が送信時に除去 |
+| Referer を node:https で送信 | 11163d4 | 同上 `REFERRER_MISSING` | node:https は Referer を確実に送る（echo で確認）。HTTPS は E2E 暗号で Vercel も改変不可 → **Referer は楽天に届いているのに MISSING** |
+
+### 確定した切り分け結論
+
+- **applicationId / accessKey は有効**（"Invalid Access Key" や "specify valid applicationId" は出ない）。
+- **Referer ヘッダは楽天に到達している**（node:https 送信・HTTPS E2E で改変不可）。
+- それでも `REQUEST_CONTEXT_BODY_HTTP_REFERRER_MISSING` → **楽天アプリ側に「リファラー（許可ドメイン）」が登録されていない**ことが原因と判断。
+  新 openapi プラットフォームは、リクエストの Referer をアプリ登録済みリファラーと照合する。アプリに
+  リファラー未登録だと、ヘッダを送っても「リクエストのリファラーが（有効なものとして）存在しない」と判定される。
+
+### コード変更（このセッション）
+
+| commit | 内容 |
+|---|---|
+| 7150d3a | 新 endpoint(2026-04-01)・accessKey・formatVersion=2 対応（§13）|
+| 082b59e | Referer ヘッダ送信（fetch）→ Vercel で除去され効果なし |
+| 11163d4 | **Referer を `node:https` で確実送信**（fetch の forbidden header 回避）。`User-Agent` も付与 |
+
+→ コードは「新 endpoint + accessKey + Referer 送信」まで正しく整備済み。**残るは楽天アプリのリファラー登録のみ。**
+
+### 人側に必要な作業（これで復旧する想定）
+
+楽天 Developers / Rakuten Web Service のアプリ管理画面（https://webservice.rakuten.co.jp/app/list 等）で、
+対象アプリの **「アプリURL」/「リファラー（許可ドメイン）」に本番ドメインを登録**する。
+
+- 登録する値: `https://cheap-cross-search.vercel.app/`（コードが送る Referer と一致させる）
+  - ドメイン形式のみ可なら `cheap-cross-search.vercel.app`
+- 保存後、数分待ってから再度 `/search?q=ワイヤレスイヤホン` を確認（env・コードは設定済みなので追加デプロイ不要のはず）。
+- もし**別のドメイン**を登録した場合は教えてください。コードの Referer 値（現在 `SITE_URL`＝`cheap-cross-search.vercel.app`）をその値に合わせて調整します。
+
+### 確認の決定打
+
+production 再確認で楽天が **realOffers>0**（`offerId=rakuten-…`・`item.rakuten.co.jp` の商品リンク）になること。
+runtime ログに `[rakuten]` エラーが出なくなること。
+
+> **Phase 23B/23C は OPEN 継続。** ブロッカーは「楽天アプリのリファラー登録」（楽天アカウント設定・Claude 実施不可）。
+> 登録後に一報いただければ Claude が production 再確認 → 復旧していれば CLOSE。

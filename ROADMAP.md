@@ -13,6 +13,8 @@
 > **2026-05-25 Phase 23C 新仕様対応（根本原因確定）:** 楽天ログは `specify valid applicationId`、アプリ画面に「アプリケーションID/アクセスキー/アフィリエイトID」あり → **旧 endpoint + applicationId のみが原因**と確定。商品検索API **2026-04-01**（`openapi.rakuten.co.jp/ichibams/.../20260401`・**accessKey 必須**・formatVersion=2）へアダプタを更新（新旧エラー/レスポンス両対応・secrets masked・lint/tsc/build PASS）。**人側で Vercel に `RAKUTEN_ACCESS_KEY`(Production) 追加 + redeploy が必要。** 詳細は §13。
 >
 > **2026-05-25 🔴 真因発見：Production が古い commit 配信:** Vercel Production の Source が `6cbef8e`（旧コード・accessKey 非対応・旧endpoint）のままで、最新 `7150d3a`（新仕様アダプタ・push済み）が一度も載っていなかった。env 変更が効かなかった真因。**6cbef8e の Redeploy では直らない** — Production Branch を `feature/phase8-supabase-vercel` に設定 or `7150d3a` の deployment を Promote が必要（Vercel 認証要・Claude 実施不可・認証境界で停止）。詳細は §14。
+>
+> **2026-05-25 Vercel CLI 本番化＋referrer 切り分け:** Claude が `vercel link`+`vercel --prod` で最新コード（HEAD `11163d4`）を Production 化（dpl READY・alias 反映）。runtime ログで段階切り分け → applicationId+accessKey 有効・新endpoint OK・Referer も node:https で楽天到達済（HTTPS E2E で改変不可）にもかかわらず `403 REQUEST_CONTEXT_BODY_HTTP_REFERRER_MISSING`。⚠️ **未復旧。残ブロッカー＝楽天アプリの「リファラー(許可ドメイン)」未登録**（人側で `cheap-cross-search.vercel.app` を登録）。Phase 23B/23C OPEN。詳細は §15。
 
 ## フェーズ概要
 
