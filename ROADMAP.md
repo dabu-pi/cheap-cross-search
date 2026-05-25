@@ -3,6 +3,8 @@
 > **2026-05-25 新PC復元:** GitHub から clone（HEAD `764a101`）・npm ci/lint/typecheck/build 全 PASS・production smoke 4 URL OK。詳細は `docs/TRANSFER_TO_NEW_PC_2026-05-25.md`。
 >
 > **2026-05-25 AliExpress Affiliate 再申請 HOLD:** 登録不承認（site information invalid/non-compliant）。すぐに再申請せず、サイト運用開始 + 運営者情報/問い合わせ/正式URL/アフィリエイト表記等の整備後に再申請する。詳細は `docs/ALIEXPRESS_AFFILIATE_STATUS_2026-05-25.md`。
+>
+> **2026-05-25 楽天API復旧 原因切り分け（Phase 23B）:** コード（endpoint/param/encode/fallback/registry）は正しいことを検証（ダミーidで本番と同一の HTTP 400 wrong_parameter を再現）。原因は Vercel `RAKUTEN_APP_ID` の値が無効。**real_api 未復旧** — 人側で有効 applicationId を Vercel 更新 → redeploy が必須。詳細は `docs/RAKUTEN_API_RECOVERY_2026-05-25.md`。
 
 ## フェーズ概要
 
@@ -34,6 +36,7 @@
 | 20A | 検索UI視認性・外部検索モード説明改善 | ✅ 完了（text-gray-900・外部検索モード説明・外部サイト誘導明記・15/15 PASS・production確認OK・2026-05-24）| - |
 | 21 | 検索体験・カテゴリ導線改善 | ✅ 完了（カテゴリ別人気KW・関連KW候補・EmptyState改善・21/21 PASS・2026-05-24）| - |
 | 22 | 実商品検索API PoC — 楽天・Yahoo! アダプタ | ✅ 完了（rakuten-ichiba.ts・yahoo-shopping.ts・6ショップ体制・20/20 PASS・2026-05-24）| - |
+| 23B | 楽天API復旧 原因切り分け | ✅ 切り分け完了・⚠️ real_api 未復旧（コード正常・原因は Vercel RAKUTEN_APP_ID 値が無効・人側 env 更新+redeploy 待ち・2026-05-25）| ★★★ |
 
 ---
 

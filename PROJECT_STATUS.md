@@ -1,6 +1,6 @@
 # PROJECT_STATUS — ECサイト比較.com
 
-最終更新: 2026-05-25（新PC復元・動作確認完了 — GitHub から clone・HEAD 764a101・npm ci/lint/typecheck/build 全 PASS・production smoke 4 URL OK。詳細: `docs/TRANSFER_TO_NEW_PC_2026-05-25.md`）
+最終更新: 2026-05-25（楽天API復旧 原因切り分け — コードは正しく endpoint/param 検証済み。原因は Vercel `RAKUTEN_APP_ID` 値が無効。lint/typecheck/build PASS。real_api は人側の Vercel env 更新+redeploy 待ち。AliExpress 再申請 HOLD。詳細: `docs/RAKUTEN_API_RECOVERY_2026-05-25.md` / `docs/ALIEXPRESS_AFFILIATE_STATUS_2026-05-25.md`）
 
 > **新PC復元メモ（2026-05-25）:** `C:\hirayama-ai-workspace\workspace\cheap-cross-search` に GitHub から fresh clone（branch `feature/phase8-supabase-vercel`・HEAD `764a101`）。
 > 引き継ぎメモの `bdfdb67` は remote tip と不一致（旧PC未 push の可能性）。GitHub 正本で復元。
@@ -9,9 +9,10 @@
 
 前回更新: 2026-05-24（Phase 23A 楽天APIエラー fallback 修正 — HTTP 400 wrong_parameter 原因特定・link_only fallback 実装・dpl_5Nvk24wASG4NNcyqF5o7suPrnF9f READY）
 
-> **次回再開時の最優先作業:**
+> **次回再開時の最優先作業（人側）:**
 > 楽天市場 real_api 有効化には **RAKUTEN_APP_ID の値を正しい applicationId に Vercel で更新** → redeploy が必要。
-> 詳細は「Phase 23」「Phase 23A」セクション参照。
+> 2026-05-25 の切り分けで、コード（endpoint/param/encode/fallback/registry）は正しく、原因は Vercel の値が無効と確定。
+> 手順は `docs/RAKUTEN_API_RECOVERY_2026-05-25.md` §8 を参照（楽天テストフォームで applicationId の有効性を先に確認可）。
 
 ## 現状
 
@@ -65,6 +66,7 @@
 | Phase 22（実商品検索API PoC） | ✅ 完了（楽天市場・Yahoo!ショッピング アダプタ実装・6ショップ体制・APIキー設定で即有効化・20/20 PASS・2026-05-24）|
 | Phase 23（楽天市場 real_api 有効化） | ⚠️ 要対応（RAKUTEN_APP_ID 値が invalid → applicationId 要確認・Phase 23A で調査済み・2026-05-24）|
 | Phase 23A（楽天APIエラー調査・fallback修正） | ✅ 完了（HTTP 400 wrong_parameter 原因特定・link_only fallback 実装・dpl_5Nvk24wASG4NNcyqF5o7suPrnF9f READY・2026-05-24）|
+| Phase 23B（楽天API復旧 原因切り分け）| ✅ 切り分け完了・⚠️ real_api 未復旧（2026-05-25・コードは正しい/endpoint・param 検証済み・ダミーidで本番同一エラー再現・原因は Vercel `RAKUTEN_APP_ID` 値が無効・**人側で有効 applicationId を Vercel 更新 → redeploy が必須**。詳細: `docs/RAKUTEN_API_RECOVERY_2026-05-25.md`）|
 | YAHOO_APP_ID / Yahoo!ショッピング | 🔜 未設定・external_search 維持（別フェーズで有効化）|
 
 ## ⚠️ Phase 23 楽天市場 real_api 有効化（要対応・2026-05-24）
