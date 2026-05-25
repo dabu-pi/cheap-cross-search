@@ -33,6 +33,7 @@
 
 import type { SearchAdapter, SearchAdapterInput, ShopSearchResult, ProductOffer } from './types';
 import { buildSearchUrl, getShopByCode } from '@/lib/shops/shops';
+import { SITE_URL } from '@/lib/config/site';
 
 const RAKUTEN_ENDPOINT =
   'https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260401';
@@ -148,6 +149,13 @@ export class RakutenIchibaAdapter implements SearchAdapter {
       const res = await fetch(url, {
         cache: 'no-store',
         signal: AbortSignal.timeout(input.timeoutMs ?? 8000),
+        headers: {
+          // 2026-04-01 仕様: HTTP Referer が必須
+          // （未送信だと 403 REQUEST_CONTEXT_BODY_HTTP_REFERRER_MISSING になる）
+          // 楽天アプリに登録したサイトURLを Referer として送る。
+          Referer: `${SITE_URL}/`,
+          'User-Agent': `cheap-cross-search/1.0 (+${SITE_URL})`,
+        },
       });
 
       if (!res.ok) {
