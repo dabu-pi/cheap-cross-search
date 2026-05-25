@@ -31,6 +31,7 @@
  * @see https://webservice.rakuten.co.jp/documentation/ichiba-item-search
  */
 
+import https from 'node:https';
 import type { SearchAdapter, SearchAdapterInput, ShopSearchResult, ProductOffer } from './types';
 import { buildSearchUrl, getShopByCode } from '@/lib/shops/shops';
 import { SITE_URL } from '@/lib/config/site';
@@ -93,6 +94,38 @@ function firstImageUrl(arr?: Array<string | { imageUrl: string }>): string | und
   return typeof first === 'string' ? first : first.imageUrl;
 }
 
+/**
+ * node:https による GET。
+ * fetch（undici）は `Referer` を forbidden header として送信時に落とすため、
+ * Referer 必須の楽天 2026-04-01 API には https モジュールで明示送信する。
+ */
+function rakutenHttpsGet(
+  url: string,
+  headers: Record<string, string>,
+  timeoutMs: number
+): Promise<{ ok: boolean; status: number; statusText: string; body: string }> {
+  return new Promise((resolve, reject) => {
+    const req = https.request(url, { method: 'GET', headers }, (res) => {
+      const chunks: Buffer[] = [];
+      res.on('data', (c: Buffer) => chunks.push(c));
+      res.on('end', () => {
+        const status = res.statusCode ?? 0;
+        resolve({
+          ok: status >= 200 && status < 300,
+          status,
+          statusText: res.statusMessage ?? '',
+          body: Buffer.concat(chunks).toString('utf8'),
+        });
+      });
+    });
+    req.on('error', reject);
+    req.setTimeout(timeoutMs, () => {
+      req.destroy(new Error(`Rakuten API timeout after ${timeoutMs}ms`));
+    });
+    req.end();
+  });
+}
+
 // ─── アダプタ本体 ──────────────────────────────────────────────────────────
 
 export class RakutenIchibaAdapter implements SearchAdapter {
@@ -146,28 +179,25 @@ export class RakutenIchibaAdapter implements SearchAdapter {
 
       const url = `${RAKUTEN_ENDPOINT}?${params}`;
 
-      const res = await fetch(url, {
-        cache: 'no-store',
-        signal: AbortSignal.timeout(input.timeoutMs ?? 8000),
-        headers: {
-          // 2026-04-01 仕様: HTTP Referer が必須
-          // （未送信だと 403 REQUEST_CONTEXT_BODY_HTTP_REFERRER_MISSING になる）
-          // 楽天アプリに登録したサイトURLを Referer として送る。
+      // 2026-04-01 仕様: HTTP Referer が必須（未送信だと
+      // 403 REQUEST_CONTEXT_BODY_HTTP_REFERRER_MISSING）。fetch では Referer が
+      // 落ちるため node:https で楽天アプリ登録のサイトURLを Referer として送る。
+      const res = await rakutenHttpsGet(
+        url,
+        {
           Referer: `${SITE_URL}/`,
           'User-Agent': `cheap-cross-search/1.0 (+${SITE_URL})`,
         },
-      });
+        input.timeoutMs ?? 8000
+      );
 
       if (!res.ok) {
-        // レスポンス本文（secrets を含まない）を読みつつ、念のため mask
-        let body = '';
-        try { body = await res.text(); } catch { /* ignore */ }
-        const safeBody = maskSecrets(body.slice(0, 300));
+        const safeBody = maskSecrets(res.body.slice(0, 300));
         console.error(`[rakuten] API HTTP ${res.status} ${res.statusText}:`, safeBody);
         throw new Error(`Rakuten API HTTP ${res.status}: ${res.statusText} — ${safeBody}`);
       }
 
-      const data = (await res.json()) as RakutenSearchResponse;
+      const data = JSON.parse(res.body) as RakutenSearchResponse;
 
       // 2026-04-01 のエラー形式
       if (data.errors) {
