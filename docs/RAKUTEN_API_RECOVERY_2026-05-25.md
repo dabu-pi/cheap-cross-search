@@ -457,3 +457,12 @@ egressRefererSeen: "https://cheap-cross-search.vercel.app/"   ← Vercel は Ref
 
 > **Phase 23B/23C は OPEN 継続。** これ以上はコードではなく楽天アカウント設定の問題。
 > 設定変更後に一報いただければ Claude が即 production 再確認（必要なら旧 endpoint 対応への小修正も実施）。
+
+## 17. 作業一旦停止（2026-05-25 終了）
+
+本日の楽天API復旧作業をここで停止。再開手順は **[`RAKUTEN_API_RESTART_PLAN_2026-05-26.md`](./RAKUTEN_API_RESTART_PLAN_2026-05-26.md)** にまとめた。
+
+- 最終状態: 楽天 real API **未復旧**（`REQUEST_CONTEXT_BODY_HTTP_REFERRER_MISSING`）。Phase 23B **OPEN** / Phase 23C **実装完了**。production は link_only fallback で安全稼働。
+- 残ブロッカー: 楽天アカウント/アプリ設定側（伝播待ち or 設定/権限/context チェック）。コード側は対応済み。
+- 明日以降: 時間を置いて production 再確認 → 未解消なら楽天アプリ設定再確認 → 楽天サポート問い合わせ（要点は restart plan §6）。
+- 本停止セッションは**コード変更なし**（docs のみ）。そのため lint/tsc/build は不要と判断・未実施。production・env・楽天アプリ設定には触れていない。一時診断は復活させていない。

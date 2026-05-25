@@ -17,6 +17,8 @@
 > **2026-05-25 Vercel CLI 本番化＋referrer 切り分け:** Claude が `vercel link`+`vercel --prod` で最新コード（HEAD `11163d4`）を Production 化（dpl READY・alias 反映）。runtime ログで段階切り分け → applicationId+accessKey 有効・新endpoint OK・Referer も node:https で楽天到達済（HTTPS E2E で改変不可）にもかかわらず `403 REQUEST_CONTEXT_BODY_HTTP_REFERRER_MISSING`。詳細は §15。
 >
 > **2026-05-25 診断エンドポイントで確定切り分け → コード側は限界:** referrer 登録後も継続。一時診断(/api/diag/rakuten・確認後削除)で確定 — (1) Vercel は Referer 送出済(egress確認) (2) 新endpoint は Referer 有/無で**同一** `REFERRER_MISSING`＝リクエスト無関係＝**楽天アカウント設定/伝播/アプリ種別の問題** (3) 旧endpoint は現applicationId で `specify valid applicationId`＝現credは新platform専用。⚠️ **未復旧。残作業は人側**（設定伝播待ち / 従来型 webservice applicationId 取得 / 楽天サポート）。Phase 23B/23C OPEN。詳細は §16。
+>
+> **2026-05-25 作業一旦停止:** 本日の楽天API復旧はここで停止。新仕様アダプタ実装完了・本番デプロイ済み、production は link_only fallback で安全稼働。Phase 23B OPEN / 23C 実装完了。残ブロッカーは楽天アカウント/アプリ設定（伝播待ち or 権限/context）。**再開手順は `docs/RAKUTEN_API_RESTART_PLAN_2026-05-26.md`**（時間を置いて再確認 → 楽天アプリ設定確認 → サポート問い合わせ / 従来型 applicationId 取得）。
 
 ## フェーズ概要
 

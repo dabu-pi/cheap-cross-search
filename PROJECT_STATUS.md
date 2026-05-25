@@ -1,6 +1,6 @@
 # PROJECT_STATUS — ECサイト比較.com
 
-最終更新: 2026-05-25（楽天API復旧 原因切り分け — コードは正しく endpoint/param 検証済み。原因は Vercel `RAKUTEN_APP_ID` 値が無効。lint/typecheck/build PASS。real_api は人側の Vercel env 更新+redeploy 待ち。AliExpress 再申請 HOLD。詳細: `docs/RAKUTEN_API_RECOVERY_2026-05-25.md` / `docs/ALIEXPRESS_AFFILIATE_STATUS_2026-05-25.md`）
+最終更新: 2026-05-25（楽天API復旧 作業一旦停止 — 新仕様(2026-04-01)アダプタ実装完了・本番デプロイ済み・applicationId+accessKey 有効。⚠️ real_api 未復旧＝楽天が `REQUEST_CONTEXT_BODY_HTTP_REFERRER_MISSING`（楽天アカウント/アプリ設定側・伝播待ち）。Phase 23B OPEN / 23C 実装完了。production は link_only fallback で安全稼働。再開手順: `docs/RAKUTEN_API_RESTART_PLAN_2026-05-26.md`。AliExpress 再申請 HOLD）
 
 > **新PC復元メモ（2026-05-25）:** `C:\hirayama-ai-workspace\workspace\cheap-cross-search` に GitHub から fresh clone（branch `feature/phase8-supabase-vercel`・HEAD `764a101`）。
 > 引き継ぎメモの `bdfdb67` は remote tip と不一致（旧PC未 push の可能性）。GitHub 正本で復元。
