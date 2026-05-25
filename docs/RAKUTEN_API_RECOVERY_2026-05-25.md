@@ -305,3 +305,52 @@ GET 同上 + imageFlag=1&sort=standard（accessKey なし）
 
 - **Phase 23C（新仕様対応・実装）= 完了（commit 済み）。**
 - **Phase 23B（real_api 復旧）= OPEN 継続**（人側 env 追加 + redeploy 待ち → production 確認で CLOSE 判定）。
+
+## 14. 真因の発見：Production が古い commit を配信していた（2026-05-25）
+
+ユーザーが `RAKUTEN_ACCESS_KEY` を Vercel Production に追加し Redeploy 後、Vercel の Deployment Details の
+**Source が `6cbef8e` のまま**（最新 `7150d3a` ではない）であることに気づいた。これが全ての失敗の真因。
+
+### 確認結果（git）
+
+- 最新 `7150d3a` は origin に push 済み（HEAD == origin == 7150d3a）。
+- `6cbef8e` は `7150d3a` の**祖先**（`merge-base --is-ancestor` = 0）。内容は Phase 23A（2026-05-24）の
+  **旧 endpoint `app.rakuten.co.jp/services/api/IchibaItem/Search/20220601`・accessKey なし**のコード。
+- `6cbef8e..7150d3a` の間に **9 commits**（うち `7150d3a` が新仕様アダプタ本体）。
+  → **Production は新仕様アダプタを一度も載せていなかった。**
+
+### これが意味すること
+
+これまでの env 変更（`RAKUTEN_APP_ID` 貼り直し → `RAKUTEN_ACCESS_KEY` 追加）が production の挙動を
+変えなかったのは当然で、**production は終始 6cbef8e（accessKey 非対応・旧 endpoint）を実行していた**ため。
+Deployment 一覧で 6cbef8e の deployment を「Redeploy」しても、同じ古い commit を再ビルドするだけで
+最新コードは反映されない。
+
+### なぜ最新が production に出ないか（推定）
+
+- Vercel プロジェクトの **Production Branch が `feature/phase8-supabase-vercel` ではない**（例: `main`）ため、
+  当該ブランチへの push が Production に自動反映されない、もしくは
+- Git 連携が無効で、過去に 6cbef8e から作った deployment を手動 Redeploy し続けている。
+- ローカル repo に `.vercel` リンク・`vercel.json` は無く、`VERCEL_TOKEN` も未設定 →
+  **Claude からの CLI デプロイは認証（ログイン）と project link が必要で実施不可**（認証境界で停止）。
+
+### 人側で必要な対応（最新 7150d3a を Production へ載せる）
+
+いずれか一つ。**「6cbef8e の Redeploy」では直らない**点に注意。
+
+1. **Production Branch を確認/変更**: Vercel → project `cheap-cross-search` → Settings → Git →
+   **Production Branch** を `feature/phase8-supabase-vercel` にする。その後 push 済みの 7150d3a が
+   Production としてビルドされる（必要なら空 commit を push、または Deployments から最新を再ビルド）。
+2. **最新 commit の deployment を Promote**: Deployments で `7150d3a` から作られた（Preview）deployment を探し
+   **Promote to Production**。無ければ Git 連携が当該ブランチを自動ビルドしていない → 手順1へ。
+3. **Production Branch が `main` 運用なら**: `7150d3a` を `main` に merge して push（要・別途方針確認）。
+4. **認証済み端末で Vercel CLI**: repo で `vercel link`（project 紐付け）→ `vercel --prod`
+   （= 最新コードから Production deploy）。Claude 側は未認証のため実施不可。
+
+### 確認の決定打
+
+Production deployment の **Source（commit）が `7150d3a`** になっていること。
+6cbef8e のままなら新仕様コードは動かない（楽天は link_only fallback のまま）。
+
+> **Phase 23B/23C とも、production の Source が `7150d3a` になり再確認できるまで OPEN。**
+> env（`RAKUTEN_APP_ID` + `RAKUTEN_ACCESS_KEY`）は設定済みなので、7150d3a が Production に載れば復旧する見込み。

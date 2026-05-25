@@ -70,6 +70,7 @@
 | Phase 23B 自動実施トライ | 🔒 認証で停止（2026-05-25・楽天/Vercel ともログイン必須・Claude 側に対話ログイン手段・有効値・VERCEL_TOKEN/CLI なし → 手順1〜5 実施不可。人側ブラウザ操作が必要。詳細: `RAKUTEN_API_RECOVERY_2026-05-25.md` §10）|
 | Phase 23B 復旧確認（env更新+redeploy後）| ⚠️ **未復旧**（2026-05-25・curl SSR 生HTML検査 X-Vercel-Cache:MISS・楽天は依然 link_only fallback・realOffers=0 を5回3クエリで確認・原因は server側＝有効値が production runtime に届いていない疑い・Vercel Runtime Logs の `[rakuten]` で切り分け。Phase 23B は OPEN 継続。詳細: §11）|
 | Phase 23C（楽天API 2026-04-01 新仕様対応）| ✅ 実装完了（2026-05-25・**根本原因＝旧endpoint+applicationIdのみ**。新 endpoint `openapi.rakuten.co.jp/ichibams/.../20260401`・**accessKey 必須**・formatVersion=2 対応・新旧エラー形式両対応・secrets masked・lint/tsc/build PASS。**人側で Vercel に `RAKUTEN_ACCESS_KEY`(Production) 追加 + redeploy が必要**。詳細: `RAKUTEN_API_RECOVERY_2026-05-25.md` §13）|
+| Phase 23 真因発見：Production が古い | 🔴 **Production が `6cbef8e`(旧コード・accessKey非対応)を配信中**（2026-05-25・最新 `7150d3a` は9commits先・push済み）。env 変更が効かなかった真因。6cbef8e の Redeploy では直らない。**人側で Production Branch 確認/変更 or 7150d3a の deployment を Promote が必要**（認証要・Claude 実施不可）。詳細: §14 |
 | YAHOO_APP_ID / Yahoo!ショッピング | 🔜 未設定・external_search 維持（別フェーズで有効化）|
 
 ## ⚠️ Phase 23 楽天市場 real_api 有効化（要対応・2026-05-24）

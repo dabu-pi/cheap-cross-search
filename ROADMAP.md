@@ -11,6 +11,8 @@
 > **2026-05-25 復旧確認 → ⚠️ 未復旧:** ユーザーが env 更新+redeploy 実施後に確認したが、楽天は依然 link_only fallback（curl SSR 生HTML・X-Vercel-Cache:MISS・realOffers=0 を5回3クエリで確認）。原因は server側で、有効値が production runtime に届いていない疑い（env scope=Production か / redeploy が production promote 済みか / 値の空白混入 / Vercel Runtime Logs `[rakuten]` で切り分け）。**Phase 23B は OPEN 継続。** 詳細は `docs/RAKUTEN_API_RECOVERY_2026-05-25.md` §11。
 >
 > **2026-05-25 Phase 23C 新仕様対応（根本原因確定）:** 楽天ログは `specify valid applicationId`、アプリ画面に「アプリケーションID/アクセスキー/アフィリエイトID」あり → **旧 endpoint + applicationId のみが原因**と確定。商品検索API **2026-04-01**（`openapi.rakuten.co.jp/ichibams/.../20260401`・**accessKey 必須**・formatVersion=2）へアダプタを更新（新旧エラー/レスポンス両対応・secrets masked・lint/tsc/build PASS）。**人側で Vercel に `RAKUTEN_ACCESS_KEY`(Production) 追加 + redeploy が必要。** 詳細は §13。
+>
+> **2026-05-25 🔴 真因発見：Production が古い commit 配信:** Vercel Production の Source が `6cbef8e`（旧コード・accessKey 非対応・旧endpoint）のままで、最新 `7150d3a`（新仕様アダプタ・push済み）が一度も載っていなかった。env 変更が効かなかった真因。**6cbef8e の Redeploy では直らない** — Production Branch を `feature/phase8-supabase-vercel` に設定 or `7150d3a` の deployment を Promote が必要（Vercel 認証要・Claude 実施不可・認証境界で停止）。詳細は §14。
 
 ## フェーズ概要
 
