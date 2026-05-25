@@ -7,6 +7,8 @@
 > **2026-05-25 楽天API復旧 原因切り分け（Phase 23B）:** コード（endpoint/param/encode/fallback/registry）は正しいことを検証（ダミーidで本番と同一の HTTP 400 wrong_parameter を再現）。原因は Vercel `RAKUTEN_APP_ID` の値が無効。**real_api 未復旧** — 人側で有効 applicationId を Vercel 更新 → redeploy が必須。詳細は `docs/RAKUTEN_API_RECOVERY_2026-05-25.md`。
 >
 > **2026-05-25 自動実施トライは認証で停止:** 楽天/Vercel ともログイン必須・Claude 側に対話ログイン手段/有効値/VERCEL_TOKEN/CLI が無いため手順1〜5 を実施できず。real_api 復旧は人側のブラウザ操作（Rakuten 確認 + Vercel env 更新 + redeploy）待ち。再開条件は §10 参照。
+>
+> **2026-05-25 復旧確認 → ⚠️ 未復旧:** ユーザーが env 更新+redeploy 実施後に確認したが、楽天は依然 link_only fallback（curl SSR 生HTML・X-Vercel-Cache:MISS・realOffers=0 を5回3クエリで確認）。原因は server側で、有効値が production runtime に届いていない疑い（env scope=Production か / redeploy が production promote 済みか / 値の空白混入 / Vercel Runtime Logs `[rakuten]` で切り分け）。**Phase 23B は OPEN 継続。** 詳細は `docs/RAKUTEN_API_RECOVERY_2026-05-25.md` §11。
 
 ## フェーズ概要
 

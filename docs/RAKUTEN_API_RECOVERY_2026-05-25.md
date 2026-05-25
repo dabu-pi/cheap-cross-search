@@ -168,3 +168,49 @@ Claude 側で可能な範囲まで自動実施しようとしたが、**すべ�
 5. https://cheap-cross-search.vercel.app/search?q=ワイヤレスイヤホン で楽天が商品カード表示になれば復旧
 
 > 認証完了後（= ユーザーが手順3・4 を実施した後）に Claude 側で再開できる作業: production 確認（WebFetch / live-check-runner）→ real_api 復旧の有無を判定 → 本ドキュメント・PROJECT_STATUS・ROADMAP を「復旧済み」に更新 → commit / push。再開時は「Vercel env 更新 + redeploy 済み」とだけ伝えてもらえればよい（値は不要）。
+
+## 11. 復旧確認（2026-05-25・env 更新+redeploy 後）⚠️ 未復旧
+
+ユーザーが「Vercel Production env `RAKUTEN_APP_ID` を有効値に更新し、最新 Production deployment を Redeploy 済み」と報告。
+これを受けて production を確認した結果、**楽天は依然 link_only fallback のままで real_api は復旧していない**。
+
+### 確認方法と証拠（curl で SSR 生 HTML を直接検査・WebFetch キャッシュ回避）
+
+- 応答ヘッダ: `HTTP/1.1 200` / `X-Vercel-Cache: MISS` / `Age: 0` / `Cache-Control: no-store` → **CDN キャッシュではない新鮮な SSR レンダ**を確認。
+- 楽天の唯一のリンクは `shop=rakuten&to=https://search.rakuten.co.jp/search/mall/.../&source=direct_search`
+  = **link_only fallback の検索ボタン**（楽天の*検索*ページ向け・`offerId` なし）。
+- 実商品オファーの指標（`offerId=rakuten-…` / `item.rakuten.co.jp` の商品ページリンク）は **0 件**。
+- 5 回・3 クエリ（ワイヤレスイヤホン×3 / スマホケース / 本）で連続確認 → realOffers=0 で一定。**一過性タイムアウトではない**。
+- 比較: Amazon カードは `offerId=demo-amazon-*`（デモデータ）で正常表示。他ショップ表示・UI ともに破損なし。
+- 楽天の masked エラー文言は `warnings` に入るが **DOM/HTML には serialize されない**ため、外部からは server 側の失敗理由までは取得できなかった。
+
+### 解釈（原因は依然 server 側＝Vercel runtime）
+
+楽天アダプタは production で実行され、内部でエラー or 設定不備となり link_only にフォールバックしている。
+ユーザーが API Test Form で値の有効性を確認済みなら「値そのもの」は正しい可能性が高く、
+**production runtime にその有効値が届いていない／反映されていない**ことが疑われる。候補:
+
+1. env の Environment が **Production になっていない**（Preview/Development のみ等）
+2. **production alias が旧 deployment を指している**（Redeploy が Production に promote されていない／まだ READY でない）
+3. Vercel に貼った値に**前後の空白・改行混入**（explorer では正しい値でテストし、Vercel 側だけ不正）
+4. その他 runtime エラー
+
+### 切り分けの決定打（人側・Vercel ログ）
+
+Vercel → 当該 Production deployment → **Runtime Logs / Functions Logs** で `[rakuten]` を検索する。
+出力されるメッセージ（applicationId はコード側で MASKED 済み・共有しても秘密漏れなし）で分岐が確定する:
+
+- `RAKUTEN_APP_ID が未設定です` → runtime に env が届いていない（候補1・2）
+- `API エラーのため外部検索フォールバック: ... HTTP 400 ... specify valid applicationId` → 値は届いているが無効（候補3）
+- 別の HTTP エラー → その内容で判断
+
+### 人側に依頼する確認・対応
+
+1. Vercel env `RAKUTEN_APP_ID` の **Environment に Production が含まれる**ことを確認
+2. **Redeploy が Production deployment として READY**（production alias が指す最新）になっていることを確認。
+   不安なら "Use existing Build Cache" を外して再 Redeploy
+3. 値に**前後の空白・改行**が無いことを確認（applicationId であり Application Secret ではない）
+4. 上記 Runtime Logs の `[rakuten]` 行を確認（masked なので内容は共有可）
+5. 修正後に「再度 redeploy 済み」と一報 → Claude 側で再確認
+
+> 本確認時点では **Phase 23B は CLOSE しない**（real_api 未復旧）。production は破損しておらず link_only fallback で安全稼働中。
