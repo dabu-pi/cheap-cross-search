@@ -409,3 +409,51 @@ runtime ログに `[rakuten]` エラーが出なくなること。
 
 > **Phase 23B/23C は OPEN 継続。** ブロッカーは「楽天アプリのリファラー登録」（楽天アカウント設定・Claude 実施不可）。
 > 登録後に一報いただければ Claude が production 再確認 → 復旧していれば CLOSE。
+
+## 16. 一時診断エンドポイントによる確定切り分け（2026-05-25）
+
+ユーザーが楽天アプリ「ECサイト比較」に「許可されたWebサイト: cheap-cross-search.vercel.app」「アプリURL: https://cheap-cross-search.vercel.app」を登録後も `REFERRER_MISSING` が継続。
+ログだけでは判断できないため、**一時診断エンドポイント `/api/diag/rakuten`**（masked・secret 非出力）を追加・デプロイして server 側から複数戦略を試した。**確認後に削除済み（production は 404）。**
+
+### 診断結果（secret なし）
+
+```
+hasAppId: true / hasAccessKey: true
+egressRefererSeen: "https://cheap-cross-search.vercel.app/"   ← Vercel は Referer を確実に送出している
+
+新 endpoint (openapi.rakuten.co.jp/ichibams/.../20260401):
+  A_referer_header              -> 403 REQUEST_CONTEXT_BODY_HTTP_REFERRER_MISSING
+  B_referer_and_referrer_headers-> 403 REQUEST_CONTEXT_BODY_HTTP_REFERRER_MISSING
+  C_referrer_queryparam         -> 403 REQUEST_CONTEXT_BODY_HTTP_REFERRER_MISSING
+  D_no_referer_baseline         -> 403 REQUEST_CONTEXT_BODY_HTTP_REFERRER_MISSING
+
+旧 endpoint (app.rakuten.co.jp/.../20220601):
+  E_old_appid_only              -> 400 wrong_parameter: specify valid applicationId
+  F_old_with_accesskey          -> 400 wrong_parameter: specify valid applicationId
+```
+
+### 確定した結論
+
+1. **Vercel は Referer を確実に送出している**（egress 確認済み・echo に出現）。
+2. **新 endpoint のエラーはリクエストの Referer と無関係**：Referer あり(A)/二重(B)/クエリ(C)/無し(D) すべて同一の `REFERRER_MISSING`。
+   → これは**リクエスト側で解決できない。楽天アプリ/アカウント側の context チェック**（登録設定・伝播・アプリ種別/承認）に起因する。
+3. **旧 endpoint は現 applicationId で `specify valid applicationId`**。
+   → 現在の applicationId/accessKey は **新プラットフォーム(openapi/Developers)専用**で、**従来の楽天ウェブサービス(app.rakuten.co.jp)では無効**。
+
+→ **コード側で打てる手は尽きた**（新 endpoint は正しく叩けており accessKey も有効。残るは楽天アカウント側設定）。
+
+### コードの最終状態（このセッション）
+
+- アダプタは新 endpoint(2026-04-01)+applicationId+accessKey+Referer(node:https) で正しく実装済み。API エラー時は link_only fallback（production 健全・UI エラー漏れなし）。
+- 一時診断エンドポイントは**削除済み**（commit 未実施の untracked・production からも 404 で除去確認）。
+
+### 人側の選択肢（いずれか）
+
+1. **設定伝播待ち**: 「許可されたWebサイト」登録直後のため、楽天 gateway への反映に時間がかかる可能性。しばらく置いて再確認（Claude 側でいつでも再チェック可）。
+2. **アプリ設定の見直し**: 楽天 Developers で、当該 API が server-to-server 利用を許可する設定/プランか、別途「リファラー」専用項目があるかを確認。`REQUEST_CONTEXT_BODY_HTTP_REFERRER_MISSING` でアプリ設定側を点検。
+3. **従来型 applicationId の取得**: 従来の楽天ウェブサービス(webservice.rakuten.co.jp)で発行する applicationId なら、旧 endpoint `app.rakuten.co.jp/.../20220601` を accessKey/Referer 不要で server 側から利用できる。
+   （その場合アダプタを旧 endpoint へ戻す小修正で対応可能。現 applicationId は旧 endpoint で無効なので、別途従来型 ID が必要。）
+4. **楽天サポート照会**: `REQUEST_CONTEXT_BODY_HTTP_REFERRER_MISSING` の server-side 解消方法を問い合わせ。
+
+> **Phase 23B/23C は OPEN 継続。** これ以上はコードではなく楽天アカウント設定の問題。
+> 設定変更後に一報いただければ Claude が即 production 再確認（必要なら旧 endpoint 対応への小修正も実施）。

@@ -14,7 +14,9 @@
 >
 > **2026-05-25 🔴 真因発見：Production が古い commit 配信:** Vercel Production の Source が `6cbef8e`（旧コード・accessKey 非対応・旧endpoint）のままで、最新 `7150d3a`（新仕様アダプタ・push済み）が一度も載っていなかった。env 変更が効かなかった真因。**6cbef8e の Redeploy では直らない** — Production Branch を `feature/phase8-supabase-vercel` に設定 or `7150d3a` の deployment を Promote が必要（Vercel 認証要・Claude 実施不可・認証境界で停止）。詳細は §14。
 >
-> **2026-05-25 Vercel CLI 本番化＋referrer 切り分け:** Claude が `vercel link`+`vercel --prod` で最新コード（HEAD `11163d4`）を Production 化（dpl READY・alias 反映）。runtime ログで段階切り分け → applicationId+accessKey 有効・新endpoint OK・Referer も node:https で楽天到達済（HTTPS E2E で改変不可）にもかかわらず `403 REQUEST_CONTEXT_BODY_HTTP_REFERRER_MISSING`。⚠️ **未復旧。残ブロッカー＝楽天アプリの「リファラー(許可ドメイン)」未登録**（人側で `cheap-cross-search.vercel.app` を登録）。Phase 23B/23C OPEN。詳細は §15。
+> **2026-05-25 Vercel CLI 本番化＋referrer 切り分け:** Claude が `vercel link`+`vercel --prod` で最新コード（HEAD `11163d4`）を Production 化（dpl READY・alias 反映）。runtime ログで段階切り分け → applicationId+accessKey 有効・新endpoint OK・Referer も node:https で楽天到達済（HTTPS E2E で改変不可）にもかかわらず `403 REQUEST_CONTEXT_BODY_HTTP_REFERRER_MISSING`。詳細は §15。
+>
+> **2026-05-25 診断エンドポイントで確定切り分け → コード側は限界:** referrer 登録後も継続。一時診断(/api/diag/rakuten・確認後削除)で確定 — (1) Vercel は Referer 送出済(egress確認) (2) 新endpoint は Referer 有/無で**同一** `REFERRER_MISSING`＝リクエスト無関係＝**楽天アカウント設定/伝播/アプリ種別の問題** (3) 旧endpoint は現applicationId で `specify valid applicationId`＝現credは新platform専用。⚠️ **未復旧。残作業は人側**（設定伝播待ち / 従来型 webservice applicationId 取得 / 楽天サポート）。Phase 23B/23C OPEN。詳細は §16。
 
 ## フェーズ概要
 
