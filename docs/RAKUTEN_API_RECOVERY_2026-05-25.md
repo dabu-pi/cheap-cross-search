@@ -214,3 +214,28 @@ Vercel → 当該 Production deployment → **Runtime Logs / Functions Logs** �
 5. 修正後に「再度 redeploy 済み」と一報 → Claude 側で再確認
 
 > 本確認時点では **Phase 23B は CLOSE しない**（real_api 未復旧）。production は破損しておらず link_only fallback で安全稼働中。
+
+## 12. 復旧確認（2回目・値を再貼り付け+redeploy 後）⚠️ なお未復旧
+
+ユーザーが「Vercel Production `RAKUTEN_APP_ID` を楽天 Developers 画面のアプリケーションID に前後空白・改行なしで貼り直し、Production を Redeploy → Ready」と報告。再確認した結果も **未復旧**。
+
+- 確認: curl 生 SSR HTML・`X-Vercel-Cache: MISS` / `Age: 0`（新鮮なレンダ）。
+- 楽天 realOffers=0 / itemPageLinks=0 / searchFallback あり を **3 クエリ**（ワイヤレスイヤホン・スマホケース・本）で確認。依然 link_only fallback。
+
+### 重要な仮説：楽天「ポータルの取り違え」
+
+ユーザーは「**楽天 Developers 画面**のアプリケーションID」と報告。本アプリが使う Ichiba Item Search API は
+**楽天ウェブサービス（webservice.rakuten.co.jp）**専用の applicationId が必要で、楽天 Developers / RMS とは別系統。
+別ポータルの applicationId を貼ると、見た目は有効でも `specify valid applicationId` で弾かれる可能性がある。
+→ webservice.rakuten.co.jp のアプリ一覧の applicationId か、その API Explorer（/explorer/api）の IchibaItem Search で 200+商品が返る値か、を要確認。
+
+### 採用した切り分け方法（ユーザー選択）
+
+**Vercel Runtime/Functions Logs の `[rakuten]` 行**を確認する（applicationId はコード側で MASKED 済み・共有可）。
+- `RAKUTEN_APP_ID が未設定です` → env が runtime に届いていない（scope=Production か / redeploy promote 済みか）
+- `... HTTP 400 ... specify valid applicationId` → 値が無効（→ §12 のポータル取り違え仮説へ。webservice.rakuten.co.jp の applicationId を取得し直す）
+- 別エラー → 内容で判断
+
+ログだけで判らない場合は、masked 診断エンドポイント（`/api/diag/rakuten`）追加に進む。
+
+> **Phase 23B は引き続き OPEN。** 次アクション = ユーザーが `[rakuten]` ログ行を共有 → Claude が原因特定。
