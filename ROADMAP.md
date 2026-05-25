@@ -1,5 +1,7 @@
 # ROADMAP — ECサイト比較.com
 
+> **2026-05-25 新PC復元:** GitHub から clone（HEAD `764a101`）・npm ci/lint/typecheck/build 全 PASS・production smoke 4 URL OK。詳細は `docs/TRANSFER_TO_NEW_PC_2026-05-25.md`。
+
 ## フェーズ概要
 
 | Phase | タイトル | 状態 | 優先 |

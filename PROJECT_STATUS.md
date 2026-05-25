@@ -1,6 +1,13 @@
 # PROJECT_STATUS — ECサイト比較.com
 
-最終更新: 2026-05-24（Phase 23A 楽天APIエラー fallback 修正 — HTTP 400 wrong_parameter 原因特定・link_only fallback 実装・dpl_5Nvk24wASG4NNcyqF5o7suPrnF9f READY）
+最終更新: 2026-05-25（新PC復元・動作確認完了 — GitHub から clone・HEAD 764a101・npm ci/lint/typecheck/build 全 PASS・production smoke 4 URL OK。詳細: `docs/TRANSFER_TO_NEW_PC_2026-05-25.md`）
+
+> **新PC復元メモ（2026-05-25）:** `C:\hirayama-ai-workspace\workspace\cheap-cross-search` に GitHub から fresh clone（branch `feature/phase8-supabase-vercel`・HEAD `764a101`）。
+> 引き継ぎメモの `bdfdb67` は remote tip と不一致（旧PC未 push の可能性）。GitHub 正本で復元。
+> live-check-runner は他 Claude セッション稼働 + Chrome CDP 9222 占有のため Single Writer Rule によりスキップ、production smoke で代替確認。
+> `.env.local` は未配置（fresh clone）。秘密値は一切非表示。
+
+前回更新: 2026-05-24（Phase 23A 楽天APIエラー fallback 修正 — HTTP 400 wrong_parameter 原因特定・link_only fallback 実装・dpl_5Nvk24wASG4NNcyqF5o7suPrnF9f READY）
 
 > **次回再開時の最優先作業:**
 > 楽天市場 real_api 有効化には **RAKUTEN_APP_ID の値を正しい applicationId に Vercel で更新** → redeploy が必要。
