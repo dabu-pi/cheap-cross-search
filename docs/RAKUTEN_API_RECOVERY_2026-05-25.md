@@ -239,3 +239,69 @@ Vercel → 当該 Production deployment → **Runtime Logs / Functions Logs** �
 ログだけで判らない場合は、masked 診断エンドポイント（`/api/diag/rakuten`）追加に進む。
 
 > **Phase 23B は引き続き OPEN。** 次アクション = ユーザーが `[rakuten]` ログ行を共有 → Claude が原因特定。
+
+## 13. 根本原因の確定と新仕様（2026-04-01）対応 — Phase 23C（2026-05-25）
+
+### 根本原因（確定）
+
+Vercel Runtime Logs で `RAKUTEN_APP_ID` は runtime に届いていたが、楽天 API が
+`HTTP 400 {"error":"wrong_parameter","error_description":"specify valid applicationId"}` を返していた。
+人側で楽天 Developers / Rakuten Web Service のアプリ一覧を確認したところ、画面には
+**「アプリケーションID」「アクセスキー」「アフィリエイトID」**の3点があった。
+
+→ **原因は「旧 endpoint + applicationId のみ」で実装していたこと。**
+楽天市場商品検索APIは現行 **version 2026-04-01** で、新プラットフォーム（`openapi.rakuten.co.jp`）+
+**accessKey 必須**に変わっていた。旧実装の applicationId 単独リクエストは valid と認識されなかった。
+
+### ライブ検証（新 endpoint・ダミー値・秘密なし）
+
+```
+GET https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260401?applicationId=<dummy>&keyword=test&hits=1&formatVersion=2
+→ 400 {"errors":{"errorCode":400,"errorMessage":"accessKey must be present as a query parameter or in the header"}}
+
+GET 同上 + &accessKey=<dummy>
+→ 403 {"errors":{"errorCode":403,"errorMessage":"Invalid Access Key"}}
+
+GET 同上 + imageFlag=1&sort=standard（accessKey なし）
+→ 400 accessKey must be present（= imageFlag/sort/formatVersion は受理）
+```
+
+→ 新 endpoint は稼働中・**applicationId + accessKey 必須**・accessKey は query で受理・
+パラメータ（keyword/hits/imageFlag/sort/formatVersion）は妥当・エラー形式は `errors.errorCode/errorMessage`。
+
+### 公式ドキュメント確認（2026-04-01・formatVersion=2）
+
+- 成功レスポンスは `{"items":[{ itemName, itemPrice, ... }]}`（**lowercase `items`・フィールドは各要素直下にフラット**）。
+- `mediumImageUrls` は**文字列URLの配列**（128x128）。
+- `applicationId` と `accessKey` は**必須**、`affiliateId` は**任意**（設定すると `affiliateUrl` が返る）。
+
+### 実装変更（コード）
+
+| ファイル | 変更 |
+|---|---|
+| `src/lib/search/adapters/rakuten-ichiba.ts` | endpoint を `openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260401` に変更。`accessKey`（query）と任意 `affiliateId` を送信。`formatVersion=2`。レスポンスを v2（`items` フラット・画像は文字列配列）へ対応しつつ旧形式（`Items`/`Item` 入れ子・`{imageUrl}`）も後方互換で許容。新エラー形式 `errors.errorCode/errorMessage` と旧 `error/error_description` の両対応。`applicationId`/`accessKey` を `maskSecrets()` で全ログ masked。env 未設定（appId or accessKey 欠）時は link_only・API エラー時も link_only（UI に漏らさない）|
+| `.env.local.example` | `RAKUTEN_ACCESS_KEY`（必須）・`RAKUTEN_AFFILIATE_ID`（任意）を変数名のみ追記。`RAKUTEN_APP_ID` の説明更新 |
+| `src/lib/shops/shops.ts` | 楽天 `affiliateNote` を 2026-04-01 仕様（applicationId + accessKey 必須）に更新 |
+
+### 検証（本セッション・2026-05-25）
+
+- `npm run lint` ✅ exit 0 / `npx tsc --noEmit` ✅ exit 0 / `npm run build` ✅ exit 0（21 routes）
+- 新 endpoint のダミー値検証で request shape・必須パラメータ・エラー形式を確認済み（上記）。
+- live-check-runner: 他 Claude セッション + CDP 9222 占有のため未起動。production 確認は env 追加 + redeploy 後に curl/WebFetch で実施予定。
+
+### 人側に必要な作業（これで real_api 復旧する想定）
+
+1. Vercel → project `cheap-cross-search` → Settings → Environment Variables
+   - **追加** `RAKUTEN_ACCESS_KEY` = 楽天アプリ一覧の「アクセスキー」 / Environment: **Production**
+   - 既存 `RAKUTEN_APP_ID` = 「アプリケーションID」（そのまま）
+   - 任意 `RAKUTEN_AFFILIATE_ID` = 「アフィリエイトID」（収益化する場合）
+   - ※値はチャット・Markdown に貼らない
+2. Production を **Redeploy**（READY まで）
+3. 完了後に一報 → Claude が production 確認（下記 URL）→ 復旧していれば Phase 23C/23B を CLOSE
+   - https://cheap-cross-search.vercel.app/search?q=ワイヤレスイヤホン
+   - https://cheap-cross-search.vercel.app/search?q=スマホケース
+
+### Phase 状態
+
+- **Phase 23C（新仕様対応・実装）= 完了（commit 済み）。**
+- **Phase 23B（real_api 復旧）= OPEN 継続**（人側 env 追加 + redeploy 待ち → production 確認で CLOSE 判定）。

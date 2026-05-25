@@ -9,6 +9,8 @@
 > **2026-05-25 自動実施トライは認証で停止:** 楽天/Vercel ともログイン必須・Claude 側に対話ログイン手段/有効値/VERCEL_TOKEN/CLI が無いため手順1〜5 を実施できず。real_api 復旧は人側のブラウザ操作（Rakuten 確認 + Vercel env 更新 + redeploy）待ち。再開条件は §10 参照。
 >
 > **2026-05-25 復旧確認 → ⚠️ 未復旧:** ユーザーが env 更新+redeploy 実施後に確認したが、楽天は依然 link_only fallback（curl SSR 生HTML・X-Vercel-Cache:MISS・realOffers=0 を5回3クエリで確認）。原因は server側で、有効値が production runtime に届いていない疑い（env scope=Production か / redeploy が production promote 済みか / 値の空白混入 / Vercel Runtime Logs `[rakuten]` で切り分け）。**Phase 23B は OPEN 継続。** 詳細は `docs/RAKUTEN_API_RECOVERY_2026-05-25.md` §11。
+>
+> **2026-05-25 Phase 23C 新仕様対応（根本原因確定）:** 楽天ログは `specify valid applicationId`、アプリ画面に「アプリケーションID/アクセスキー/アフィリエイトID」あり → **旧 endpoint + applicationId のみが原因**と確定。商品検索API **2026-04-01**（`openapi.rakuten.co.jp/ichibams/.../20260401`・**accessKey 必須**・formatVersion=2）へアダプタを更新（新旧エラー/レスポンス両対応・secrets masked・lint/tsc/build PASS）。**人側で Vercel に `RAKUTEN_ACCESS_KEY`(Production) 追加 + redeploy が必要。** 詳細は §13。
 
 ## フェーズ概要
 
@@ -40,7 +42,8 @@
 | 20A | 検索UI視認性・外部検索モード説明改善 | ✅ 完了（text-gray-900・外部検索モード説明・外部サイト誘導明記・15/15 PASS・production確認OK・2026-05-24）| - |
 | 21 | 検索体験・カテゴリ導線改善 | ✅ 完了（カテゴリ別人気KW・関連KW候補・EmptyState改善・21/21 PASS・2026-05-24）| - |
 | 22 | 実商品検索API PoC — 楽天・Yahoo! アダプタ | ✅ 完了（rakuten-ichiba.ts・yahoo-shopping.ts・6ショップ体制・20/20 PASS・2026-05-24）| - |
-| 23B | 楽天API復旧 原因切り分け | ✅ 切り分け完了・⚠️ real_api 未復旧（コード正常・原因は Vercel RAKUTEN_APP_ID 値が無効・人側 env 更新+redeploy 待ち・2026-05-25）| ★★★ |
+| 23B | 楽天API復旧 原因切り分け | ✅ 切り分け完了・⚠️ real_api 未復旧（OPEN・人側 env 追加+redeploy 待ち・2026-05-25）| ★★★ |
+| 23C | 楽天API 2026-04-01 新仕様対応（accessKey 必須）| ✅ 実装完了（新 endpoint/accessKey/formatVersion=2・lint/tsc/build PASS・人側 RAKUTEN_ACCESS_KEY 追加+redeploy 待ち・2026-05-25）| ★★★ |
 
 ---
 
