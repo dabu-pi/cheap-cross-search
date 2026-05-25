@@ -122,3 +122,49 @@ Claude 側で完結できない（有効な credential が必要なため）。�
 - 失敗原因は Vercel の `RAKUTEN_APP_ID` 値が無効。
 - 修正は人側（楽天で有効な applicationId 確認 → Vercel 更新 → redeploy）。
 - それまでは link_only fallback で安全に運用継続（production は壊れていない）。
+
+## 10. 自動実施の試行結果（2026-05-25・認証で停止）
+
+「人側で行う予定だった作業（楽天 applicationId 確認 → API Test Form 検証 → Vercel env 更新 → redeploy → production 確認）」を
+Claude 側で可能な範囲まで自動実施しようとしたが、**すべての実行ステップが認証の壁で実施不可**だった。
+
+### 試行と停止理由
+
+| 手順 | 結果 | 停止理由 |
+|---|---|---|
+| 1. 楽天 Application ID の確認 | ❌ 実施不可 | 楽天ウェブサービス（https://webservice.rakuten.co.jp/app/list 等）は**ログイン必須**。Claude にはユーザーの楽天アカウントにログインしたブラウザがなく、ログイン情報も持たない |
+| 2. API Test Form で有効性確認 | ❌ 実施不可 | テストには有効な applicationId の**値**が必要だが、値を保有していない（ローカルに `.env.local` なし・コードにも秘密値なし＝正しい状態）。値の捏造・秘密値の探索はしない |
+| 3. Vercel env `RAKUTEN_APP_ID` 更新 | ❌ 実施不可 | Vercel は**ログイン必須**。`vercel` CLI 未インストール・`VERCEL_TOKEN` 環境変数なし＝非対話の API 経路もない。かつ設定すべき有効値を保有していない |
+| 4. Production redeploy | ❌ 実施不可 | Vercel 認証が必要（手順3と同じ）|
+| 5. production 確認 | ⭕ 実施（ただし変更前）| WebFetch で確認 → 楽天は依然 **link_only fallback**（手順1〜4 が未実施のため当然）|
+
+### 環境確認（値は非表示・存在のみ）
+
+- `.env.local`: **存在しない**（fresh clone のまま）
+- `VERCEL_TOKEN`: 環境変数に**なし**
+- `vercel` CLI: **未インストール**
+- → Claude が非対話で実施できる経路は存在しない。
+
+### 検証（本セッション・2026-05-25）
+
+- `npm run lint` ✅ exit 0 / `npx tsc --noEmit` ✅ exit 0 / `npm run build` ✅ exit 0（コード変更なし）
+- live-check-runner: 他 Claude セッション稼働 + Chrome CDP 9222 占有のため Single Writer Rule に従い未起動。WebFetch で代替確認。
+- production `/search?q=ワイヤレスイヤホン`: 楽天 link_only fallback（商品カードなし・他ショップ正常・エラー UI 漏れなし）。
+
+### この作業で Claude が行わなかったこと（方針）
+
+- 認証突破・ログインの自動化は行わない。
+- 秘密値（applicationId / token / password / OTP）の表示・記録・コード直書きはしない。
+- repo 内の秘密値探索や、値の捏造はしない。
+
+### 人側に残った作業（これが完了すると real_api 復旧）
+
+§8 の手順1〜5 を**ユーザーがブラウザ上で直接**実施する必要がある（要約）:
+
+1. https://webservice.rakuten.co.jp/ にログインし、有効な **applicationId** を確認
+2. https://webservice.rakuten.co.jp/explorer/api の Ichiba Item Search で `keyword=ワイヤレスイヤホン` + applicationId を入れ、200 で商品が返るか確認
+3. https://vercel.com/ → project `cheap-cross-search` → Settings → Environment Variables → `RAKUTEN_APP_ID`（Production）を有効値に更新（値はどこにも貼らない）
+4. 最新 Production deployment を Redeploy（READY まで）
+5. https://cheap-cross-search.vercel.app/search?q=ワイヤレスイヤホン で楽天が商品カード表示になれば復旧
+
+> 認証完了後（= ユーザーが手順3・4 を実施した後）に Claude 側で再開できる作業: production 確認（WebFetch / live-check-runner）→ real_api 復旧の有無を判定 → 本ドキュメント・PROJECT_STATUS・ROADMAP を「復旧済み」に更新 → commit / push。再開時は「Vercel env 更新 + redeploy 済み」とだけ伝えてもらえればよい（値は不要）。

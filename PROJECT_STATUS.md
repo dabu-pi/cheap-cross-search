@@ -67,6 +67,7 @@
 | Phase 23（楽天市場 real_api 有効化） | ⚠️ 要対応（RAKUTEN_APP_ID 値が invalid → applicationId 要確認・Phase 23A で調査済み・2026-05-24）|
 | Phase 23A（楽天APIエラー調査・fallback修正） | ✅ 完了（HTTP 400 wrong_parameter 原因特定・link_only fallback 実装・dpl_5Nvk24wASG4NNcyqF5o7suPrnF9f READY・2026-05-24）|
 | Phase 23B（楽天API復旧 原因切り分け）| ✅ 切り分け完了・⚠️ real_api 未復旧（2026-05-25・コードは正しい/endpoint・param 検証済み・ダミーidで本番同一エラー再現・原因は Vercel `RAKUTEN_APP_ID` 値が無効・**人側で有効 applicationId を Vercel 更新 → redeploy が必須**。詳細: `docs/RAKUTEN_API_RECOVERY_2026-05-25.md`）|
+| Phase 23B 自動実施トライ | 🔒 認証で停止（2026-05-25・楽天/Vercel ともログイン必須・Claude 側に対話ログイン手段・有効値・VERCEL_TOKEN/CLI なし → 手順1〜5 実施不可。人側ブラウザ操作が必要。詳細: `RAKUTEN_API_RECOVERY_2026-05-25.md` §10）|
 | YAHOO_APP_ID / Yahoo!ショッピング | 🔜 未設定・external_search 維持（別フェーズで有効化）|
 
 ## ⚠️ Phase 23 楽天市場 real_api 有効化（要対応・2026-05-24）
