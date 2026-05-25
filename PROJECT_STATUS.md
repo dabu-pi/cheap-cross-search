@@ -45,7 +45,7 @@
 | Phase 5b（API調査・申請準備） | ✅ 調査完了（docs/API_AFFILIATE_RESEARCH.md 作成済み・2026-05-24）|
 | サービス名変更 | ✅ 完了（「安買い横断サーチ」→「ECサイト比較.com」・2026-05-24）|
 | ECサイト比較.com 本番反映 | ✅ 完了（Vercel deploy 757bf98・live-check 11/11 PASS・2026-05-24）|
-| AliExpress Portals 申請 | ⏳ 審査中（Submitted 2026-05-23 22:16 PST・実機確認済み・メール通知待ち）|
+| AliExpress Portals 申請 | ❌ 不承認 → 🅷 **再申請 HOLD**（2026-05-25・site information invalid/non-compliant・運用開始後に再申請。詳細: `docs/ALIEXPRESS_AFFILIATE_STATUS_2026-05-25.md`）|
 | Temu Affiliate 申請準備 | ✅ 準備完了（申請情報整理済み・**未申請 HOLD**）|
 | SHEIN / A8.net 申請準備 | ✅ 準備完了（A8.net 経由手順整理済み・未申請）|
 | Phase 10（実用検索・比較MVP） | ✅ 完了（キーワード対応デモ・バナー改善・バッジ改善・8/8 PASS・2026-05-24）|
@@ -394,7 +394,7 @@
 
 ## ⚠️ 次に実施すること（優先順）
 
-1. ⏳ **AliExpress Portals 承認待ち** — 承認メール → `docs/ADAPTER_DEVELOPMENT_GUIDE.md` 手順通りに実装
+1. 🅷 **AliExpress Portals 再申請 HOLD** — 2026-05-25 不承認（site information invalid/non-compliant）。すぐに再申請せず、サイト運用開始 + 運営者情報/問い合わせ/正式URL 等の整備後に再申請する。詳細: `docs/ALIEXPRESS_AFFILIATE_STATUS_2026-05-25.md`
 2. 🔜 Amazon PA-API 有効化（売上3件達成後）→ `ADAPTER_DEVELOPMENT_GUIDE.md` 手順通りに実装
 3. 🔜 **SHEIN / A8.net 申請** — https://www.a8.net/ → SHEIN プログラム（申請準備完了）
 4. 🔜 **Temu Affiliate 申請**（HOLD — 申請タイミングを判断）— https://www.temu.com/affiliate.html

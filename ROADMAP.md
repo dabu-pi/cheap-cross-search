@@ -1,6 +1,8 @@
 # ROADMAP — ECサイト比較.com
 
 > **2026-05-25 新PC復元:** GitHub から clone（HEAD `764a101`）・npm ci/lint/typecheck/build 全 PASS・production smoke 4 URL OK。詳細は `docs/TRANSFER_TO_NEW_PC_2026-05-25.md`。
+>
+> **2026-05-25 AliExpress Affiliate 再申請 HOLD:** 登録不承認（site information invalid/non-compliant）。すぐに再申請せず、サイト運用開始 + 運営者情報/問い合わせ/正式URL/アフィリエイト表記等の整備後に再申請する。詳細は `docs/ALIEXPRESS_AFFILIATE_STATUS_2026-05-25.md`。
 
 ## フェーズ概要
 
@@ -17,7 +19,7 @@
 | 7 | 安全公開準備・ポリシー | ✅ 完了（2026-05-24）| - |
 | 8 | 本番Supabase接続・デプロイ準備 | ✅ 完了（0001+0002+0003 適用・DB保存確認・2026-05-24）| - |
 | 9 | Vercel本番デプロイ確認 | ✅ 完了（P9-1〜P9-13 全確認・2026-05-24）| - |
-| 5b | 実API/アフィリエイト調査・申請準備 | 🔄 進行中（Amazon✅ AliExpress⏳ Temu/SHEIN準備完了）| ★★★ |
+| 5b | 実API/アフィリエイト調査・申請準備 | 🔄 進行中（Amazon✅ AliExpress❌不承認→HOLD Temu/SHEIN準備完了）| ★★★ |
 | 10 | 実用検索・比較MVP | ✅ 完了（キーワード対応デモ・バナー/バッジ改善・2026-05-24）| - |
 | 11 | 比較体験UI改善 | ✅ 完了（PriceComparisonBar・フィルター・ボタン改善・2026-05-24）| - |
 | 12 | 比較ソート・実用導線強化 | ✅ 完了（ソート拡張・クリックフィルター連動・EmptyState改善・14/14 PASS・2026-05-24）| - |
