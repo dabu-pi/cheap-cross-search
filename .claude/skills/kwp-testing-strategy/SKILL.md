@@ -1,6 +1,6 @@
 ---
 name: kwp-testing-strategy
-description: 仕様と変更範囲から、必要なテストだけを選んでテスト戦略を作る。既存testsを先に調査し、過剰なテスト追加を避け、回帰リスクの高い箇所を優先する。unit／integration／E2E／visual／manualを使い分け、Preview確認とProduction前確認を分離する。変更概要・既存テスト状況・回帰リスク・必須／推奨／不要テスト・手動確認・Preview確認・Production前確認・合格条件を構造化して出力する。Anthropic公式testing-strategyの平山版下位テンプレート。disable-model-invocationにより自動発火せず、平山が /kwp-testing-strategy で明示起動したときだけ使う。
+description: 仕様と変更範囲から、必要なテストだけを選んでテスト戦略を作る。既存testsを先に調査し、テストランナーやテストが存在しない場合はその事実を明記し、過剰なテスト追加を避け、回帰リスクの高い箇所を優先する。unit／integration／E2E／visual／manualを使い分け、Preview確認とProduction前確認を分離する。変更概要・既存テスト状況・回帰リスク・必須／推奨／不要テスト・手動確認・Preview確認・Production前確認・合格条件を構造化して出力する。Anthropic公式testing-strategyの平山版下位テンプレート。disable-model-invocationにより自動発火せず、平山が /kwp-testing-strategy で明示起動したときだけ使う。
 disable-model-invocation: true
 ---
 
@@ -56,6 +56,13 @@ tests / __tests__ / *.test.* / *.spec.* / e2e / playwright 等
 
 既存testsを先に調査してから戦略を組む。既にカバーされている領域へ重複を足さない。
 
+**テストランナー不在・外部テスト資産の扱い（0.2.0 追加）:**
+
+- 対象repo内に**テストランナーが無い**（`package.json` に test スクリプトが無く jest/vitest/playwright 設定も無い）場合は、その事実を「既存テスト状況」に**必ず明記**する。無いことを黙って前提にしない。
+- `live-check-runner` など**別repoに存在するテスト資産**の有無も確認対象に含める（PROJECT_STATUS 等の "N/N PASS" 記録が別repo由来のことがある）。
+- 外部テスト資産が存在しても、**対象repoから実行可能か**を必ず区別する。別repo・別環境でしか動かないものは「対象repoの自動ゲートではない」と明記する。
+- 対象repoで実際に走らせられるゲート（例: `lint`・`build`・`tsc`）だけを「必須テスト」に置く。
+
 ---
 
 ## 選定の考え方
@@ -64,6 +71,7 @@ tests / __tests__ / *.test.* / *.spec.* / e2e / playwright 等
 - 過剰なテスト追加を避ける。trivialなgetter/setter・framework code・一度きりのscriptは対象にしない。
 - unit／integration／E2E／visual／manual を使い分ける。速く多く回せるものを土台に、E2E・visualは要所へ絞る。
 - **Preview確認とProduction確認を分離する。** Previewで見るもの／Production前に最後に確かめるものを分けて書く。
+- **テストランナーの新規導入（vitest/jest/playwright 等）は自動実施しない。** 導入が有効なときは「推奨テスト」に置き、owner承認事項として **導入目的・費用対効果（保守コスト対効果）** を明示する。導入そのものはこのSkillの範囲外。
 
 ---
 
@@ -113,6 +121,7 @@ ALWAYS 次の見出し構成で出力する。
    - 今回必ず実施するもの＋各選定理由
 5. 推奨テスト
    - 余力があれば実施するもの＋理由
+   - テストランナー新規導入が有効な場合はここに置き、owner承認事項・導入目的・費用対効果を明示する（導入は自動実施しない）
 6. 不要なテスト
    - 今回あえてやらないもの＋理由（過剰を避ける判断を明示）
 7. 手動確認
